@@ -1,0 +1,40 @@
+# Gradle
+.gradle/
+build/
+
+# Minecraft run directories
+run/
+runs/
+run-data/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+bin/
+eclipse/
+
+# macOS
+.DS_Store
+
+# Misc
+*.log
+logs/
+
+# Python tooling (tools/*.py generators)
+__pycache__/
+*.pyc
+
+# Secrets / local credentials (never commit)
+.env
+.env.*
+!.env.example
+
+# Release artifacts + throwaway build worktrees (scripts/build-all.sh)
+/dist/
+/.worktrees/

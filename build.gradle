@@ -1,0 +1,200 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.+'
+}
+
+version = mod_version
+group = mod_group_id
+
+stonecutter {
+    // 1.21.11 renamed/moved several classes wholesale. Global token replacements keep the
+    // shared source in the canonical (pre-rename) vocabulary; Stonecutter rewrites per node.
+    // Each pair is idempotent (the result never re-contains the source token) and reverses
+    // uniquely (the canonical tree never legitimately contains the target token).
+    replacements.string(current.parsed.matches('>=1.21.11')) {
+        replace 'ResourceLocation', 'Identifier'
+        // RenderType static factories moved to RenderTypes (the RenderType import itself is a
+        // per-file guard — an import-path replacement would substring-collide with these).
+        replace 'RenderType.lines(', 'RenderTypes.lines('
+        replace 'RenderType.entitySolid(', 'RenderTypes.entitySolid('
+        replace 'RenderType.eyes(', 'RenderTypes.eyes('
+        replace 'RenderType.translucentMovingBlock(', 'RenderTypes.translucentMovingBlock('
+    }
+    // MC 26.1 (first of the 2026 scheme): the GUI pipeline's GuiGraphics became
+    // GuiGraphicsExtractor, and several utilities moved/renamed. Same invertibility
+    // rules as above (the ';' / ' ' / '(' anchors keep every pair collision-free).
+    replacements.string(current.parsed.matches('>=26.1')) {
+        replace 'GuiGraphics;', 'GuiGraphicsExtractor;'
+        replace 'GuiGraphics ', 'GuiGraphicsExtractor '
+        replace 'net.minecraft.client.renderer.state.CameraRenderState', 'net.minecraft.client.renderer.state.level.CameraRenderState'
+        replace 'import net.minecraft.client.renderer.LightTexture;', 'import net.minecraft.util.LightCoordsUtil;'
+        replace 'LightTexture.FULL_BRIGHT', 'LightCoordsUtil.FULL_BRIGHT'
+        replace 'FarmBlock', 'FarmlandBlock'
+    }
+}
+
+base {
+    archivesName = mod_id
+}
+
+// 1.21.x ships on Java 21; the 26.x line (2026 version scheme) bumped to Java 25.
+// The toolchain provisions the right JDK per node for compile + the NeoForge run
+// tasks (foojay resolver is wired in settings.gradle); the Gradle daemon stays on 21.
+def nodeJavaVersion = ['26.1': 25, '26.2': 25].getOrDefault(stonecutter.current.project, 21)
+java.toolchain.languageVersion = JavaLanguageVersion.of(nodeJavaVersion)
+
+println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+
+neoForge {
+    version = neo_version
+
+    // ModDevGradle wires the modding deps into `main` only; the JUnit suite in
+    // src/test needs Minecraft/NeoForge on its compile + runtime classpath too.
+    addModdingDependenciesTo sourceSets.test
+
+    // NB: the namespace property is `neoforge.enabledGameTestNamespaces` (was `forge.…`).
+    // It must be set on client, server AND gameTestServer — if it's unset, ZERO gametests
+    // register and `runGameTestServer` exits 0 having run nothing (a false green).
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+        // Launches the dedicated GameTestServer, runs all registered gametests, then exits.
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+repositories {
+    maven {
+        name = 'BlameJared (JEI, Patchouli)'
+        url = 'https://maven.blamejared.com/'
+    }
+}
+
+dependencies {
+    // JEI: API at compile time, full mod at dev runtime.
+    // From MC 26.x JEI's artifact tracks the PATCH version (jei-26.1.2-…) while the node id is
+    // the minor (26.1) — jei_mc_version overrides the coordinate where they diverge.
+    def jeiMc = findProperty('jei_mc_version') ?: minecraft_version
+    compileOnly "mezz.jei:jei-${jeiMc}-common-api:${jei_version}"
+    compileOnly "mezz.jei:jei-${jeiMc}-neoforge-api:${jei_version}"
+    runtimeOnly "mezz.jei:jei-${jeiMc}-neoforge:${jei_version}"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test', Test).configure {
+    useJUnitPlatform()
+    // Under Stonecutter each version is a subproject, so the test task's default
+    // working dir is versions/<node>/; tests that read root-relative resource paths
+    // need the real project root.
+    workingDir = rootProject.projectDir
+    testLogging {
+        events 'failed'
+        exceptionFormat 'full'
+    }
+}
+
+// Expand declared replace properties into the mod metadata + pack.mcmeta at process time.
+tasks.named('processResources', ProcessResources).configure {
+    // pack.mcmeta pack_format is the DATA pack format of the target MC version (1.21.1=48,
+    // 1.21.8=81, 1.21.9=88). Per-node so each jar declares the right value instead of a stale
+    // hardcode. Source of truth: version.json ("pack_version".data_major) inside the MC client jar.
+    def dataPackFormat = ['1.21.1': 48, '1.21.8': 81, '1.21.9': 88, '1.21.10': 88, '1.21.11': 94, '26.1': 101, '26.2': 107].getOrDefault(stonecutter.current.project, 48)
+    // 1.21.9's pack schema requires explicit min_format/max_format once the format is >81;
+    // older versions reject the unknown keys' absence gracefully but we keep them off there.
+    def packFormatExtra = dataPackFormat > 81
+            ? ",\n    \"min_format\": ${dataPackFormat},\n    \"max_format\": ${dataPackFormat}"
+            : ''
+    var replaceProperties = [
+            minecraft_version_range: minecraft_version_range,
+            neo_version_range: neo_version_range,
+            loader_version_range: loader_version_range,
+            mod_id: mod_id, mod_name: mod_name, mod_license: mod_license, mod_version: mod_version,
+            mod_authors: mod_authors, mod_description: mod_description,
+            pack_format: dataPackFormat,
+            pack_format_extra: packFormatExtra,
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties + [project: project]
+    }
+
+    // MC 1.21.2 changed the recipe-ingredient codec: the {"item":"x"} / {"tag":"x"} objects
+    // became a bare id "x" / "#tag". The source recipe JSONs stay in the 1.21.1 form (which
+    // 1.21.1 requires); for any forward node (>=1.21.2) rewrite them in the packaged output so
+    // the same single source ships valid recipes per node. Idempotent — already-bare ids don't
+    // match. Result objects ({"id":...}) and conditions are untouched (no "item"/"tag" key).
+    if (stonecutter.current.project != '1.21.1') {
+        doLast {
+            def recipeDir = new File(sourceSets.main.output.resourcesDir, 'data/mcwaterslides/recipe')
+            if (recipeDir.exists()) {
+                recipeDir.eachFileRecurse { f ->
+                    if (!f.name.endsWith('.json')) return
+                    def text = f.text
+                    def out = text
+                            .replaceAll(/\{\s*"item"\s*:\s*"([^"]+)"\s*\}/, '"$1"')
+                            .replaceAll(/\{\s*"tag"\s*:\s*"([^"]+)"\s*\}/, '"#$1"')
+                    if (out != text) f.text = out
+                }
+            }
+        }
+    }
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes([
+                'Specification-Title'     : mod_id,
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : '1',
+                'Implementation-Title'    : project.name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : mod_authors,
+                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            artifact jar
+        }
+    }
+    repositories {
+        maven {
+            url "file://${project.projectDir}/mcmodsrepo"
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    options.compilerArgs += ['-Xmaxerrs', '2000', '-Xmaxwarns', '2000']
+}
+
+// GameTests live on the 1.21.1 oracle node; forward nodes exclude them (compile + boot-smoke
+// only) until the gametest API seams are worth porting. Mirrors MC3DPrint's ladder policy.
+if (stonecutter.current.project != '1.21.1') {
+    tasks.named('compileJava', JavaCompile) { exclude '**/gametest/**' }
+}
