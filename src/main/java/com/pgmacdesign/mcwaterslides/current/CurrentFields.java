@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.pgmacdesign.mcwaterslides.machine.JetBlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
@@ -58,7 +58,7 @@ public final class CurrentFields {
      * Aggregate thrust (blocks/sec per second, as a vector) acting on an entity's feet
      * from every energized jet whose field contains them.
      */
-    public static Vec3 sampleThrust(Level level, LivingEntity entity, double thrustPerSecond) {
+    public static Vec3 sampleThrust(Level level, Entity entity, double thrustPerSecond) {
         BlockPos feet = BlockPos.containing(entity.position());
         Vec3 thrust = Vec3.ZERO;
         for (JetBlockEntity jet : jetsIn(level).values()) {

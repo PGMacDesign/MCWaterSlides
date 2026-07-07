@@ -116,7 +116,7 @@ public class JetBlockEntity extends BlockEntity {
     }
 
     /** Per-jet entity cap: everyone pushes unless the rare over-cap allowlist is active. */
-    public boolean allowsPush(LivingEntity entity) {
+    public boolean allowsPush(Entity entity) {
         Level level = getLevel();
         if (level != null && level.isClientSide) {
             return true; // server billing corrects momentum via the ride sync

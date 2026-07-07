@@ -28,7 +28,14 @@ public final class RideEvents {
 
     @SubscribeEvent
     public static void onEntityTick(EntityTickEvent.Post event) {
-        if (!(event.getEntity() instanceof LivingEntity living) || living.level().isClientSide) {
+        if (event.getEntity().level().isClientSide) {
+            return;
+        }
+        if (event.getEntity() instanceof net.minecraft.world.entity.item.ItemEntity item) {
+            tickItem(item);
+            return;
+        }
+        if (!(event.getEntity() instanceof LivingEntity living)) {
             return;
         }
         // Don't allocate ride state for the 99% of mobs that never touch a slide.
@@ -48,9 +55,32 @@ public final class RideEvents {
                 PacketDistributor.sendToPlayer(player,
                         new RideSyncPayload(state.sessionId, state.riding, (float) state.momentum));
             }
-        } else {
+        } else if (com.pgmacdesign.mcwaterslides.config.MCWaterslidesConfig.MOBS_RIDE.get()) {
             RideTicker.tick(living, state, false, true);
+            if (state.riding && living instanceof net.minecraft.world.entity.Mob mob) {
+                // Riding mobs shouldn't fight the current with pathfinding.
+                mob.getNavigation().stop();
+            }
+        } else {
+            state.endRide();
         }
+    }
+
+    /** Items have no momentum machinery — currents just shove them (free: no surge billing). */
+    private static void tickItem(net.minecraft.world.entity.item.ItemEntity item) {
+        if (!com.pgmacdesign.mcwaterslides.config.MCWaterslidesConfig.ITEMS_RIDE.get()) {
+            return;
+        }
+        var thrust = com.pgmacdesign.mcwaterslides.current.CurrentFields.sampleThrust(
+                item.level(), item, com.pgmacdesign.mcwaterslides.config.MCWaterslidesConfig.JET_THRUST.get());
+        if (thrust.equals(net.minecraft.world.phys.Vec3.ZERO)) {
+            return;
+        }
+        var d = item.getDeltaMovement();
+        double vx = net.minecraft.util.Mth.clamp(d.x + thrust.x / 400.0, -0.6, 0.6);
+        double vy = net.minecraft.util.Mth.clamp(d.y + thrust.y / 400.0, -0.6, 0.6);
+        double vz = net.minecraft.util.Mth.clamp(d.z + thrust.z / 400.0, -0.6, 0.6);
+        item.setDeltaMovement(vx, vy, vz);
     }
 
     @SubscribeEvent

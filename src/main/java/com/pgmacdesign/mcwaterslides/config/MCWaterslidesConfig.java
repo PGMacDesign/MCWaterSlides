@@ -26,6 +26,8 @@ public final class MCWaterslidesConfig {
     public static final ModConfigSpec.IntValue PUMP_HOUSE_PASSIVE_RF;
     public static final ModConfigSpec.IntValue FLOOD_VALVE_RF_PER_BLOCK;
     public static final ModConfigSpec.IntValue FLOOD_VALVE_MAX_VOLUME;
+    public static final ModConfigSpec.BooleanValue MOBS_RIDE;
+    public static final ModConfigSpec.BooleanValue ITEMS_RIDE;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -54,6 +56,15 @@ public final class MCWaterslidesConfig {
                 .comment("Horizontal speed (b/s) needed to start riding a flat channel.",
                         "Slopes always start you regardless.")
                 .defineInRange("minStartSpeed", 1.0, 0.0, 10.0);
+        builder.pop();
+
+        builder.comment("Riders").push("riders");
+        MOBS_RIDE = builder
+                .comment("Mobs ride slides and get pushed by currents (villager waterparks, pig races).")
+                .define("mobsRide", true);
+        ITEMS_RIDE = builder
+                .comment("Dropped items get pushed by currents (slides quietly double as item transport).")
+                .define("itemsRide", true);
         builder.pop();
 
         builder.comment("Jets").push("jet");
