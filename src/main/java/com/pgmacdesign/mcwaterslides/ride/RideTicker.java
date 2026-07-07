@@ -33,6 +33,16 @@ public final class RideTicker {
         Level level = entity.level();
         BlockPos feet = BlockPos.containing(entity.position());
         BlockState feetState = level.getBlockState(feet);
+        // On ascending steps a rider's feet sit in the AIR block above the slope (standing
+        // on the 14px step top) — resolve one block down so slope seams don't read as air.
+        if (!(feetState.getBlock() instanceof SlideSurface)) {
+            BlockState belowState = level.getBlockState(feet.below());
+            if (belowState.getBlock() instanceof SlideSurface
+                    && entity.position().y - feet.below().getY() < 1.35) {
+                feet = feet.below();
+                feetState = belowState;
+            }
+        }
         RailShape shape = null;
         boolean verticalTube = false;
         boolean splashPool = feetState.getBlock() instanceof SplashPoolBlock;

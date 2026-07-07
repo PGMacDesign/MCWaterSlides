@@ -95,6 +95,15 @@ public final class CurrentField {
                     queue.add(next);
                 }
             }
+            // Slopes rise diagonally — 6-connectivity alone would kill a current at the
+            // first ascending/descending step, so currents step with the slide.
+            for (Direction d : Direction.Plane.HORIZONTAL) {
+                for (BlockPos next : new BlockPos[]{pos.relative(d).above(), pos.relative(d).below()}) {
+                    if (visited.add(next.asLong())) {
+                        queue.add(next);
+                    }
+                }
+            }
         }
 
         if (cells.isEmpty()) {
@@ -115,7 +124,12 @@ public final class CurrentField {
         int rx = dx - axial * facing.getStepX();
         int ry = dy - axial * facing.getStepY();
         int rz = dz - axial * facing.getStepZ();
-        return Math.max(Math.abs(rx), Math.max(Math.abs(ry), Math.abs(rz))) <= 1;
+        if (facing.getAxis().isVertical()) {
+            return Math.max(Math.abs(rx), Math.max(Math.abs(ry), Math.abs(rz))) <= 1;
+        }
+        // Horizontal jets: tight perpendicular beam, but a 45° vertical envelope so the
+        // current can follow ascending/descending runs (slopes are the whole mod).
+        return Math.max(Math.abs(rx), Math.abs(rz)) <= 1 && Math.abs(ry) <= axial;
     }
 
     private static boolean isPassable(BlockState state) {
