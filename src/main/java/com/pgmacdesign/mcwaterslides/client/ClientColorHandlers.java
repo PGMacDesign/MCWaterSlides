@@ -47,6 +47,14 @@ public final class ClientColorHandlers {
                     }
                     return liningColor(((SlideTubeBlock) state.getBlock()).color());
                 }, holder.get()));
+        event.register((state, level, pos, tintIndex) -> {
+            if (tintIndex == 0) {
+                return level != null && pos != null
+                        ? 0xFF000000 | BiomeColors.getAverageWaterColor(level, pos)
+                        : DEFAULT_WATER;
+            }
+            return NATURAL_LINING;
+        }, ModBlocks.SPLASH_POOL.get());
     }
 
     @SubscribeEvent
@@ -67,6 +75,8 @@ public final class ClientColorHandlers {
                     var block = ((BlockItem) stack.getItem()).getBlock();
                     return liningColor(((SlideTubeBlock) block).color());
                 }, holder.get()));
+        event.register((stack, tintIndex) -> tintIndex == 0 ? DEFAULT_WATER : NATURAL_LINING,
+                ModItems.SPLASH_POOL.get());
     }
 
     private static int liningColor(DyeColor color) {

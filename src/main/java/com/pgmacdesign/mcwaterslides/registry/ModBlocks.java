@@ -69,6 +69,14 @@ public final class ModBlocks {
                             .strength(2.5f, 6.0f)
                             .sound(SoundType.COPPER));
 
+    public static final DeferredBlock<com.pgmacdesign.mcwaterslides.slide.SplashPoolBlock> SPLASH_POOL =
+            BLOCKS.registerBlock("splash_pool",
+                    com.pgmacdesign.mcwaterslides.slide.SplashPoolBlock::new,
+                    BlockBehaviour.Properties.of()
+                            .strength(1.5f, 6.0f)
+                            .sound(SoundType.STONE)
+                            .noOcclusion());
+
     private static DeferredBlock<SlideChannelBlock> registerChannel(String name, DyeColor color) {
         return BLOCKS.registerBlock(name,
                 props -> new SlideChannelBlock(color, props),

@@ -22,6 +22,7 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> PUMP_HOUSE;
     public static final DeferredItem<BlockItem> WATER_CONDUIT;
     public static final DeferredItem<BlockItem> FLOOD_VALVE;
+    public static final DeferredItem<BlockItem> SPLASH_POOL;
 
     static {
         ModBlocks.SLIDE_CHANNELS.forEach((color, block) ->
@@ -32,6 +33,7 @@ public final class ModItems {
         PUMP_HOUSE = ITEMS.registerSimpleBlockItem(ModBlocks.PUMP_HOUSE);
         WATER_CONDUIT = ITEMS.registerSimpleBlockItem(ModBlocks.WATER_CONDUIT);
         FLOOD_VALVE = ITEMS.registerSimpleBlockItem(ModBlocks.FLOOD_VALVE);
+        SPLASH_POOL = ITEMS.registerSimpleBlockItem(ModBlocks.SPLASH_POOL);
     }
 
     private ModItems() {}

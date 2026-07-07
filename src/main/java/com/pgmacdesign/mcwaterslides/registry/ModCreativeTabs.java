@@ -23,6 +23,7 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.PUMP_HOUSE.get());
                         output.accept(ModItems.WATER_CONDUIT.get());
                         output.accept(ModItems.FLOOD_VALVE.get());
+                        output.accept(ModItems.SPLASH_POOL.get());
                     })
                     .build());
 

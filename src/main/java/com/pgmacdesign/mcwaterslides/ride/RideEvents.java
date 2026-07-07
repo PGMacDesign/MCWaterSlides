@@ -63,6 +63,15 @@ public final class RideEvents {
     @SubscribeEvent
     public static void onFall(LivingFallEvent event) {
         LivingEntity entity = event.getEntity();
+        // Splash pool contact negates ALL landing damage, ridden or not — including a
+        // cap-speed launch off an open ramp end that happens to land in one.
+        net.minecraft.core.BlockPos feet = net.minecraft.core.BlockPos.containing(entity.position());
+        if (entity.level().getBlockState(feet).getBlock() instanceof com.pgmacdesign.mcwaterslides.slide.SplashPoolBlock
+                || entity.level().getBlockState(feet.below()).getBlock() instanceof com.pgmacdesign.mcwaterslides.slide.SplashPoolBlock) {
+            event.setDamageMultiplier(0f);
+            event.setCanceled(true);
+            return;
+        }
         RideState state = entity.getData(ModAttachments.RIDE_STATE.get());
         if (RideTicker.immuneToFall(entity, state)) {
             event.setDamageMultiplier(0f);

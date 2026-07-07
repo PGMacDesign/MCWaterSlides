@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "WKW",
+    "CCC"
+  ],
+  "key": {
+    "W": {
+      "item": "minecraft:white_wool"
+    },
+    "K": {
+      "item": "minecraft:clay_ball"
+    },
+    "C": {
+      "tag": "mcwaterslides:slide_channels"
+    }
+  },
+  "result": {
+    "id": "mcwaterslides:splash_pool",
+    "count": 2
+  }
+}

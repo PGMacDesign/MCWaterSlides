@@ -1,0 +1,49 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "mcwaterslides:block/splash_pool_floor"
+      }
+    },
+    {
+      "apply": {
+        "model": "mcwaterslides:block/splash_pool_water"
+      }
+    },
+    {
+      "when": {
+        "north": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/splash_pool_wall"
+      }
+    },
+    {
+      "when": {
+        "south": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/splash_pool_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "east": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/splash_pool_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "west": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/splash_pool_wall",
+        "y": 270
+      }
+    }
+  ]
+}

@@ -7,6 +7,7 @@ import com.pgmacdesign.mcwaterslides.current.CurrentFields;
 import com.pgmacdesign.mcwaterslides.slide.SlideChannelBlock;
 import com.pgmacdesign.mcwaterslides.slide.SlideSurface;
 import com.pgmacdesign.mcwaterslides.slide.SlideTubeBlock;
+import com.pgmacdesign.mcwaterslides.slide.SplashPoolBlock;
 import com.pgmacdesign.mcwaterslides.slide.TubeShape;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,6 +35,7 @@ public final class RideTicker {
         BlockState feetState = level.getBlockState(feet);
         RailShape shape = null;
         boolean verticalTube = false;
+        boolean splashPool = feetState.getBlock() instanceof SplashPoolBlock;
         if (feetState.getBlock() instanceof SlideTubeBlock) {
             TubeShape tubeShape = feetState.getValue(SlideTubeBlock.SHAPE);
             if (tubeShape == TubeShape.VERTICAL) {
@@ -73,6 +75,22 @@ public final class RideTicker {
                 state.endRide();
                 return;
             }
+        }
+
+        if (splashPool) {
+            // The catch: a strong smooth brake (~1.5 blocks from cap), then the ride ends
+            // and vanilla control resumes — the rider stands up in the pool.
+            state.gapTicks = 0;
+            state.momentum *= 0.3;
+            if (state.momentum < 1.0) {
+                state.endRide();
+                return;
+            }
+            if (applyMotion && state.travel != null) {
+                Vec3 v = SlidePhysics.velocity(state.momentum, state.travel, 0);
+                entity.setDeltaMovement(v.x, entity.getDeltaMovement().y, v.z);
+            }
+            return;
         }
 
         if (verticalTube) {
