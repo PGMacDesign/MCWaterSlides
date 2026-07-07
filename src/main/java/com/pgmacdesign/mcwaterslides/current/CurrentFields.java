@@ -54,6 +54,25 @@ public final class CurrentFields {
         }
     }
 
+    /** FX iteration: every energized jet within {@code range} of {@code center}. */
+    public interface JetFxVisitor {
+        void visit(BlockPos jetPos, net.minecraft.core.Direction flow, CurrentField field);
+    }
+
+    public static void forEachEnergizedNear(Level level, Vec3 center, double range, JetFxVisitor visitor) {
+        double rangeSq = range * range;
+        for (JetBlockEntity jet : jetsIn(level).values()) {
+            if (!jet.isEnergized()) {
+                continue;
+            }
+            BlockPos pos = jet.getBlockPos();
+            if (center.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= rangeSq
+                    && !jet.field().isEmpty()) {
+                visitor.visit(pos, jet.field().flow(), jet.field());
+            }
+        }
+    }
+
     /**
      * Aggregate thrust (blocks/sec per second, as a vector) acting on an entity's feet
      * from every energized jet whose field contains them.

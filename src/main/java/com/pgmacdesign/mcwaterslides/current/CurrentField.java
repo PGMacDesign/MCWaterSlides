@@ -26,11 +26,13 @@ public final class CurrentField {
 
     private final Direction flow;
     private final LongSet cells;
+    private final long[] cellArray; // snapshot for random FX sampling
     private final AABB bounds;
 
     private CurrentField(Direction flow, LongSet cells, AABB bounds) {
         this.flow = flow;
         this.cells = cells;
+        this.cellArray = cells.toLongArray();
         this.bounds = bounds;
     }
 
@@ -53,6 +55,11 @@ public final class CurrentField {
 
     public int size() {
         return cells.size();
+    }
+
+    /** A uniformly random field cell (FX sampling). Undefined on an empty field. */
+    public BlockPos randomCell(net.minecraft.util.RandomSource random) {
+        return BlockPos.of(cellArray[random.nextInt(cellArray.length)]);
     }
 
     /**
