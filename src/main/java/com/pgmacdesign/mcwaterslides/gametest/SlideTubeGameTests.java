@@ -48,6 +48,35 @@ public class SlideTubeGameTests {
         helper.succeedWhen(() -> assertTubeShape(helper, new BlockPos(2, 1, 2), TubeShape.NORTH_SOUTH));
     }
 
+    /**
+     * Tube entry geometry: the forced swim pose (0.6 box, see RidePose) fits the 12px
+     * bore; a standing player (1.8) is walled out. Pins the invariant that riders enter
+     * tubes and walkers don't — full player traversal can't be gametested headless
+     * (player motion is client-authoritative), so geometry is the contract.
+     */
+    @GameTest(template = "empty5", timeoutTicks = 40)
+    public static void boreAdmitsSwimBoxOnly(GameTestHelper helper) {
+        BlockPos tube = new BlockPos(2, 1, 2);
+        helper.setBlock(tube, ModBlocks.SLIDE_TUBES.get(null).get());
+        helper.succeedWhen(() -> {
+            BlockPos abs = helper.absolutePos(tube);
+            var shape = helper.getLevel().getBlockState(abs).getCollisionShape(helper.getLevel(), abs);
+            double floorTop = 2 / 16.0;
+            var swimBox = new net.minecraft.world.phys.AABB(0.2, floorTop + 0.001, 0.2, 0.8, floorTop + 0.6, 0.8);
+            var standBox = new net.minecraft.world.phys.AABB(0.2, floorTop + 0.001, 0.2, 0.8, floorTop + 1.8, 0.8);
+            if (net.minecraft.world.phys.shapes.Shapes.joinIsNotEmpty(shape,
+                    net.minecraft.world.phys.shapes.Shapes.create(swimBox),
+                    net.minecraft.world.phys.shapes.BooleanOp.AND)) {
+                helper.fail("swim-pose box (0.6) must fit the tube bore");
+            }
+            if (!net.minecraft.world.phys.shapes.Shapes.joinIsNotEmpty(shape,
+                    net.minecraft.world.phys.shapes.Shapes.create(standBox),
+                    net.minecraft.world.phys.shapes.BooleanOp.AND)) {
+                helper.fail("standing box (1.8) must NOT fit the bore");
+            }
+        });
+    }
+
     /** A chicken (0.7 tall — fits the 12px bore) rides from an open channel INTO a tube run. */
     @GameTest(template = "empty5", timeoutTicks = 200)
     public static void jetPushesChickenThroughTube(GameTestHelper helper) {
