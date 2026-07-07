@@ -185,8 +185,12 @@ def ascending_body():
                 "north": face("#lining", tint=1, cull="north"),
                 "south": face("#lining", tint=1, cull="south"),
             }),
-            # Ramp plate: a flat 2px slab tilted 45° so it climbs from floor to lip.
-            element([2, 7, 0], [14, 9, 16], {
+            # Ramp plate: a flat slab whose TOP face sits on the pivot plane (y=8), so a
+            # 45° rescaled tilt sweeps its surface corner-to-corner — (z0,y0) up to
+            # (z16,y16) — meeting the flat neighbor's floor at the bottom and the
+            # next-level floor at the top. (Off the pivot plane it overshoots the cell,
+            # which is what made the junctions look wonky.)
+            element([2, 6, 0], [14, 8, 16], {
                 "up": face("#lining", tint=1),
                 "down": face("#base"),
                 "north": face("#base"),
@@ -217,8 +221,8 @@ def corner_water():
 
 
 def ascending_water():
-    """Ramp water sheet: a tilted quad tracking the sloped floor, just above it."""
-    quad = element([2, 9.6, 0], [14, 9.8, 16], {"up": face("#water", tint=0)},
+    """Ramp water sheet: a tilted quad tracking the sloped floor, a hair above its surface."""
+    quad = element([2, 6.2, 0], [14, 8.2, 16], {"up": face("#water", tint=0)},
                    shade=False, rotation=ramp_rotation(False))
     return {
         "render_type": "minecraft:translucent",
