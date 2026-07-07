@@ -1,0 +1,42 @@
+{
+  "textures": {
+    "particle": "mcwaterslides:block/slide_channel_base",
+    "base": "mcwaterslides:block/slide_channel_base",
+    "lining": "mcwaterslides:block/slide_channel_lining"
+  },
+  "elements": [
+    {
+      "from": [
+        14,
+        2,
+        0
+      ],
+      "to": [
+        16,
+        14,
+        16
+      ],
+      "faces": {
+        "east": {
+          "texture": "#base",
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "up": {
+          "texture": "#base"
+        },
+        "north": {
+          "texture": "#base",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#base",
+          "cullface": "south"
+        }
+      }
+    }
+  ]
+}

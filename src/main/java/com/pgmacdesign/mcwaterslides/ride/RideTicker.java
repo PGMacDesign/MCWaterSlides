@@ -149,7 +149,11 @@ public final class RideTicker {
                     Vec3 v = SlidePhysics.velocity(state.momentum, travel, slopeSign);
                     double vy = slopeSign < 0 ? v.y : entity.getDeltaMovement().y;
                     entity.setDeltaMovement(v.x, vy, v.z);
-                    centerInChannel(entity, feet, travel, applyMotionStrength(state.momentum));
+                    // Wide (wall-merged) slides let riders drift laterally — the outer
+                    // walls contain them; only single-lane channels pull to centerline.
+                    if (!isWideChannel(feetState)) {
+                        centerInChannel(entity, feet, travel, applyMotionStrength(state.momentum));
+                    }
                 }
             }
         } else if (entity.isInWater()) {
@@ -263,6 +267,12 @@ public final class RideTicker {
             return v.x >= 0 ? Direction.EAST : Direction.WEST;
         }
         return v.z >= 0 ? Direction.SOUTH : Direction.NORTH;
+    }
+
+    /** A channel that dropped a wall to a parallel lane — riders may cross the seam. */
+    private static boolean isWideChannel(BlockState state) {
+        return state.getBlock() instanceof SlideChannelBlock
+                && (!state.getValue(SlideChannelBlock.WALL_NEG) || !state.getValue(SlideChannelBlock.WALL_POS));
     }
 
     /** Gentle pull toward the channel centerline so corners sweep instead of scrape. */

@@ -84,7 +84,7 @@ public final class SlideConnections {
         return corner(a, b);
     }
 
-    /** Recompute this block's own shape in place (no-op when unchanged). */
+    /** Recompute this block's own shape + wall merges in place (no-op when unchanged). */
     public static void refreshSelf(Level level, BlockPos pos, BlockState state) {
         if (state.getBlock() instanceof SlideTubeBlock tube) {
             // Tubes own their shape logic (adds VERTICAL).
@@ -96,9 +96,47 @@ public final class SlideConnections {
         }
         RailShape current = state.getValue(SlideChannelBlock.SHAPE);
         RailShape computed = computeShape(level, pos, axisOf(current));
-        if (computed != current) {
-            level.setBlock(pos, state.setValue(SlideChannelBlock.SHAPE, computed), Block.UPDATE_ALL);
+        BlockState updated = withMergedWalls(level, pos,
+                state.setValue(SlideChannelBlock.SHAPE, computed));
+        if (updated != state) {
+            level.setBlock(pos, updated, Block.UPDATE_ALL);
         }
+    }
+
+    /**
+     * Drop a straight channel's perpendicular wall on any side where a parallel-shape
+     * channel abuts (wide slides read as one broad surface). Existence-of-a-parallel-
+     * neighbor only — the neighbor's SHAPE is itself existence-derived and already
+     * settled, so this stays oscillation-free: shapes never depend on wall flags.
+     * Corners/ascending keep both walls (their flags are inert, ignored by collision).
+     */
+    public static BlockState withMergedWalls(LevelReader level, BlockPos pos, BlockState state) {
+        RailShape shape = state.getValue(SlideChannelBlock.SHAPE);
+        Direction.Axis perp = perpAxisOf(shape);
+        boolean neg = true;
+        boolean posWall = true;
+        if (perp != null) {
+            Direction negDir = Direction.fromAxisAndDirection(perp, Direction.AxisDirection.NEGATIVE);
+            Direction posDir = Direction.fromAxisAndDirection(perp, Direction.AxisDirection.POSITIVE);
+            neg = !parallelChannelAt(level, pos.relative(negDir), shape);
+            posWall = !parallelChannelAt(level, pos.relative(posDir), shape);
+        }
+        return state.setValue(SlideChannelBlock.WALL_NEG, neg).setValue(SlideChannelBlock.WALL_POS, posWall);
+    }
+
+    /** A channel of the same straight shape (parallel lane) sits at {@code pos}. */
+    private static boolean parallelChannelAt(LevelReader level, BlockPos pos, RailShape shape) {
+        BlockState s = level.getBlockState(pos);
+        return s.getBlock() instanceof SlideChannelBlock && s.getValue(SlideChannelBlock.SHAPE) == shape;
+    }
+
+    /** The perpendicular (wall-bearing) axis of a straight shape, or null otherwise. */
+    private static Direction.Axis perpAxisOf(RailShape shape) {
+        return switch (shape) {
+            case NORTH_SOUTH -> Direction.Axis.X;
+            case EAST_WEST -> Direction.Axis.Z;
+            default -> null;
+        };
     }
 
     /** Recompute every slide block that could connect to {@code pos} (place/remove ripple). */

@@ -70,6 +70,65 @@ public class SlideChannelGameTests {
         helper.succeedWhen(() -> assertShape(helper, b, RailShape.NORTH_EAST));
     }
 
+    /**
+     * Parallel lanes merge: two side-by-side north-south channels drop the shared wall
+     * (WALL on the abutting side goes false), outer walls stay. Wide slides read as one
+     * broad surface. Mirrors the Splash Pool's inverted-wall merge.
+     */
+    @GameTest(template = "empty5", timeoutTicks = 40)
+    public static void parallelLanesMergeWalls(GameTestHelper helper) {
+        for (int z = 1; z <= 3; z++) {
+            helper.setBlock(new BlockPos(2, 1, z), ModBlocks.SLIDE_CHANNELS.get(null).get());
+            helper.setBlock(new BlockPos(3, 1, z), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        }
+        helper.succeedWhen(() -> {
+            var west = helper.getBlockState(new BlockPos(2, 1, 2));
+            var east = helper.getBlockState(new BlockPos(3, 1, 2));
+            assertShape(helper, new BlockPos(2, 1, 2), RailShape.NORTH_SOUTH);
+            // West lane: pos (east) wall drops toward its neighbor, neg (west) wall stays.
+            if (west.getValue(SlideChannelBlock.WALL_POS) || !west.getValue(SlideChannelBlock.WALL_NEG)) {
+                helper.fail("west lane should drop only its east wall, got neg="
+                        + west.getValue(SlideChannelBlock.WALL_NEG) + " pos=" + west.getValue(SlideChannelBlock.WALL_POS));
+            }
+            // East lane: neg (west) wall drops, pos (east) wall stays.
+            if (east.getValue(SlideChannelBlock.WALL_NEG) || !east.getValue(SlideChannelBlock.WALL_POS)) {
+                helper.fail("east lane should drop only its west wall, got neg="
+                        + east.getValue(SlideChannelBlock.WALL_NEG) + " pos=" + east.getValue(SlideChannelBlock.WALL_POS));
+            }
+            // The seam is physically open: no collision in the west lane's east-wall band.
+            BlockPos abs = helper.absolutePos(new BlockPos(2, 1, 2));
+            var shape = helper.getLevel().getBlockState(abs).getCollisionShape(helper.getLevel(), abs);
+            var seam = new net.minecraft.world.phys.AABB(14.5 / 16.0, 2.5 / 16.0, 0.3, 15.5 / 16.0, 13.5 / 16.0, 0.7);
+            if (net.minecraft.world.phys.shapes.Shapes.joinIsNotEmpty(shape,
+                    net.minecraft.world.phys.shapes.Shapes.create(seam),
+                    net.minecraft.world.phys.shapes.BooleanOp.AND)) {
+                helper.fail("merged seam must have no wall collision");
+            }
+        });
+    }
+
+    /** Breaking one lane reseals the survivor's wall (existence-based recompute). */
+    @GameTest(template = "empty5", timeoutTicks = 60)
+    public static void unmergeRestoresWall(GameTestHelper helper) {
+        for (int z = 1; z <= 3; z++) {
+            helper.setBlock(new BlockPos(2, 1, z), ModBlocks.SLIDE_CHANNELS.get(null).get());
+            helper.setBlock(new BlockPos(3, 1, z), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        }
+        helper.runAfterDelay(2, () -> {
+            if (helper.getBlockState(new BlockPos(2, 1, 2)).getValue(SlideChannelBlock.WALL_POS)) {
+                helper.fail("precondition: west lane should have dropped its east wall");
+            }
+            for (int z = 1; z <= 3; z++) {
+                helper.destroyBlock(new BlockPos(3, 1, z));
+            }
+        });
+        helper.succeedWhen(() -> {
+            if (!helper.getBlockState(new BlockPos(2, 1, 2)).getValue(SlideChannelBlock.WALL_POS)) {
+                helper.fail("west lane must reseal its east wall once the neighbor lane is gone");
+            }
+        });
+    }
+
     @GameTest(template = "empty5", timeoutTicks = 40)
     public static void removalReflowsNeighbors(GameTestHelper helper) {
         BlockPos a = new BlockPos(2, 1, 1);

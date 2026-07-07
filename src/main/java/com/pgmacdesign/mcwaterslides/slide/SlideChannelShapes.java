@@ -17,11 +17,26 @@ import net.minecraft.world.level.block.Block;
 final class SlideChannelShapes {
     private static final Map<RailShape, VoxelShape> SHAPES = new EnumMap<>(RailShape.class);
     private static final Map<RailShape, VoxelShape> WALLS = new EnumMap<>(RailShape.class);
+    /** Straight shapes × (wallNeg, wallPos) — wide slides drop shared walls. */
+    private static final Map<RailShape, VoxelShape[]> STRAIGHT_VARIANTS = new EnumMap<>(RailShape.class);
 
     private SlideChannelShapes() {}
 
     static VoxelShape shape(RailShape shape) {
         return SHAPES.get(shape);
+    }
+
+    /**
+     * Shape honoring dropped side walls (parallel-lane merges). Neg = west wall on a
+     * north-south run, north wall on an east-west run; pos = the other side. Non-straight
+     * shapes ignore the flags.
+     */
+    static VoxelShape shape(RailShape shape, boolean wallNeg, boolean wallPos) {
+        VoxelShape[] variants = STRAIGHT_VARIANTS.get(shape);
+        if (variants == null) {
+            return SHAPES.get(shape);
+        }
+        return variants[(wallNeg ? 1 : 0) | (wallPos ? 2 : 0)];
     }
 
     /** Just the side walls of a flat shape (no floor) — tube bores drop floors/lids. */
@@ -34,14 +49,16 @@ final class SlideChannelShapes {
     private static final double WALL_H = 14;
 
     static {
-        // Straight north-south: walls along east/west edges.
-        WALLS.put(RailShape.NORTH_SOUTH, Shapes.or(
-                Block.box(0, 2, 0, 2, WALL_H, 16),
-                Block.box(14, 2, 0, 16, WALL_H, 16)));
-        // Straight east-west: walls along north/south edges.
-        WALLS.put(RailShape.EAST_WEST, Shapes.or(
-                Block.box(0, 2, 0, 16, WALL_H, 2),
-                Block.box(0, 2, 14, 16, WALL_H, 16)));
+        // Straight north-south: walls along west (neg X) / east (pos X) edges.
+        VoxelShape nsNeg = Block.box(0, 2, 0, 2, WALL_H, 16);
+        VoxelShape nsPos = Block.box(14, 2, 0, 16, WALL_H, 16);
+        WALLS.put(RailShape.NORTH_SOUTH, Shapes.or(nsNeg, nsPos));
+        STRAIGHT_VARIANTS.put(RailShape.NORTH_SOUTH, straightVariants(nsNeg, nsPos));
+        // Straight east-west: walls along north (neg Z) / south (pos Z) edges.
+        VoxelShape ewNeg = Block.box(0, 2, 0, 16, WALL_H, 2);
+        VoxelShape ewPos = Block.box(0, 2, 14, 16, WALL_H, 16);
+        WALLS.put(RailShape.EAST_WEST, Shapes.or(ewNeg, ewPos));
+        STRAIGHT_VARIANTS.put(RailShape.EAST_WEST, straightVariants(ewNeg, ewPos));
 
         // Corners: outer walls on the two closed sides. SOUTH_EAST exits south+east →
         // walls on north + west.
@@ -57,6 +74,16 @@ final class SlideChannelShapes {
         SHAPES.put(RailShape.ASCENDING_NORTH, ascendingZ(true));
         SHAPES.put(RailShape.ASCENDING_EAST, ascendingX(false));
         SHAPES.put(RailShape.ASCENDING_WEST, ascendingX(true));
+    }
+
+    /** Floor + optional neg/pos walls, indexed (wallNeg ? 1 : 0) | (wallPos ? 2 : 0). */
+    private static VoxelShape[] straightVariants(VoxelShape neg, VoxelShape pos) {
+        return new VoxelShape[]{
+                FLOOR,
+                Shapes.or(FLOOR, neg),
+                Shapes.or(FLOOR, pos),
+                Shapes.or(FLOOR, neg, pos),
+        };
     }
 
     /** Walls on the flagged sides (north wall, west wall, south wall, east wall). */

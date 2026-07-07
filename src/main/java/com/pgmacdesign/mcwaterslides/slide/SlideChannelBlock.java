@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -28,6 +29,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  */
 public class SlideChannelBlock extends Block implements SlideSurface {
     public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE;
+    /** Perpendicular-axis walls: present by default, dropped where a parallel lane abuts. */
+    public static final BooleanProperty WALL_NEG = BooleanProperty.create("wall_neg");
+    public static final BooleanProperty WALL_POS = BooleanProperty.create("wall_pos");
 
     @Nullable
     private final DyeColor color;
@@ -35,7 +39,10 @@ public class SlideChannelBlock extends Block implements SlideSurface {
     public SlideChannelBlock(@Nullable DyeColor color, Properties properties) {
         super(properties);
         this.color = color;
-        registerDefaultState(stateDefinition.any().setValue(SHAPE, RailShape.NORTH_SOUTH));
+        registerDefaultState(stateDefinition.any()
+                .setValue(SHAPE, RailShape.NORTH_SOUTH)
+                .setValue(WALL_NEG, true)
+                .setValue(WALL_POS, true));
     }
 
     @Nullable
@@ -45,7 +52,7 @@ public class SlideChannelBlock extends Block implements SlideSurface {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(SHAPE);
+        builder.add(SHAPE, WALL_NEG, WALL_POS);
     }
 
     @Override
@@ -54,7 +61,8 @@ public class SlideChannelBlock extends Block implements SlideSurface {
         RailShape shape = SlideConnections.computeShape(
                 context.getLevel(), context.getClickedPos(),
                 context.getHorizontalDirection().getAxis());
-        return defaultBlockState().setValue(SHAPE, shape);
+        return SlideConnections.withMergedWalls(context.getLevel(), context.getClickedPos(),
+                defaultBlockState().setValue(SHAPE, shape));
     }
 
     @Override
@@ -86,12 +94,12 @@ public class SlideChannelBlock extends Block implements SlideSurface {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SlideChannelShapes.shape(state.getValue(SHAPE));
+        return SlideChannelShapes.shape(state.getValue(SHAPE), state.getValue(WALL_NEG), state.getValue(WALL_POS));
     }
 
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SlideChannelShapes.shape(state.getValue(SHAPE));
+        return SlideChannelShapes.shape(state.getValue(SHAPE), state.getValue(WALL_NEG), state.getValue(WALL_POS));
     }
 
     /** Channels are mostly open — light passes, mobs shouldn't consider them full. */

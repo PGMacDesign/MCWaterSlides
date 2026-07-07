@@ -83,35 +83,49 @@ def body_textures():
     }
 
 
+def straight_floor_element():
+    return element([0, 0, 0], [16, 2, 16], {
+        "down": face("#base", cull="down"),
+        "up": face("#lining", tint=1),
+        "north": face("#base", cull="north"),
+        "south": face("#base", cull="south"),
+        "east": face("#base", cull="east"),
+        "west": face("#base", cull="west"),
+    })
+
+
+def straight_wall_neg_element():
+    """West wall (neg X for a north-south run). Inner (east) face tinted."""
+    return element([0, 2, 0], [2, WALL_H, 16], {
+        "west": face("#base", cull="west"),
+        "east": face("#lining", tint=1),
+        "up": face("#base"),
+        "north": face("#base", cull="north"),
+        "south": face("#base", cull="south"),
+    })
+
+
+def straight_wall_pos_element():
+    """East wall (pos X for a north-south run). Inner (west) face tinted."""
+    return element([14, 2, 0], [16, WALL_H, 16], {
+        "east": face("#base", cull="east"),
+        "west": face("#lining", tint=1),
+        "up": face("#base"),
+        "north": face("#base", cull="north"),
+        "south": face("#base", cull="south"),
+    })
+
+
 def straight_body():
-    """North-south run: open ends N/S, walls E/W."""
+    """North-south run: open ends N/S, walls E/W (composite for inventory)."""
     return {
         "textures": body_textures(),
-        "elements": [
-            element([0, 0, 0], [16, 2, 16], {
-                "down": face("#base", cull="down"),
-                "up": face("#lining", tint=1),
-                "north": face("#base", cull="north"),
-                "south": face("#base", cull="south"),
-                "east": face("#base", cull="east"),
-                "west": face("#base", cull="west"),
-            }),
-            element([0, 2, 0], [2, WALL_H, 16], {
-                "west": face("#base", cull="west"),
-                "east": face("#lining", tint=1),
-                "up": face("#base"),
-                "north": face("#base", cull="north"),
-                "south": face("#base", cull="south"),
-            }),
-            element([14, 2, 0], [16, WALL_H, 16], {
-                "east": face("#base", cull="east"),
-                "west": face("#lining", tint=1),
-                "up": face("#base"),
-                "north": face("#base", cull="north"),
-                "south": face("#base", cull="south"),
-            }),
-        ],
+        "elements": [straight_floor_element(), straight_wall_neg_element(), straight_wall_pos_element()],
     }
+
+
+def model_of(*elements):
+    return {"textures": body_textures(), "elements": list(elements)}
 
 
 def corner_body():
@@ -220,10 +234,12 @@ def inventory_model():
 
 # ── blockstates / items / loot / tags / recipes / lang ─────────────────────
 
-# shape -> (model family, y rotation). Body + water parts share these.
-SHAPE_VARIANTS = {
-    "north_south": ("slide_channel", 0),
-    "east_west": ("slide_channel", 90),
+# Straight shapes split floor/walls so wide-slide merges drop the shared wall
+# per-state (wall_neg/wall_pos). shape -> y rotation.
+STRAIGHT_VARIANTS = {"north_south": 0, "east_west": 90}
+
+# Corner/ascending shapes keep the whole body baked in. shape -> (family, y rotation).
+WHOLE_VARIANTS = {
     "ascending_south": ("slide_channel_ascending", 0),
     "ascending_west": ("slide_channel_ascending", 90),
     "ascending_north": ("slide_channel_ascending", 180),
@@ -237,12 +253,23 @@ SHAPE_VARIANTS = {
 
 def blockstate():
     parts = []
-    for shape, (family, rot) in SHAPE_VARIANTS.items():
+
+    def apply_of(model, rot):
+        a = {"model": f"{MOD}:block/{model}"}
+        if rot:
+            a["y"] = rot
+        return a
+
+    for shape, rot in STRAIGHT_VARIANTS.items():
+        parts.append({"when": {"shape": shape}, "apply": apply_of("slide_channel_floor", rot)})
+        parts.append({"when": {"shape": shape}, "apply": apply_of("slide_channel_water", rot)})
+        parts.append({"when": {"shape": shape, "wall_neg": "true"},
+                      "apply": apply_of("slide_channel_wall_neg", rot)})
+        parts.append({"when": {"shape": shape, "wall_pos": "true"},
+                      "apply": apply_of("slide_channel_wall_pos", rot)})
+    for shape, (family, rot) in WHOLE_VARIANTS.items():
         for model in (family, f"{family}_water"):
-            apply = {"model": f"{MOD}:block/{model}"}
-            if rot:
-                apply["y"] = rot
-            parts.append({"when": {"shape": shape}, "apply": apply})
+            parts.append({"when": {"shape": shape}, "apply": apply_of(model, rot)})
     return {"multipart": parts}
 
 
@@ -274,6 +301,9 @@ def gen_data():
     # models
     models = RES / f"assets/{MOD}/models"
     write_json(models / "block/slide_channel.json", straight_body())
+    write_json(models / "block/slide_channel_floor.json", model_of(straight_floor_element()))
+    write_json(models / "block/slide_channel_wall_neg.json", model_of(straight_wall_neg_element()))
+    write_json(models / "block/slide_channel_wall_pos.json", model_of(straight_wall_pos_element()))
     write_json(models / "block/slide_channel_corner.json", corner_body())
     write_json(models / "block/slide_channel_ascending.json", ascending_body())
     write_json(models / "block/slide_channel_water.json", straight_water())

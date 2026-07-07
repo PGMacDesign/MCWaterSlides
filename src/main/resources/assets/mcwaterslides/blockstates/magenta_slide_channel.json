@@ -5,7 +5,7 @@
         "shape": "north_south"
       },
       "apply": {
-        "model": "mcwaterslides:block/slide_channel"
+        "model": "mcwaterslides:block/slide_channel_floor"
       }
     },
     {
@@ -18,10 +18,28 @@
     },
     {
       "when": {
+        "shape": "north_south",
+        "wall_neg": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_wall_neg"
+      }
+    },
+    {
+      "when": {
+        "shape": "north_south",
+        "wall_pos": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_wall_pos"
+      }
+    },
+    {
+      "when": {
         "shape": "east_west"
       },
       "apply": {
-        "model": "mcwaterslides:block/slide_channel",
+        "model": "mcwaterslides:block/slide_channel_floor",
         "y": 90
       }
     },
@@ -31,6 +49,26 @@
       },
       "apply": {
         "model": "mcwaterslides:block/slide_channel_water",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "east_west",
+        "wall_neg": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_wall_neg",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "east_west",
+        "wall_pos": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_wall_pos",
         "y": 90
       }
     },
