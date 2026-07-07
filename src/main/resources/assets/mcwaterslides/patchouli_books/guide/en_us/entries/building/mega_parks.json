@@ -1,0 +1,16 @@
+{
+  "name": "Mega-Parks",
+  "icon": "minecraft:filled_map",
+  "category": "mcwaterslides:building",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Build as big as you dare \u2014 a park can span a hundred chunks and more. $(bold)You$() load the world as you ride: the slide ahead is always ready before you arrive, no chunk loaders needed."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Mobs and items only ride while a player is near enough to keep the world ticking. Wander off and your villager pauses mid-slide; come back and the ride picks up again. $(bold)That's by design$() \u2014 slides are for riding, not unattended freight.$(br2)Want a cross-map item line anyway? Pair the slides with a chunk-loading mod: currents run fine in any chunk something else keeps loaded.",
+      "title": "Mobs, items & distance"
+    }
+  ]
+}

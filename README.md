@@ -28,6 +28,18 @@ Valve** (fills your sealed glass tube with water — and finds the leak when it
 isn't sealed), **Splash Pools** (safe landings), mob & item riding, and a hidden
 advancement for a single 10,000-block ride.
 
+## Big parks & chunk loading — a deliberate design decision
+
+MC Waterslides ships **no chunk loading, on purpose** — that's a commitment, not an
+oversight. Riders load chunks themselves the way any moving player does, so a park
+can span a hundred chunks and only the parts near players ever tick.
+
+Mobs and dropped items only ride while a player is close enough to keep their chunks
+ticking: leave, and they pause mid-slide; return, and they resume. **That's intended
+behavior.** Slides are not designed as an unattended item-transit system — though if
+you want one, they compose fine with chunk-loader mods (currents run in any chunk
+something else keeps loaded).
+
 ## Versions
 
 One codebase (Stonecutter) builds a jar per NeoForge target:

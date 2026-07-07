@@ -125,6 +125,19 @@ def gen():
              "bar. Patch it and flip the lever again.", title="Finding leaks"),
     ]))
 
+    write_json(entries / "building/mega_parks.json", entry("building", "Mega-Parks",
+            "minecraft:filled_map", [
+        text("Build as big as you dare — a park can span a hundred chunks and more. "
+             "$(bold)You$() load the world as you ride: the slide ahead is always ready "
+             "before you arrive, no chunk loaders needed."),
+        text("Mobs and items only ride while a player is near enough to keep the world "
+             "ticking. Wander off and your villager pauses mid-slide; come back and the "
+             "ride picks up again. $(bold)That's by design$() — slides are for riding, "
+             "not unattended freight.$(br2)Want a cross-map item line anyway? Pair the "
+             "slides with a chunk-loading mod: currents run fine in any chunk something "
+             "else keeps loaded.", title="Mobs, items & distance"),
+    ]))
+
     write_json(entries / "power/jets.json", entry("power", "The Jet",
             f"{MOD}:jet", [
         text("The $(item)Jet$() shoves a current through the water ahead of it — about 24 "

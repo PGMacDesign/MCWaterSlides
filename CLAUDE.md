@@ -98,6 +98,9 @@ blocks), `machine/` (Jet, Pump House, Flood Valve, Splash Pool, Conduit), `curre
 - Channels/tubes carry **intrinsic water, cauldron-style** (model-rendered animated
   water overlay, biome-tinted, NO FluidState — real waterlogging would spread water over
   the walls). Nothing can dry them. Jets energize real water volumes AND slide blocks.
+- **No chunk loading, ever, without explicit owner sign-off.** Riders self-load chunks;
+  mobs/items pausing outside simulation distance is intended behavior (documented in the
+  README and the in-game book). Don't "fix" it.
 
 **Soft-dep compat pattern** (when valuing/handling other mods' content): an
 `onCommonSetup` hook that **returns early unless `ModList.get().isLoaded("<id>")`**, then
