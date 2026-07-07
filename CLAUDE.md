@@ -1,7 +1,10 @@
-# MCWaterSlides — Project Instructions
+# MC Waterslides — Project Instructions
 
-**Multi-version NeoForge** mod — water slides (concept/design doc pending; update this
-line when the design lands). This repo deliberately mirrors **PGMacDesign/MC3DPrint**
+**Multi-version NeoForge** mod: build enormous, fast, RF-jet-powered waterslides — downhill,
+uphill, enclosed tubes, effectively endless. **Fun-first, zero grind**: copper+clay-cheap
+materials, no rare gates, no economy to protect (deliberately the anti-MC3DPrint on balance).
+Full design: `docs/design-mechanics-spec.html`, `docs/blocks-recipes-spec.html`,
+`docs/architecture-delivery-plan.html`. This repo deliberately mirrors **PGMacDesign/MC3DPrint**
 (local: `~/_Development/_MiscWorkspace/mc3dprint`, post-multi-version-merge `main`) in
 structure, build setup, and conventions — when a question isn't answered here, do what
 MC3DPrint does.
@@ -72,11 +75,27 @@ builds are for smoke-testing only. Extend the script's node array when adding a 
 
 ## Architecture (`src/main/java/com/pgmacdesign/mcwaterslides/`)
 
-Not scaffolded yet — replace this section with a package table as code lands. Follow
-MC3DPrint's layout: `McWaterSlides.java` mod entry (registries + event-listener wiring),
-one package per feature domain, plus `registry/`, `item/`, `block/`, `client/`,
-`command/`, `config/`, `network/`, `loot/`, `advancement/` as named, and
-`integration/<mod>/` for soft-dep compat.
+Not scaffolded yet — replace this section with a package table as code lands. Planned
+layout (see `docs/architecture-delivery-plan.html` §2): `MCWaterSlides.java` mod entry
+(registries + event-listener wiring), `ride/` (momentum engine), `slide/` (channel/tube
+blocks), `machine/` (Jet, Pump House, Flood Valve, Splash Pool, Conduit), `current/`
+(jet current fields + caching), plus `registry/`, `client/`, `network/`, `config/`,
+`advancement/`, `gametest/` as named, and `integration/<mod>/` for soft-dep compat.
+
+## Design invariants (don't break these)
+
+- **Speed cap ~22 b/s (config)** — deliberately under the server movement-check ceiling;
+  riders are normal entities (velocity-push), never seat-mounted (hybrid mount = plan B only).
+- **The Jet is the only physics primitive.** It energizes *any* connected water (~24-block
+  current), not just our blocks — freeform glass tubes are first-class slides.
+- **Slope exchange is symmetric** (±2 b/s per block by default): climbs cost what drops
+  give; upward jets re-pay climbs. Endless loops are a feature, not an exploit.
+- **Nothing rare, ever.** Copper/clay/iron tier everywhere; channels yield 16/craft.
+- **Pump House keeps energy parity with MC3DPrint's Clock Generator**: 20 RF/t at 5× burn
+  = same 160,000 RF/coal, double rate — never an efficiency upgrade over it.
+- **No fall damage while riding**; closed tube = committed (no bail); Splash Pool contact
+  negates landing damage.
+- Channels/tubes are **permanently waterlogged** (intrinsic water, can't be dried).
 
 **Soft-dep compat pattern** (when valuing/handling other mods' content): an
 `onCommonSetup` hook that **returns early unless `ModList.get().isLoaded("<id>")`**, then

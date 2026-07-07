@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MC Waterslides — Architecture &amp; Delivery Plan</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+         max-width: 860px; margin: 2rem auto; padding: 0 1.25rem; line-height: 1.55;
+         color: #1c2733; background: #ffffff; }
+  h1 { font-size: 1.9rem; border-bottom: 3px solid #38b6e3; padding-bottom: .4rem; }
+  h2 { font-size: 1.35rem; margin-top: 2.2rem; border-bottom: 1px solid #c9d4dd; padding-bottom: .25rem; }
+  h3 { font-size: 1.05rem; margin-top: 1.5rem; }
+  code { background: #eef3f7; padding: .1em .35em; border-radius: 4px; font-size: .92em; }
+  pre { background: #eef3f7; padding: .8rem 1rem; border-radius: 8px; overflow-x: auto; font-size: .88em; line-height: 1.45; }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .95rem; }
+  th, td { border: 1px solid #c9d4dd; padding: .45rem .6rem; text-align: left; vertical-align: top; }
+  th { background: #eef6fa; }
+  .meta { color: #5b6b7a; font-size: .9rem; }
+  blockquote { border-left: 4px solid #e3a838; margin: 1rem 0; padding: .3rem 1rem; background: #fdf8ee; }
+  @media (prefers-color-scheme: dark) {
+    body { color: #dce6ee; background: #14181c; }
+    code, pre { background: #232b33; }
+    th { background: #1b2c36; }
+    th, td { border-color: #37444f; }
+    blockquote { background: #2b2312; }
+    .meta { color: #92a4b3; }
+  }
+</style>
+</head>
+<body>
+
+<h1>MC Waterslides — Architecture &amp; Delivery Plan</h1>
+<p class="meta">v1 planning doc · 2026-07-06 · PGMacDesign · repo: <code>PGMacDesign/MCWaterSlides</code> (public, MIT)</p>
+
+<h2>1. Repo &amp; stack</h2>
+<p>The repo deliberately mirrors <strong>PGMacDesign/MC3DPrint</strong> (post-multi-version merge)
+in structure, build setup, CI, and conventions. Where this doc is silent, MC3DPrint is the answer.</p>
+<ul>
+  <li>Java 21, NeoForge, official Mojang mappings, Gradle + ModDevGradle + <strong>Stonecutter</strong> (Groovy controller).</li>
+  <li>mod id <code>mcwaterslides</code> · package <code>com.pgmacdesign.mcwaterslides</code> · display name <strong>MC Waterslides</strong>.</li>
+  <li><strong>Multi-version from day one:</strong> one tree, one jar per NeoForge node — 1.21.1 · 1.21.8 · 1.21.9 · 1.21.10 · 1.21.11 · 26.1 · 26.2 (extend as new MC versions ship). <strong>1.21.1 is the base/vcs node</strong>: plain code targets it; other nodes via Stonecutter guards/replacements. Java 21 launcher JVM for the daemon; 26.x nodes compile on a foojay-provisioned Java 25 toolchain.</li>
+  <li>Sequencing: scaffold all seven nodes up front (compile-green stubs), but <strong>make 1.21.1 fully fun first</strong>; walk the forward ladder green as a dedicated ship milestone rather than porting every feature seven times mid-flight.</li>
+</ul>
+
+<h2>2. Package layout</h2>
+<pre><code>com.pgmacdesign.mcwaterslides/
+  MCWaterSlides.java     — mod entry: registries + event-listener wiring
+  ride/                  — the momentum engine: rider attachment, physics tick,
+                           current sampling, controls (brake/bail), safety rules
+  slide/                 — Slide Channel + Slide Tube: shape/auto-connect logic,
+                           permanent waterlogging, dye handling
+  machine/               — Jet, Pump House, Flood Valve, Splash Pool, Water Conduit
+                           (block entities, menus, energy handling)
+  current/               — current-field model: per-jet propagation, caching,
+                           invalidation on block updates
+  registry/              — deferred registers (blocks, items, BEs, menus, tabs,
+                           attachments, advancement triggers)
+  client/                — screens, particles/FX, local-player prediction hooks
+  network/               — sync payloads (momentum sync, current visualization)
+  config/                — MCWaterslidesConfig (one common toml)
+  advancement/           — ride-distance/speed criteria triggers
+  gametest/              — in-world GameTests (1.21.1 oracle node)
+</code></pre>
+
+<h2>3. The two hard problems (spike early)</h2>
+<blockquote><p><strong>These two carry the project risk. Both get spiked inside M1, before anything
+else is polished.</strong> Run <code>derive-invariants</code> on the momentum/current tickets before
+implementation and write the Invariants section back to the ticket.</p></blockquote>
+<h3>3a. High-speed player movement vs. the server</h3>
+<p>At 22 b/s the vanilla "player moved too quickly" check and client/server desync are the #1 jank
+source. Approach:</p>
+<ul>
+  <li><strong>Client prediction for the local player:</strong> the same momentum integration runs
+      client-side while riding; the server stays authoritative and reconciles. Riding state +
+      momentum sync via a small payload.</li>
+  <li><strong>Movement-check mitigation:</strong> flag actively-riding players so the speed check
+      tolerates slide velocity (bounded by <code>speedCap</code> — the cap exists partly for this),
+      restore vanilla checks the tick riding ends.</li>
+  <li><strong>Fallback if playtests still show jank at cap:</strong> the hybrid seat-entity above a
+      speed threshold (pre-agreed plan B; design doc §2).</li>
+</ul>
+<h3>3b. Current propagation cost</h3>
+<p>Naive per-tick BFS through water from every jet is O(range × cross-section) × jets. Approach:
+compute each jet's current field once on placement/power-on, <strong>cache it</strong>, and
+invalidate on block updates within the field's bounds; hard cap field volume per jet; riders sample
+the cached field (a lookup, not a search). <code>maxPushedEntitiesPerJet</code> bounds per-tick
+entity work on mega-parks.</p>
+
+<h2>4. Testing strategy</h2>
+<ul>
+  <li><strong>Mobs make physics testable.</strong> Because mobs ride (design §4), GameTests can spawn
+      a villager in a channel and assert real physics without simulating a player:
+      <code>current_pushes_mob_along_channel</code>, <code>uphill_jet_break_even</code>,
+      <code>no_power_no_push</code>, <code>item_transport</code>, <code>splash_pool_stops_rider</code>,
+      <code>flood_valve_fills_enclosure</code> (+ leak detection), <code>channel_autoconnect_shapes</code>.</li>
+  <li><strong>JUnit</strong> for pure logic: momentum math (drag, slope exchange, cap clamp),
+      current-field propagation/invalidation, flood-fill bounds.</li>
+  <li>MC3DPrint's hard-won rules apply verbatim: <code>neoforge.enabledGameTestNamespaces</code> on
+      all three run configs (else zero gametests register and the run false-greens);
+      <code>test</code> workingDir pinned to root; GameTests live on the 1.21.1 oracle node, forward
+      nodes get compile + boot-smoke.</li>
+</ul>
+
+<h2>5. Multi-version notes</h2>
+<ul>
+  <li>Highest-churn areas across 1.21.x → 26.x for this mod: <strong>client rendering/particles</strong>
+      (RenderType moves), <strong>fluid interaction hooks</strong>, and <strong>entity attachment /
+      network payload APIs</strong>. Keep each behind small seams so guards stay local.</li>
+  <li>MC3DPrint guard lore applies verbatim: single-hop replacement pairs; twice-moving APIs need
+      if/elif guard chains; never nest block-comment guards; never open a guard with bare
+      <code>//</code> lines; reset active node → 1.21.1 before every commit.</li>
+  <li><code>scripts/build-all.sh</code> → one <code>mcwaterslides-&lt;ver&gt;-neoforge-&lt;node&gt;.jar</code>
+      per node into <code>dist/</code>; <code>release.yml</code> runs it on GitHub Release publish and
+      attaches all jars.</li>
+</ul>
+
+<h2>6. Milestones &amp; tickets</h2>
+<table>
+  <tr><th>Milestone</th><th>Tickets</th><th>Exit criterion</th></tr>
+  <tr><td><strong>M0 — Scaffold</strong></td>
+      <td>1. Repo scaffold: 7-node Stonecutter skeleton, mod entry, CI</td>
+      <td><code>:1.21.1:runClient</code> boots; all seven <code>:NODE:compileJava</code> green.</td></tr>
+  <tr><td><strong>M1 — Ride core</strong></td>
+      <td>2. Slide Channel (auto-connect, 16 colors, intrinsic water)<br>
+          3. Momentum engine (attachment, physics tick, controls, prediction spike)<br>
+          4. Jet (directional current, propagation, redstone)</td>
+      <td><strong>Riding a slide uphill and downhill is FUN in dev.</strong> This milestone is the
+          bet; everything after is decoration. Includes the §3 spikes.</td></tr>
+  <tr><td><strong>M2 — Power</strong></td>
+      <td>5. Pump House (dual-mode generator)<br>
+          6. Water Conduit + jet RF integration</td>
+      <td>A coal-fed Pump House runs a 5-jet slide end-to-end with no other mods installed.</td></tr>
+  <tr><td><strong>M3 — Tubes &amp; volume</strong></td>
+      <td>7. Slide Tube<br>
+          8. Freeform volume currents + Flood Valve<br>
+          9. Splash Pool</td>
+      <td>The 4×4 enclosed glass tube experience works: build shell → Flood Valve fills it → ride
+          it → Splash Pool exit.</td></tr>
+  <tr><td><strong>M4 — Riders &amp; feel</strong></td>
+      <td>10. Mob &amp; item riding + config toggles<br>
+          11. Feel pass: current particles, sounds, speed FX<br>
+          12. Advancements + config surface completion</td>
+      <td>A non-dev can read a slide at a glance (visible current), hear speed, and villagers ride.</td></tr>
+  <tr><td><strong>M5 — Ship</strong></td>
+      <td>13. Patchouli guide + JEI verification<br>
+          14. Test suite: GameTests + JUnit<br>
+          15. Forward ladder: all seven nodes green + build-all + release pipeline<br>
+          16. CurseForge listing + v0.1.0 release</td>
+      <td>Release published with all node jars attached; CurseForge live.</td></tr>
+</table>
+
+<h2>7. Risks &amp; rabbit holes</h2>
+<table>
+  <tr><th>Risk</th><th>Mitigation</th></tr>
+  <tr><td>Server anti-cheat / desync at speed (§3a)</td><td>Spike in M1; speed cap under check ceiling; hybrid seat-entity as pre-agreed plan B.</td></tr>
+  <tr><td>Current propagation perf (§3b)</td><td>Cached fields, bounded volume, entity-push caps; JUnit the invalidation.</td></tr>
+  <tr><td>Enclosed-volume detection (Flood Valve)</td><td>Bounded flood-fill with hard cap; failure mode reports the leak instead of hanging.</td></tr>
+  <tr><td>Permanent waterlogging edge cases (pistons, sponges, dispensers)</td><td>GameTest the griefing vectors; blocks drop as items, water stays put.</td></tr>
+  <tr><td>Multi-version churn in client FX</td><td>Isolate viz behind seams; forward nodes ship reduced FX before broken FX.</td></tr>
+  <tr><td>Scope creep toward "park management" features</td><td>The non-goals list in the design doc is the contract; racing/timers/rafts are v2.</td></tr>
+</table>
+
+<p class="meta">Companion docs: <em>Design &amp; Mechanics Spec</em> · <em>Block &amp; Recipe Spec</em></p>
+
+</body>
+</html>

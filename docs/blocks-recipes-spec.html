@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MC Waterslides — Block &amp; Recipe Spec</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+         max-width: 860px; margin: 2rem auto; padding: 0 1.25rem; line-height: 1.55;
+         color: #1c2733; background: #ffffff; }
+  h1 { font-size: 1.9rem; border-bottom: 3px solid #38b6e3; padding-bottom: .4rem; }
+  h2 { font-size: 1.35rem; margin-top: 2.2rem; border-bottom: 1px solid #c9d4dd; padding-bottom: .25rem; }
+  h3 { font-size: 1.05rem; margin-top: 1.5rem; }
+  code { background: #eef3f7; padding: .1em .35em; border-radius: 4px; font-size: .92em; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .95rem; }
+  th, td { border: 1px solid #c9d4dd; padding: .45rem .6rem; text-align: left; vertical-align: top; }
+  th { background: #eef6fa; }
+  .meta { color: #5b6b7a; font-size: .9rem; }
+  blockquote { border-left: 4px solid #38b6e3; margin: 1rem 0; padding: .3rem 1rem; background: #f2fafd; }
+  @media (prefers-color-scheme: dark) {
+    body { color: #dce6ee; background: #14181c; }
+    code { background: #232b33; }
+    th { background: #1b2c36; }
+    th, td { border-color: #37444f; }
+    blockquote { background: #16232b; }
+    .meta { color: #92a4b3; }
+  }
+</style>
+</head>
+<body>
+
+<h1>MC Waterslides — Block &amp; Recipe Spec</h1>
+<p class="meta">v1 planning doc · 2026-07-06 · PGMacDesign · recipe grids provisional; <strong>yields are the design decision</strong></p>
+
+<h2>1. Material identity: copper + clay</h2>
+<blockquote><p>Copper because it's abundant, early-game, and vanilla still barely uses it — this mod
+is finally something to do with 40 stacks of it. Clay because it's <em>the</em> water-adjacent
+resource: every riverbed and lakebed has piles, and anyone building a waterslide is by definition
+near water. Both dig-it-up-anywhere common, day one, no biome luck (slime was rejected for exactly
+that: trivial with a slime chunk, miserable without). <strong>Nothing rare appears anywhere in the
+mod</strong> — iron tier at most.</p></blockquote>
+
+<h2>2. The v1 roster</h2>
+<table>
+  <tr><th>#</th><th>Block/Item</th><th>Role</th><th>Key properties</th></tr>
+  <tr><td>1</td><td><strong>Slide Channel</strong></td><td>Open U-channel ride surface</td>
+      <td>Rail-style auto-connect (straight / 90° corner / ascending / descending); permanently waterlogged (intrinsic water); <strong>dyeable, 16 colors</strong> via tint layer (one model set); 1 block wide — riders centered through corners; side-by-side for width.</td></tr>
+  <tr><td>2</td><td><strong>Slide Tube</strong></td><td>Enclosed 1-block tube</td>
+      <td>Same connection logic as the channel, with a lid: vertical drops, corkscrews, fully-3D twisters. Riding one = committed (no bail until an opening). Dyeable; translucent window strip so riders aren't blind.</td></tr>
+  <tr><td>3</td><td><strong>Jet</strong></td><td>The physics primitive</td>
+      <td>6-way facing incl. up; projects a ~24-block current through connected water/channels; fixed thrust; redstone on/off; RF powered (idle trickle + push surge, internal buffer). Energizes <em>any</em> water — freeform glass tubes of any cross-section are first-class slides.</td></tr>
+  <tr><td>4</td><td><strong>Pump House</strong></td><td>Standalone generator</td>
+      <td>Dual mode: 20 RF/t burning furnace fuel at 5× burn (coal = 160k RF — exact energy parity with MC3DPrint's Clock Generator, double rate, half duration); ~2 RF/t passive beside flowing water. GUI: fuel slot + flame + buffer gauge.</td></tr>
+  <tr><td>5</td><td><strong>Water Conduit</strong></td><td>Cheap RF cable</td>
+      <td>Waterproof (waterloggable), ~256 RF/t, no storage. Runs along the slide's spine.</td></tr>
+  <tr><td>6</td><td><strong>Flood Valve</strong></td><td>Fill/drain enclosed volumes</td>
+      <td>RF-powered bounded flood-fill of the sealed volume it faces (~10 RF/block, cap ~32,768); toggling off drains. Reports the leak location when the volume isn't sealed. Exists because hand-filling a 4×4 tube with source blocks is misery.</td></tr>
+  <tr><td>7</td><td><strong>Splash Pool</strong></td><td>Slide exit</td>
+      <td>Kills momentum smoothly within ~1 block; negates all landing damage on contact; rider pops out standing.</td></tr>
+</table>
+
+<h3>Deliberately not in v1</h3>
+<ul>
+  <li>Support pylons / decorative struts — vanilla blocks do this fine.</li>
+  <li>Start gates — you just hop in.</li>
+  <li>Race timers / checkpoints — strong v2 feature, done properly with times and leaderboards.</li>
+  <li>Boats / slide rafts — vehicle physics vs. current is a rabbit hole; v2 candidate.</li>
+</ul>
+
+<h2>3. Recipes &amp; yields</h2>
+<p>Grids finalized during implementation; the <strong>yields</strong> below are the commitment.
+Sanity anchor: a respectable 100-block slide ≈ 7 channel crafts, ~5 jets, 1 Pump House, a stack of
+conduit — an afternoon of casual gathering. Mega-parks are gated by imagination, not materials.</p>
+
+<table>
+  <tr><th>Item</th><th>Ingredients (sketch)</th><th>Yield</th></tr>
+  <tr><td>Slide Channel</td><td>3 smooth stone + 2 copper ingot + 1 clay ball</td><td><strong>16</strong></td></tr>
+  <tr><td>Colored Slide Channel</td><td>8 channels + 1 dye (concrete-style ring recolor)</td><td>8</td></tr>
+  <tr><td>Slide Tube</td><td>4 channels + 4 glass</td><td>4</td></tr>
+  <tr><td>Water Conduit</td><td>copper + clay</td><td><strong>8–12</strong></td></tr>
+  <tr><td>Jet</td><td>4 copper ingot + 2 iron ingot + 1 redstone</td><td>2</td></tr>
+  <tr><td>Pump House</td><td>iron + copper + furnace + bucket</td><td>1</td></tr>
+  <tr><td>Flood Valve</td><td>iron + copper + bucket + redstone</td><td>1</td></tr>
+  <tr><td>Splash Pool</td><td>channels + wool + clay</td><td>2</td></tr>
+</table>
+
+<h2>4. Blockstate &amp; connection model</h2>
+<ul>
+  <li><strong>Channel/Tube shape property</strong> mirrors vanilla rails: <code>north_south</code>,
+      <code>east_west</code>, four corners, four ascending variants — picked automatically from
+      neighbors on place/update, exactly the mental model every player already has from rails.</li>
+  <li><strong>Intrinsic water:</strong> <code>waterlogged=true</code> is permanent (placement sets it,
+      nothing can unset it). Vanilla fluid rendering, biome water tint, fish-out-of-water edge cases
+      all come for free.</li>
+  <li><strong>Color:</strong> one blockstate/model set + a tint index driven by a color property or
+      per-color block registration (implementation picks; 16 registrations à la concrete is the
+      safe multi-version choice).</li>
+  <li><strong>Jet</strong> is a facing block (<code>facing</code> = 6 directions) + <code>powered</code>
+      + <code>enabled</code> (redstone).</li>
+</ul>
+
+<h2>5. Config surface (v1, <code>mcwaterslides-common.toml</code>)</h2>
+<table>
+  <tr><th>Key</th><th>Default</th></tr>
+  <tr><td><code>speedCap</code> (blocks/sec)</td><td>22</td></tr>
+  <tr><td><code>jetThrust</code> (b/s per sec)</td><td>8</td></tr>
+  <tr><td><code>jetRange</code> (blocks)</td><td>24</td></tr>
+  <tr><td><code>jetIdleRf</code> / <code>jetPushRf</code> (RF/t)</td><td>4 / 80</td></tr>
+  <tr><td><code>jetBufferRf</code></td><td>20,000</td></tr>
+  <tr><td><code>channelDrag</code> / <code>openWaterDrag</code> (%/tick)</td><td>1 / 2</td></tr>
+  <tr><td><code>slopeExchange</code> (b/s per block)</td><td>2.0</td></tr>
+  <tr><td><code>pumpHouseRfPerTick</code></td><td>20</td></tr>
+  <tr><td><code>pumpHouseBurnMultiplier</code></td><td>5</td></tr>
+  <tr><td><code>pumpHousePassiveRf</code></td><td>2</td></tr>
+  <tr><td><code>floodValveMaxVolume</code></td><td>32,768</td></tr>
+  <tr><td><code>floodValveRfPerBlock</code></td><td>10</td></tr>
+  <tr><td><code>mobsRide</code> / <code>itemsRide</code></td><td>true / true</td></tr>
+  <tr><td><code>maxPushedEntitiesPerJet</code></td><td>16</td></tr>
+</table>
+
+<h2>6. Ship surface</h2>
+<ul>
+  <li><strong>Patchouli</strong> soft dep: the <em>Park Builder's Manual</em> — your first slide;
+      jets &amp; power; tubes &amp; the Flood Valve; splash pools. The in-game book IS the onboarding.</li>
+  <li><strong>JEI:</strong> recipes visible; no custom categories needed.</li>
+  <li><strong>Creative tab:</strong> one <code>MC Waterslides</code> tab, roster order as above.</li>
+  <li><strong>Distribution:</strong> CurseForge + GitHub Releases (release workflow builds all
+      version jars and attaches them; CurseForge publish for soak-tested targets).</li>
+</ul>
+
+<p class="meta">Companion docs: <em>Design &amp; Mechanics Spec</em> · <em>Architecture &amp; Delivery Plan</em></p>
+
+</body>
+</html>

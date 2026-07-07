@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MC Waterslides — Design &amp; Mechanics Spec</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+         max-width: 860px; margin: 2rem auto; padding: 0 1.25rem; line-height: 1.55;
+         color: #1c2733; background: #ffffff; }
+  h1 { font-size: 1.9rem; border-bottom: 3px solid #38b6e3; padding-bottom: .4rem; }
+  h2 { font-size: 1.35rem; margin-top: 2.2rem; border-bottom: 1px solid #c9d4dd; padding-bottom: .25rem; }
+  h3 { font-size: 1.05rem; margin-top: 1.5rem; }
+  code { background: #eef3f7; padding: .1em .35em; border-radius: 4px; font-size: .92em; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .95rem; }
+  th, td { border: 1px solid #c9d4dd; padding: .45rem .6rem; text-align: left; vertical-align: top; }
+  th { background: #eef6fa; }
+  .meta { color: #5b6b7a; font-size: .9rem; }
+  .pill { display: inline-block; background: #d9f1fa; color: #0b5e7d; border-radius: 999px;
+          padding: .05rem .6rem; font-size: .8rem; font-weight: 600; margin-right: .3rem; }
+  blockquote { border-left: 4px solid #38b6e3; margin: 1rem 0; padding: .3rem 1rem; background: #f2fafd; }
+  @media (prefers-color-scheme: dark) {
+    body { color: #dce6ee; background: #14181c; }
+    code { background: #232b33; }
+    th { background: #1b2c36; }
+    th, td { border-color: #37444f; }
+    blockquote { background: #16232b; }
+    .meta { color: #92a4b3; }
+    .pill { background: #0b3c4f; color: #8fd8f2; }
+  }
+</style>
+</head>
+<body>
+
+<h1>MC Waterslides — Design &amp; Mechanics Spec</h1>
+<p class="meta">v1 planning doc · 2026-07-06 · PGMacDesign · status: <strong>agreed design</strong> (all numbers config-tunable and provisional until playtest)</p>
+
+<h2>1. Vision</h2>
+<blockquote>
+<p><strong>A for-fun mod.</strong> Not endgame, not grind, not an economy to balance. Players build
+absolutely enormous waterslides — downhill, uphill, looping, effectively endless — and ride them
+fast, for joy or for transport. Cheap materials, RF-powered jets, and permission to break
+Minecraft's water physics in the name of fun.</p>
+</blockquote>
+
+<h3>Design pillars</h3>
+<ol>
+  <li><strong>Fun first.</strong> Every mechanic earns its place by being fun, not by being balanced.
+      No duplication-exploit paranoia (there is nothing here worth duping — see pillar 3).</li>
+  <li><strong>Build whatever you want.</strong> Free-form construction. No track validation, no
+      "well-formed path" requirement. If you can shape water, you can ride it.</li>
+  <li><strong>Cheap everywhere.</strong> Copper + clay identity. No diamonds, no netherite, no rare
+      drops anywhere in the mod. An iron pickaxe and a riverbank fund a full water park.</li>
+  <li><strong>Fast is the point.</strong> Top speed just shy of elytra flight. Slow lazy rivers are
+      equally valid — speed is determined by how you build, not by tiers.</li>
+</ol>
+
+<h2>2. Core architecture: velocity-push riding</h2>
+<p>A rider in slide water is a <strong>normal entity the whole time</strong> — no seat entity, no
+mounting, no track lock. Slide blocks and jets apply motion to entities in their water. The rider
+can look around freely, bail out, wipe out, launch off an open ramp end, and splash into a pool.
+This preserves the water <em>feel</em> and keeps building fully free-form.</p>
+<p>Rejected alternatives, for the record: seat-entity rides (roller-coaster mods) give smoother
+high-speed motion but feel like minecarts and force a track-network concept; a hybrid
+(auto-mount above a speed threshold) stays in the back pocket if playtests show top-speed jank.</p>
+
+<h2>3. The momentum model</h2>
+<p>Riders carry a managed <strong>slide momentum</strong> value (an entity attachment ticked by the
+mod), not raw vanilla velocity — vanilla water drag would cap speed near swimming pace. Momentum
+is a scalar speed along the current direction, integrated into actual movement each tick.</p>
+
+<table>
+  <tr><th>Rule</th><th>Behavior</th></tr>
+  <tr><td>Build</td><td>Jets add momentum while the rider is inside their current (see §4). Descending adds momentum per block dropped.</td></tr>
+  <tr><td>Spend</td><td>Ascending costs the same momentum per block climbed that descending grants (symmetric exchange). An upward-aimed jet re-pays the climb — this is what makes uphill and endless slides work.</td></tr>
+  <tr><td>Bleed</td><td>Small per-tick drag. Momentum carries the rider through <em>unpowered</em> stretches until it runs out. Full speed coasts roughly 100 blocks in a channel.</td></tr>
+  <tr><td>Cap</td><td>Hard cap ~<strong>22 blocks/sec</strong> (sprint ≈ 5.6, elytra cruise ≈ 30+). Config-tunable; the default deliberately stays under the server movement-check ceiling.</td></tr>
+</table>
+
+<h3>Default constants (all in <code>mcwaterslides-common.toml</code>)</h3>
+<table>
+  <tr><th>Constant</th><th>Default</th><th>Meaning</th></tr>
+  <tr><td><code>speedCap</code></td><td>22 b/s</td><td>Momentum ceiling</td></tr>
+  <tr><td><code>jetThrust</code></td><td>+8 b/s per second</td><td>Acceleration while in a powered jet's current</td></tr>
+  <tr><td><code>slopeExchange</code></td><td>±2.0 b/s per block</td><td>Momentum gained per block descended / lost per block climbed</td></tr>
+  <tr><td><code>channelDrag</code></td><td>1% per tick</td><td>Drag inside channels/tubes</td></tr>
+  <tr><td><code>openWaterDrag</code></td><td>2% per tick</td><td>Drag in freeform water volumes</td></tr>
+</table>
+<p>Feel targets: an 11-block drop from standstill hits the cap; a jet every ~20–24 blocks sustains
+cruise on flat; "lazy river" = sparse jets, "screamer" = dense jets + drops.</p>
+
+<h3>Rider controls &amp; safety</h3>
+<ul>
+  <li><strong>Free look</strong> always. Slight steering influence in wide open water; none needed in
+      1-wide channels (the channel centers the rider through corners).</li>
+  <li><strong>Crouch = brake.</strong> <strong>Jump = bail out</strong> (open channels/water only).</li>
+  <li><strong>Closed tubes = committed.</strong> No bailing inside an enclosed tube until an opening —
+      that's the thrill.</li>
+  <li><strong>No fall damage while riding.</strong> After a bail or an open ramp-end launch, vanilla
+      rules resume (water landings still save you). Splash Pool contact negates all landing damage.</li>
+</ul>
+
+<h2>4. The Jet: one physics primitive</h2>
+<p>The <strong>Jet</strong> is the mod's single physics driver: a block that projects a directional
+<strong>current</strong> through connected water.</p>
+<ul>
+  <li><strong>Aim:</strong> placed facing any of the 6 directions — including straight up (geysers,
+      vertical tube climbs).</li>
+  <li><strong>Propagation:</strong> the current travels ~<strong>24 blocks</strong> (config) through
+      connected water / slide-channel blocks in the facing direction, then dies; place the next jet
+      to keep it going.</li>
+  <li><strong>It energizes water itself, not just our blocks.</strong> Any water volume becomes
+      rideable: build a hollow glass shell of any cross-section (2×2, 4×4, a cathedral), flood it,
+      line it with jets — that's a closed slide. Channels/tubes are the precision-shaped convenience
+      layer on top of the same mechanic.</li>
+  <li><strong>Thrust:</strong> one fixed thrust stat (config). Speed control is jet count and
+      spacing — how you build, not per-block GUIs. Redstone gates jets on/off.</li>
+  <li><strong>Riders:</strong> players (fully polished), <strong>mobs</strong> (pushed like players;
+      default on, config off — villager waterparks, pig races), <strong>dropped items</strong>
+      (default on, config off — slides quietly double as item transport). Boats/minecarts:
+      excluded from v1 (vehicle physics fights the current; a proper "slide raft" is a candidate
+      v2 feature).</li>
+</ul>
+
+<h2>5. Power (RF)</h2>
+<p>Everything speaks the standard NeoForge energy capability — every RF mod's generators and cables
+just work, no hard deps (MC3DPrint's soft-compat philosophy). A standalone power kit ships so the
+mod works with zero tech mods installed.</p>
+
+<table>
+  <tr><th>Block</th><th>Numbers (defaults, config)</th></tr>
+  <tr><td><strong>Jet</strong></td><td>Idle ~4 RF/t while energized (keeps the current alive/animated); ~80 RF/t surge while actively accelerating a rider; 20,000 RF internal buffer so a flickering supply never stutters a ride mid-tube.</td></tr>
+  <tr><td><strong>Pump House</strong></td><td>Dual mode. Burning furnace fuel: <strong>20 RF/t</strong> at a <strong>5× burn multiplier</strong> — one coal = 8,000 ticks (~6.7 min) = <strong>160,000 RF</strong>. Passive: ~2 RF/t while adjacent to flowing water (lazy-river trickle). ~100,000 RF buffer.</td></tr>
+  <tr><td><strong>Water Conduit</strong></td><td>Cheap waterproof cable, ~256 RF/t transfer, no storage.</td></tr>
+</table>
+
+<blockquote><p><strong>Energy-parity constraint (deliberate):</strong> MC3DPrint's Clock Generator
+makes 10 RF/t at a 10× burn multiplier = 160,000 RF per coal. The Pump House produces the
+<em>same total RF per coal</em>, at double the rate for half the duration — more watts now, zero
+efficiency advantage. Neither generator supersedes the other when both mods are installed.
+Design target: one Pump House comfortably idles a ~5-jet slide.</p></blockquote>
+
+<h2>6. Supporting mechanics</h2>
+<ul>
+  <li><strong>Flood Valve:</strong> RF-powered; fills the enclosed watertight volume it faces
+      (bounded flood-fill, ~10 RF/block, volume cap config ~32,768) and drains it when toggled off.
+      If the volume isn't sealed, it reports the leak location instead of filling — the "find the
+      hole in my 400-block tube" debugging experience is a feature.</li>
+  <li><strong>Splash Pool:</strong> catch block for slide exits — kills momentum smoothly within
+      ~1 block, negates all landing damage on contact, pops the rider out standing.</li>
+  <li><strong>Intrinsic water:</strong> channels and tubes are permanently waterlogged (cannot be
+      dried) — real vanilla fluid rendering for free, no bucket ceremony.</li>
+</ul>
+
+<h2>7. Advancements</h2>
+<table>
+  <tr><th>Advancement</th><th>Trigger</th></tr>
+  <tr><td>Making a Splash</td><td>Place your first Slide Channel</td></tr>
+  <tr><td>Hydraulic Engineer</td><td>Power a Jet for the first time</td></tr>
+  <tr><td>Lazy River</td><td>Ride 100 blocks in one go</td></tr>
+  <tr><td>Screamer</td><td>Hit the speed cap</td></tr>
+  <tr><td>Tube Rat</td><td>Ride 50+ blocks fully enclosed</td></tr>
+  <tr><td><strong>Around the World</strong> <span class="pill">hidden</span></td><td>One continuous ride of 10,000 blocks. Deliberate virality bait — someone will build it.</td></tr>
+</table>
+<p>A "continuous ride" ends when momentum reaches zero or the rider leaves water for &gt;1.5s.</p>
+
+<h2>8. Explicit non-goals (v1)</h2>
+<ul>
+  <li>No economy/anti-exploit systems — nothing in this mod is worth exploiting.</li>
+  <li>No boats, rafts, or minecarts on slides.</li>
+  <li>No race timers/checkpoints (strong v2 candidate).</li>
+  <li>No website (mc3dprint.dev-style) at launch; Patchouli book is the onboarding surface.</li>
+  <li>No tiers, no upgrades, no progression gates.</li>
+</ul>
+
+<p class="meta">Companion docs: <em>Block &amp; Recipe Spec</em> · <em>Architecture &amp; Delivery Plan</em></p>
+
+</body>
+</html>
