@@ -1,14 +1,24 @@
 # MCWaterSlides — Project Instructions
 
-**NeoForge 1.21.1** mod — water slides (concept/design doc pending; update this line when
-the design lands). This repo deliberately mirrors **PGMacDesign/MC3DPrint** (local:
-`~/_Development/_MiscWorkspace/mc3dprint`) in structure, build setup, and conventions —
-when a question isn't answered here, do what MC3DPrint does.
+**Multi-version NeoForge** mod — water slides (concept/design doc pending; update this
+line when the design lands). This repo deliberately mirrors **PGMacDesign/MC3DPrint**
+(local: `~/_Development/_MiscWorkspace/mc3dprint`, post-multi-version-merge `main`) in
+structure, build setup, and conventions — when a question isn't answered here, do what
+MC3DPrint does.
 
-- **Stack:** Java 21, NeoForge 1.21.1, official Mojang mappings, Gradle + ModDevGradle
-  (`net.neoforged.moddev`). mod id `mcwaterslides`, package root
-  `com.pgmacdesign.mcwaterslides`, MIT, solo (PGMacDesign). Single-target `main` — no
-  Stonecutter/multi-version until the mod stabilizes (MC3DPrint added it late, on a branch).
+- **Stack:** Java 21, NeoForge, official Mojang mappings, Gradle + ModDevGradle
+  (`net.neoforged.moddev`) + **Stonecutter** (`dev.kikugie.stonecutter`, Groovy
+  controller). mod id `mcwaterslides`, package root `com.pgmacdesign.mcwaterslides`,
+  MIT, solo (PGMacDesign).
+- **Multi-version from day one:** `main` builds one jar per NeoForge node from a single
+  tree — currently **1.21.1 · 1.21.8 · 1.21.9 · 1.21.10 · 1.21.11 · 26.1 · 26.2**
+  (mirror MC3DPrint's node list; extend both as new MC versions ship). **1.21.1 is the
+  base/vcs node** (plain code = 1.21.1; other nodes via guards/replacements). Per-node
+  versions (`minecraft_version`, `neo_version`, `jei_version`, …) live in
+  `versions/<node>/gradle.properties`; only shared metadata stays in the root file.
+  The Gradle daemon runs on a **Java 21 launcher JVM** (`gradle/gradle-daemon-jvm.properties`,
+  foojay-provisioned — Stonecutter needs 21 as launcher, not just toolchain); the 26.x
+  nodes compile on a **Java 25 toolchain** Gradle provisions itself.
 - **Public repo:** no secrets/PII, original content only. `.env` is gitignored
   (`.env.example` is the committed template; CI secrets live in GitHub repo settings, not
   files). **Nothing that points at private systems or the owner goes in committed files** —
@@ -18,12 +28,31 @@ when a question isn't answered here, do what MC3DPrint does.
 
 ## Build · Test · Deploy
 
+Tasks are **node-scoped** (each Stonecutter node is a subproject):
+
 ```bash
-./gradlew compileJava -q        # fast compile check
-./gradlew test                  # JUnit (src/test)
-./gradlew build                 # full build + tests → build/libs/mcwaterslides-<ver>.jar
-./gradlew runGameTestServer     # in-world GameTests (gametest/)
+./gradlew :1.21.1:compileJava -q        # fast compile check (any node)
+./gradlew :1.21.1:test                  # JUnit (src/test)
+./gradlew :1.21.1:assemble -x test      # build jar → versions/<node>/build/libs/
+./gradlew :1.21.1:runGameTestServer     # in-world GameTests (gametest/) — 1.21.1 is the oracle
+./scripts/build-all.sh [--version X.Y.Z]  # every shippable jar per node → dist/
 ```
+
+**Stonecutter working rules** (MC3DPrint guard lore — it bites):
+
+- Edit at active node `1.21.1`; version-variant code lives in
+  `//? if >=<ver> {/*…*///?} else {…//?}` guards. After writing new guards, run
+  `"Set active project to <node>"` to re-toggle before compiling; **reset active →
+  `1.21.1` before every commit.**
+- Replacement pairs (`build.gradle` stonecutter block) must be **single-hop** — an API
+  that moves TWICE across versions needs `if/elif` guard chains (version-range
+  replacement conditions don't fire). Each pair must be idempotent and uniquely
+  reversible.
+- Never hand-nest block-comment guards inside an already-commented region (hoist a
+  class-level helper with a sibling chain); never start a guard block with bare `//`
+  lines.
+- Pin the `test` task's `workingDir` to the root project — node subprojects default to
+  `versions/<node>/`, breaking root-relative resource paths.
 
 Rules that bite if skipped (learned on MC3DPrint):
 
@@ -32,12 +61,14 @@ Rules that bite if skipped (learned on MC3DPrint):
 2. **GameTest namespace:** `neoforge.enabledGameTestNamespaces` must be set on the
    client, server AND gameTestServer runs in `build.gradle` — if unset, ZERO gametests
    register and `runGameTestServer` exits 0 having run nothing (a false green).
-3. **`test` green ≠ runtime-correct** — also run `runGameTestServer` to catch
-   registration/NBT bugs the compiler can't.
+3. **`:NODE:test` green ≠ runtime-correct** — also run `runGameTestServer` to catch
+   registration/NBT bugs the compiler can't. GameTests run on the base node; forward
+   nodes get compile + boot-smoke until gametest seams are worth porting.
 
-Releases: publish a GitHub Release → `.github/workflows/release.yml` builds the jar(s)
-with the tag's version and attaches them to the release. The workflow is the builder;
-local release builds are for smoke-testing only.
+Releases: publish a GitHub Release → `.github/workflows/release.yml` derives the version
+from the tag, runs `scripts/build-all.sh`, and attaches one
+`mcwaterslides-<ver>-neoforge-<node>.jar` per node. CI is the builder; local release
+builds are for smoke-testing only. Extend the script's node array when adding a version.
 
 ## Architecture (`src/main/java/com/pgmacdesign/mcwaterslides/`)
 
