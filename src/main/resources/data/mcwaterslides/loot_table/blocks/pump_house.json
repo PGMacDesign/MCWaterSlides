@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "random_sequence": "mcwaterslides:blocks/pump_house",
+  "pools": [
+    {
+      "rolls": 1,
+      "bonus_rolls": 0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mcwaterslides:pump_house"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ]
+}

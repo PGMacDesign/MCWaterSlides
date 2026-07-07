@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "particle": "mcwaterslides:block/pump_house_side",
+    "front": "mcwaterslides:block/pump_house_front_lit",
+    "side": "mcwaterslides:block/pump_house_side",
+    "top": "mcwaterslides:block/pump_house_top"
+  }
+}

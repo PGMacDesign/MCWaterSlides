@@ -16,5 +16,10 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("jet", () ->
                     BlockEntityType.Builder.of(JetBlockEntity::new, ModBlocks.JET.get()).build(null));
 
+    public static final Supplier<BlockEntityType<com.pgmacdesign.mcwaterslides.machine.PumpHouseBlockEntity>> PUMP_HOUSE =
+            BLOCK_ENTITIES.register("pump_house", () ->
+                    BlockEntityType.Builder.of(com.pgmacdesign.mcwaterslides.machine.PumpHouseBlockEntity::new,
+                            ModBlocks.PUMP_HOUSE.get()).build(null));
+
     private ModBlockEntities() {}
 }

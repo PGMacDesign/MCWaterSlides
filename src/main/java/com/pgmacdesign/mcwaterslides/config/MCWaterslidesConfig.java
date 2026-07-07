@@ -21,6 +21,9 @@ public final class MCWaterslidesConfig {
     public static final ModConfigSpec.IntValue JET_PUSH_RF;
     public static final ModConfigSpec.IntValue JET_BUFFER_RF;
     public static final ModConfigSpec.IntValue MAX_PUSHED_ENTITIES_PER_JET;
+    public static final ModConfigSpec.IntValue PUMP_HOUSE_RF_PER_TICK;
+    public static final ModConfigSpec.IntValue PUMP_HOUSE_BURN_MULTIPLIER;
+    public static final ModConfigSpec.IntValue PUMP_HOUSE_PASSIVE_RF;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -70,6 +73,23 @@ public final class MCWaterslidesConfig {
         MAX_PUSHED_ENTITIES_PER_JET = builder
                 .comment("Per-tick entity cap per jet (mega-park performance guard).")
                 .defineInRange("maxPushedEntitiesPerJet", 16, 1, 1024);
+        builder.pop();
+
+        builder.comment("Pump House").push("pumpHouse");
+        PUMP_HOUSE_RF_PER_TICK = builder
+                .comment("RF generated per tick while burning fuel.",
+                        "Parity note: MC3DPrint's Clock Generator is 10 RF/t at a 10x burn",
+                        "multiplier = 160,000 RF per coal. Defaults here (20 RF/t at 5x) deliver",
+                        "the SAME total energy per coal at double rate — never an efficiency",
+                        "upgrade over it, deliberately.")
+                .defineInRange("pumpHouseRfPerTick", 20, 1, Integer.MAX_VALUE);
+        PUMP_HOUSE_BURN_MULTIPLIER = builder
+                .comment("Fuel efficiency: furnace burn time is multiplied by this",
+                        "(default 5: one coal burns ~6.7 minutes = 160,000 RF at 20 RF/t).")
+                .defineInRange("pumpHouseBurnMultiplier", 5, 1, 1_000);
+        PUMP_HOUSE_PASSIVE_RF = builder
+                .comment("Token passive RF/t while adjacent to water and not burning (lazy rivers).")
+                .defineInRange("pumpHousePassiveRf", 2, 0, Integer.MAX_VALUE);
         builder.pop();
 
         SPEC = builder.build();

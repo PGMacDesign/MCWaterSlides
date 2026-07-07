@@ -19,6 +19,7 @@ public final class ModCreativeTabs {
                     .displayItems((parameters, output) -> {
                         ModItems.SLIDE_CHANNEL_ITEMS.values().forEach(output::accept);
                         output.accept(ModItems.JET.get());
+                        output.accept(ModItems.PUMP_HOUSE.get());
                     })
                     .build());
 

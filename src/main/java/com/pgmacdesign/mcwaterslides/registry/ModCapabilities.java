@@ -15,5 +15,9 @@ public final class ModCapabilities {
         // Standard energy on every side — any RF mod's cables/generators interop, no config.
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModBlockEntities.JET.get(),
                 (be, side) -> be.energyHandler());
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModBlockEntities.PUMP_HOUSE.get(),
+                (be, side) -> be.energyHandler());
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.PUMP_HOUSE.get(),
+                (be, side) -> be.itemHandler(side));
     }
 }
