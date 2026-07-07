@@ -50,6 +50,8 @@
   "block.mcwaterslides.white_slide_tube": "White Slide Tube",
   "block.mcwaterslides.yellow_slide_channel": "Yellow Slide Channel",
   "block.mcwaterslides.yellow_slide_tube": "Yellow Slide Tube",
+  "book.mcwaterslides.guide.landing": "Welcome to $(item)MC Waterslides$()! Everything here is cheap, fast, and wet. Build enormous slides, push them uphill with jets, and always land in a pool.",
+  "book.mcwaterslides.guide.name": "Park Builder's Manual",
   "itemGroup.mcwaterslides": "MC Waterslides",
   "message.mcwaterslides.flood_valve_leak": "Flood Valve: volume not sealed \u2014 leak near %s, %s, %s"
 }

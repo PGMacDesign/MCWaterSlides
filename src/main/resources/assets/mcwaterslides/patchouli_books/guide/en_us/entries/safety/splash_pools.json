@@ -1,0 +1,16 @@
+{
+  "name": "Splash Pools",
+  "icon": "mcwaterslides:splash_pool",
+  "category": "mcwaterslides:safety",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "End every ride in a $(item)Splash Pool$(): it swallows your speed in about a block and cancels $(bold)all$() landing damage \u2014 even a full-speed launch off an open ramp end.$(br2)Pools tile: place a grid and the inner walls disappear."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "mcwaterslides:splash_pool",
+      "text": "Mobs and dropped items get caught too."
+    }
+  ]
+}

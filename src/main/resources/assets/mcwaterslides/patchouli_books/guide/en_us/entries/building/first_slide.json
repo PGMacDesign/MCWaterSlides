@@ -1,0 +1,26 @@
+{
+  "name": "Your First Slide",
+  "icon": "mcwaterslides:slide_channel",
+  "category": "mcwaterslides:building",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(item)Slide Channels$() snap together like rails \u2014 straights, corners, and slopes sort themselves out as you place them. No supports needed; slides float wherever you build them.$(br2)Lay a run downhill and hop in: $(thing)gravity alone$() gets you sliding."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "mcwaterslides:slide_channel",
+      "text": "Cheap on purpose. One craft paves 16 blocks of slide \u2014 build BIG."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "While riding:$(br)$(li)$(thing)Crouch$() to brake$(li)$(thing)Jump$() to bail out (not inside a tube!)$(li)Downhill speeds you up, uphill slows you down \u2014 unless a Jet pays for the climb.$(br2)You take $(bold)no fall damage$() while riding a slide."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Recolor channels like concrete: surround a dye with eight of them. Sixteen colors, one water park.",
+      "title": "Colors"
+    }
+  ],
+  "priority": true
+}

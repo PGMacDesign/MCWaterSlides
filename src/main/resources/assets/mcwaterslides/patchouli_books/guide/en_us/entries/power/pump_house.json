@@ -1,0 +1,20 @@
+{
+  "name": "Pump House & Conduits",
+  "icon": "mcwaterslides:pump_house",
+  "category": "mcwaterslides:power",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Jets and valves drink $(thing)RF$(). No tech mods? The $(item)Pump House$() has you covered: feed it furnace fuel (one coal runs a long while), or just park it beside water for a slow trickle.$(br2)It glows while burning. Right-click for the gauge."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "mcwaterslides:pump_house"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "mcwaterslides:water_conduit",
+      "text": "Water Conduits carry the power along your slide's spine. Any other RF mod's cables work too."
+    }
+  ]
+}

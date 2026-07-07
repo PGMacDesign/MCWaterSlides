@@ -1,0 +1,21 @@
+{
+  "name": "Glass Megastructures",
+  "icon": "mcwaterslides:flood_valve",
+  "category": "mcwaterslides:building",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Jets push riders through $(bold)any water$(), not just slide blocks. Build a watertight glass tube of any size \u2014 2x2, 4x4, a whale \u2014 flood it, line it with Jets, and it's a slide.$(br2)Filling by bucket is misery. Use a $(item)Flood Valve$()."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "mcwaterslides:flood_valve",
+      "text": "Give it redstone and RF: signal ON fills the sealed space it faces; signal OFF drains it."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "If your build isn't watertight, the valve refuses and $(bold)points at the leak$() \u2014 smoke rises at the hole and the coordinates land in your action bar. Patch it and flip the lever again.",
+      "title": "Finding leaks"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Slide Tubes",
+  "icon": "mcwaterslides:slide_tube",
+  "category": "mcwaterslides:building",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(item)Slide Tubes$() are enclosed channels: you slip in from an open section and ride the bore \u2014 the view is out the window strip. Inside a tube you're $(bold)committed$(): no bailing until an opening.$(br2)Stack tubes vertically for $(thing)drop shafts$(). Drops bank speed \u2014 you exit the bottom moving FAST."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "mcwaterslides:slide_tube",
+      "text": "Four channels, four glass, four tubes."
+    }
+  ]
+}

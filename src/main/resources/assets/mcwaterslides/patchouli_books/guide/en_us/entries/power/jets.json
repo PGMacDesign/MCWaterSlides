@@ -1,0 +1,22 @@
+{
+  "name": "The Jet",
+  "icon": "mcwaterslides:jet",
+  "category": "mcwaterslides:power",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)Jet$() shoves a current through the water ahead of it \u2014 about 24 blocks. Riders in the current accelerate hard.$(br2)$(bold)Aim the nozzle into the water.$() A jet mounted above the waterline pushes nothing."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "mcwaterslides:jet",
+      "text": "Spacing is your speed dial: sparse jets = lazy river, dense jets = screamer. A redstone signal switches a jet off."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Jets aim all six ways \u2014 $(bold)straight up included$(). An up-jet under a water column or tube shaft launches riders skyward, and a climb costs exactly what a drop pays, so a well-jetted slide can run uphill... or forever.",
+      "title": "Uphill & geysers"
+    }
+  ],
+  "priority": true
+}
