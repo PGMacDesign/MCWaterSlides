@@ -68,11 +68,18 @@ def face(texture, tint=None, cull=None):
     return f
 
 
-def element(fr, to, faces, shade=None):
+def element(fr, to, faces, shade=None, rotation=None):
     e = {"from": fr, "to": to, "faces": faces}
     if shade is not None:
         e["shade"] = shade
+    if rotation is not None:
+        e["rotation"] = rotation
     return e
+
+
+def ramp_rotation(reverse):
+    """45° tilt about X so a flat plate reads as a ramp. reverse flips the rise direction."""
+    return {"origin": [8, 8, 8], "axis": "x", "angle": 45 if reverse else -45, "rescale": True}
 
 
 def body_textures():
@@ -159,35 +166,34 @@ def corner_body():
 
 
 def ascending_body():
-    """Rises toward south (+Z): four 4px steps, full-height walls E/W."""
-    elements = [
-        element([0, 2, 0], [2, 16, 16], {
-            "west": face("#lining", tint=1, cull="west"),
-            "east": face("#lining", tint=1),
-            "up": face("#lining", tint=1, cull="up"),
-            "north": face("#lining", tint=1, cull="north"),
-            "south": face("#lining", tint=1, cull="south"),
-        }),
-        element([14, 2, 0], [16, 16, 16], {
-            "east": face("#lining", tint=1, cull="east"),
-            "west": face("#lining", tint=1),
-            "up": face("#lining", tint=1, cull="up"),
-            "north": face("#lining", tint=1, cull="north"),
-            "south": face("#lining", tint=1, cull="south"),
-        }),
-    ]
-    for i in range(4):
-        z0, z1 = i * 4, i * 4 + 4
-        top = 2 + i * 4
-        elements.append(element([0, 0, z0], [16, top, z1], {
-            "down": face("#base", cull="down"),
-            "up": face("#lining", tint=1),
-            "north": face("#lining", tint=1) if i > 0 else face("#base", cull="north"),
-            "south": face("#base", cull="south") if i == 3 else face("#base"),
-            "east": face("#base", cull="east"),
-            "west": face("#base", cull="west"),
-        }))
-    return {"textures": body_textures(), "elements": elements}
+    """Rises toward south (+Z): a smooth 45° ramp floor between full-height walls E/W.
+    Collision stays stepped (SlideChannelShapes) — this is the visual-only slope."""
+    return {
+        "textures": body_textures(),
+        "elements": [
+            element([0, 2, 0], [2, 16, 16], {
+                "west": face("#lining", tint=1, cull="west"),
+                "east": face("#lining", tint=1),
+                "up": face("#lining", tint=1, cull="up"),
+                "north": face("#lining", tint=1, cull="north"),
+                "south": face("#lining", tint=1, cull="south"),
+            }),
+            element([14, 2, 0], [16, 16, 16], {
+                "east": face("#lining", tint=1, cull="east"),
+                "west": face("#lining", tint=1),
+                "up": face("#lining", tint=1, cull="up"),
+                "north": face("#lining", tint=1, cull="north"),
+                "south": face("#lining", tint=1, cull="south"),
+            }),
+            # Ramp plate: a flat 2px slab tilted 45° so it climbs from floor to lip.
+            element([2, 7, 0], [14, 9, 16], {
+                "up": face("#lining", tint=1),
+                "down": face("#base"),
+                "north": face("#base"),
+                "south": face("#base"),
+            }, rotation=ramp_rotation(False)),
+        ],
+    }
 
 
 def water_quad(fr, to):
@@ -211,15 +217,13 @@ def corner_water():
 
 
 def ascending_water():
-    quads = []
-    for i in range(4):
-        z0, z1 = i * 4, i * 4 + 4
-        y = 2 + i * 4 + 1.8
-        quads.append(water_quad([2, y - 0.2, z0], [14, y, z1]))
+    """Ramp water sheet: a tilted quad tracking the sloped floor, just above it."""
+    quad = element([2, 9.6, 0], [14, 9.8, 16], {"up": face("#water", tint=0)},
+                   shade=False, rotation=ramp_rotation(False))
     return {
         "render_type": "minecraft:translucent",
         "textures": {"particle": "minecraft:block/water_still", "water": "minecraft:block/water_still"},
-        "elements": quads,
+        "elements": [quad],
     }
 
 

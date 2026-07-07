@@ -8,69 +8,12 @@
     {
       "from": [
         2,
-        3.5999999999999996,
+        9.6,
         0
       ],
       "to": [
         14,
-        3.8,
-        4
-      ],
-      "faces": {
-        "up": {
-          "texture": "#water",
-          "tintindex": 0
-        }
-      },
-      "shade": false
-    },
-    {
-      "from": [
-        2,
-        7.6,
-        4
-      ],
-      "to": [
-        14,
-        7.8,
-        8
-      ],
-      "faces": {
-        "up": {
-          "texture": "#water",
-          "tintindex": 0
-        }
-      },
-      "shade": false
-    },
-    {
-      "from": [
-        2,
-        11.600000000000001,
-        8
-      ],
-      "to": [
-        14,
-        11.8,
-        12
-      ],
-      "faces": {
-        "up": {
-          "texture": "#water",
-          "tintindex": 0
-        }
-      },
-      "shade": false
-    },
-    {
-      "from": [
-        2,
-        15.600000000000001,
-        12
-      ],
-      "to": [
-        14,
-        15.8,
+        9.8,
         16
       ],
       "faces": {
@@ -79,7 +22,17 @@
           "tintindex": 0
         }
       },
-      "shade": false
+      "shade": false,
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "x",
+        "angle": -45,
+        "rescale": true
+      }
     }
   ]
 }
