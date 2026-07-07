@@ -107,6 +107,42 @@ public class SlideChannelGameTests {
         });
     }
 
+    /**
+     * A filled area orients uniformly along its longer axis — no arbitrary corner walls
+     * inside. A 2-wide × 4-long patch is all NORTH_SOUTH (the long axis), including the
+     * four corner cells that used to compute L-corners.
+     */
+    @GameTest(template = "empty5", timeoutTicks = 40)
+    public static void wideAreaOrientsUniformly(GameTestHelper helper) {
+        for (int x = 2; x <= 3; x++) {
+            for (int z = 1; z <= 4; z++) {
+                helper.setBlock(new BlockPos(x, 1, z), ModBlocks.SLIDE_CHANNELS.get(null).get());
+            }
+        }
+        helper.succeedWhen(() -> {
+            for (int x = 2; x <= 3; x++) {
+                for (int z = 1; z <= 4; z++) {
+                    assertShape(helper, new BlockPos(x, 1, z), RailShape.NORTH_SOUTH);
+                }
+            }
+            // Interior seam is open (parallel neighbor), outer edge keeps its wall.
+            var west = helper.getBlockState(new BlockPos(2, 1, 2));
+            if (west.getValue(SlideChannelBlock.WALL_POS) || !west.getValue(SlideChannelBlock.WALL_NEG)) {
+                helper.fail("west column should drop only its inner (east) wall");
+            }
+        });
+    }
+
+    /** A lone L-bend is still a real corner — the area rule only fires on filled 2×2s. */
+    @GameTest(template = "empty5", timeoutTicks = 40)
+    public static void loneBendStaysACorner(GameTestHelper helper) {
+        helper.setBlock(new BlockPos(2, 1, 1), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        helper.setBlock(new BlockPos(2, 1, 2), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        helper.setBlock(new BlockPos(3, 1, 2), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        // (2,2) bends north→east; its NE diagonal (3,1) is empty, so it stays a corner.
+        helper.succeedWhen(() -> assertShape(helper, new BlockPos(2, 1, 2), RailShape.NORTH_EAST));
+    }
+
     /** Breaking one lane reseals the survivor's wall (existence-based recompute). */
     @GameTest(template = "empty5", timeoutTicks = 60)
     public static void unmergeRestoresWall(GameTestHelper helper) {

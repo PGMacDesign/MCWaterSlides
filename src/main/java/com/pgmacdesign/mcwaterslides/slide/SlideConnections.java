@@ -30,6 +30,14 @@ public final class SlideConnections {
     }
 
     public static RailShape computeShape(LevelReader level, BlockPos pos, Direction.Axis fallbackAxis) {
+        // Filled 2D patch (a wide slide): orient every cell uniformly along the run's
+        // longer axis instead of letting corners/edges pick perpendicular shapes — that
+        // mismatch is what left arbitrary internal walls in wider-than-2 builds.
+        if (isFlatAreaCell(level, pos)) {
+            return runAxisByExtent(level, pos) == Direction.Axis.X
+                    ? RailShape.EAST_WEST : RailShape.NORTH_SOUTH;
+        }
+
         List<Direction> dirs = new ArrayList<>(2);
         boolean[] raised = new boolean[4];
 
@@ -82,6 +90,46 @@ public final class SlideConnections {
             return a.getAxis() == Direction.Axis.X ? RailShape.EAST_WEST : RailShape.NORTH_SOUTH;
         }
         return corner(a, b);
+    }
+
+    /**
+     * True when {@code pos} sits in a filled 2×2 (or larger) patch of same-level slides —
+     * i.e. some perpendicular neighbor pair has its shared diagonal also filled. A lone
+     * L-bend (diagonal empty) is a real corner and stays one.
+     */
+    private static boolean isFlatAreaCell(LevelReader level, BlockPos pos) {
+        for (Direction a : new Direction[]{Direction.NORTH, Direction.SOUTH}) {
+            for (Direction b : new Direction[]{Direction.EAST, Direction.WEST}) {
+                if (isSlide(level.getBlockState(pos.relative(a)))
+                        && isSlide(level.getBlockState(pos.relative(b)))
+                        && isSlide(level.getBlockState(pos.relative(a).relative(b)))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** The axis a wide patch runs along = whichever direction the contiguous slides reach
+     *  farther (tiebreak Z), so a 2×N rectangle orients along its length, not its width. */
+    private static Direction.Axis runAxisByExtent(LevelReader level, BlockPos pos) {
+        int z = contiguous(level, pos, Direction.NORTH) + contiguous(level, pos, Direction.SOUTH);
+        int x = contiguous(level, pos, Direction.EAST) + contiguous(level, pos, Direction.WEST);
+        return x > z ? Direction.Axis.X : Direction.Axis.Z;
+    }
+
+    /** Count contiguous same-level slides walking from {@code pos} along {@code dir} (bounded). */
+    private static int contiguous(LevelReader level, BlockPos pos, Direction dir) {
+        int n = 0;
+        BlockPos p = pos;
+        for (int i = 0; i < 16; i++) {
+            p = p.relative(dir);
+            if (!isSlide(level.getBlockState(p))) {
+                break;
+            }
+            n++;
+        }
+        return n;
     }
 
     /** Recompute this block's own shape + wall merges in place (no-op when unchanged). */
