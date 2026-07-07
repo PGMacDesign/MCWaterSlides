@@ -87,6 +87,37 @@ public class FloodValveGameTests {
         });
     }
 
+    /** The right-click status snapshot surfaces the leak (unsealed) vs. a sealed volume. */
+    @GameTest(template = "empty5", timeoutTicks = 60)
+    public static void statusReportsLeakAndVolume(GameTestHelper helper) {
+        FloodValveBlockEntity leaky = buildTank(helper, false, true);
+        helper.runAfterDelay(5, () -> {
+            var st = leaky.status(helper.getBlockState(new BlockPos(0, 1, 1)));
+            if (st.leak() == null) {
+                helper.fail("status of an unsealed tank must report a leak");
+            }
+            if (!st.powered() || st.energy() <= 0) {
+                helper.fail("status should show powered + energy present");
+            }
+            helper.succeed();
+        });
+    }
+
+    @GameTest(template = "empty5", timeoutTicks = 60)
+    public static void statusReportsSealedVolume(GameTestHelper helper) {
+        FloodValveBlockEntity valve = buildTank(helper, true, true);
+        helper.runAfterDelay(5, () -> {
+            var st = valve.status(helper.getBlockState(new BlockPos(0, 1, 1)));
+            if (st.leak() != null) {
+                helper.fail("a sealed tank must not report a leak");
+            }
+            if (st.volume() <= 0) {
+                helper.fail("a sealed powered tank should report a positive volume, got " + st.volume());
+            }
+            helper.succeed();
+        });
+    }
+
     @GameTest(template = "empty5", timeoutTicks = 200)
     public static void valveDrainsWhenUnpowered(GameTestHelper helper) {
         buildTank(helper, true, false);

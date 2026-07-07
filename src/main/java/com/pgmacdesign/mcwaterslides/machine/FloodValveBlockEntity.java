@@ -84,6 +84,21 @@ public class FloodValveBlockEntity extends BlockEntity {
         return lastLeak;
     }
 
+    /** Live readout for the right-click status message. Runs a fresh bounded scan. */
+    public record Status(boolean powered, int energy, int maxEnergy, int volume, @Nullable BlockPos leak) {}
+
+    public Status status(BlockState state) {
+        boolean powered = state.getValue(FloodValveBlock.POWERED);
+        int e = energy.getEnergyStored();
+        int max = energy.getMaxEnergyStored();
+        Level level = getLevel();
+        if (level == null) {
+            return new Status(powered, e, max, 0, lastLeak);
+        }
+        ScanResult r = scan(level, getBlockPos(), state.getValue(FloodValveBlock.FACING));
+        return new Status(powered, e, max, r.cells.size(), r.leak);
+    }
+
     public void invalidateScan() {
         scanDirty = true;
     }

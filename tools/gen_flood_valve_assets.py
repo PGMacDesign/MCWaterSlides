@@ -123,6 +123,34 @@ def gen_data():
 
     merge_tag(RES / "data/minecraft/tags/block/mineable/pickaxe.json", [f"{MOD}:flood_valve"])
 
+    gen_lang()
+
+
+def gen_lang():
+    """Merge every Flood Valve string (block name, tooltip, right-click status) — keeps
+    them reproducible instead of hand-edited into en_us.json."""
+    lang_path = RES / f"assets/{MOD}/lang/en_us.json"
+    lang = json.loads(lang_path.read_text()) if lang_path.exists() else {}
+    lang.update({
+        f"block.{MOD}.flood_valve": "Flood Valve",
+        # item tooltip
+        f"tooltip.{MOD}.flood_valve.what": "Floods the sealed space it faces with water.",
+        f"tooltip.{MOD}.flood_valve.how": "Redstone ON fills · OFF drains. Needs RF.",
+        f"tooltip.{MOD}.flood_valve.leaks": "Not watertight? It points at the leak.",
+        # right-click status readout
+        f"message.{MOD}.flood_valve.status": "Flood Valve",
+        f"message.{MOD}.flood_valve.mode_fill": "Mode: filling (redstone on)",
+        f"message.{MOD}.flood_valve.mode_drain": "Mode: draining (no redstone)",
+        f"message.{MOD}.flood_valve.energy": "Energy: %s / %s RF",
+        f"message.{MOD}.flood_valve.volume": "Sealed volume: %s blocks",
+        f"message.{MOD}.flood_valve.leak_at": "⚠ Leak at %s, %s, %s — not watertight",
+        f"message.{MOD}.flood_valve.no_rf": "Out of RF — connect a Pump House or RF source",
+        f"message.{MOD}.flood_valve.placed": "Give it RF + a redstone signal to flood the space it faces",
+        # legacy actionbar leak ping (kept)
+        f"message.{MOD}.flood_valve_leak": "Flood Valve: volume not sealed — leak near %s, %s, %s",
+    })
+    write_json(lang_path, dict(sorted(lang.items())))
+
 
 if __name__ == "__main__":
     gen_textures()

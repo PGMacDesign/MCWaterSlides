@@ -53,5 +53,16 @@
   "book.mcwaterslides.guide.landing": "Welcome to $(item)MC Waterslides$()! Everything here is cheap, fast, and wet. Build enormous slides, push them uphill with jets, and always land in a pool.",
   "book.mcwaterslides.guide.name": "Park Builder's Manual",
   "itemGroup.mcwaterslides": "MC Waterslides",
-  "message.mcwaterslides.flood_valve_leak": "Flood Valve: volume not sealed \u2014 leak near %s, %s, %s"
+  "message.mcwaterslides.flood_valve.energy": "Energy: %s / %s RF",
+  "message.mcwaterslides.flood_valve.leak_at": "\u26a0 Leak at %s, %s, %s \u2014 not watertight",
+  "message.mcwaterslides.flood_valve.mode_drain": "Mode: draining (no redstone)",
+  "message.mcwaterslides.flood_valve.mode_fill": "Mode: filling (redstone on)",
+  "message.mcwaterslides.flood_valve.no_rf": "Out of RF \u2014 connect a Pump House or RF source",
+  "message.mcwaterslides.flood_valve.placed": "Give it RF + a redstone signal to flood the space it faces",
+  "message.mcwaterslides.flood_valve.status": "Flood Valve",
+  "message.mcwaterslides.flood_valve.volume": "Sealed volume: %s blocks",
+  "message.mcwaterslides.flood_valve_leak": "Flood Valve: volume not sealed \u2014 leak near %s, %s, %s",
+  "tooltip.mcwaterslides.flood_valve.how": "Redstone ON fills \u00b7 OFF drains. Needs RF.",
+  "tooltip.mcwaterslides.flood_valve.leaks": "Not watertight? It points at the leak.",
+  "tooltip.mcwaterslides.flood_valve.what": "Floods the sealed space it faces with water."
 }
