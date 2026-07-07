@@ -2,8 +2,10 @@ package com.pgmacdesign.mcwaterslides.gametest;
 
 import com.pgmacdesign.mcwaterslides.MCWaterSlides;
 import com.pgmacdesign.mcwaterslides.registry.ModAttachments;
+import com.pgmacdesign.mcwaterslides.registry.ModBlocks;
 import com.pgmacdesign.mcwaterslides.ride.RidePose;
 import com.pgmacdesign.mcwaterslides.ride.RideState;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -14,34 +16,50 @@ import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 
 /**
- * The forced-pose invariant: set while riding fast, cleared exactly once on EVERY exit
- * path. Mock players aren't level-ticked, so these drive {@link RidePose#reconcile}
- * directly — the wiring (both tickers call it every tick) is trivially inspectable.
+ * The forced-pose invariant: set while riding (or standing on a ride surface), cleared
+ * exactly once on EVERY exit path. Mock players aren't level-ticked, so these drive
+ * {@link RidePose#reconcile} directly — the wiring (both tickers call it every tick) is
+ * trivially inspectable.
  */
 @GameTestHolder(MCWaterSlides.MOD_ID)
 @PrefixGameTestTemplate(false)
 public class RidePoseGameTests {
 
     @GameTest(template = "empty5")
-    public static void poseForcedWhileRidingFast(GameTestHelper helper) {
+    public static void poseForcedWhileRiding(GameTestHelper helper) {
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
         RideState state = player.getData(ModAttachments.RIDE_STATE.get());
         state.startRide(10.0, Direction.EAST);
         RidePose.reconcile(player, state);
         if (player.getForcedPose() != Pose.SWIMMING) {
-            helper.fail("expected forced SWIMMING pose while riding at 10 b/s");
+            helper.fail("expected forced SWIMMING pose while riding");
+        }
+        helper.succeed();
+    }
+
+    /** Standing on a channel forces prone even before a ride starts — the tube-entry fix. */
+    @GameTest(template = "empty5")
+    public static void poseForcedStandingOnChannel(GameTestHelper helper) {
+        BlockPos channel = new BlockPos(2, 1, 2);
+        helper.setBlock(channel, ModBlocks.SLIDE_CHANNELS.get(null).get());
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        BlockPos abs = helper.absolutePos(channel);
+        player.setPos(abs.getX() + 0.5, abs.getY() + 0.2, abs.getZ() + 0.5);
+        RideState state = player.getData(ModAttachments.RIDE_STATE.get());
+        RidePose.reconcile(player, state);
+        if (player.getForcedPose() != Pose.SWIMMING) {
+            helper.fail("standing on a channel should force prone so you can crawl into a tube");
         }
         helper.succeed();
     }
 
     @GameTest(template = "empty5")
-    public static void poseNotForcedBelowThreshold(GameTestHelper helper) {
+    public static void poseNotForcedIdleOffSlide(GameTestHelper helper) {
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
         RideState state = player.getData(ModAttachments.RIDE_STATE.get());
-        state.startRide(2.0, Direction.EAST);
         RidePose.reconcile(player, state);
         if (player.getForcedPose() != null) {
-            helper.fail("slow rides must not force a pose");
+            helper.fail("a player not riding and not on a slide must not be forced prone");
         }
         helper.succeed();
     }
@@ -64,17 +82,20 @@ public class RidePoseGameTests {
         helper.succeed();
     }
 
-    /** Exit path 2: momentum decays below the threshold while still riding. */
+    /** Exit path 2: stepping off the slide while not riding clears the prone pose. */
     @GameTest(template = "empty5")
-    public static void poseClearedOnSlowdown(GameTestHelper helper) {
+    public static void poseClearedSteppingOffSlide(GameTestHelper helper) {
+        BlockPos channel = new BlockPos(2, 1, 2);
+        helper.setBlock(channel, ModBlocks.SLIDE_CHANNELS.get(null).get());
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        BlockPos abs = helper.absolutePos(channel);
+        player.setPos(abs.getX() + 0.5, abs.getY() + 0.2, abs.getZ() + 0.5);
         RideState state = player.getData(ModAttachments.RIDE_STATE.get());
-        state.startRide(10.0, Direction.EAST);
-        RidePose.reconcile(player, state);
-        state.momentum = 1.0;
+        RidePose.reconcile(player, state); // on the channel → prone
+        player.setPos(abs.getX() + 5.5, abs.getY() + 0.2, abs.getZ() + 0.5); // walk off onto air
         RidePose.reconcile(player, state);
         if (player.getForcedPose() != null) {
-            helper.fail("forced pose must clear when momentum decays below threshold");
+            helper.fail("prone must clear once you step off the slide");
         }
         helper.succeed();
     }
