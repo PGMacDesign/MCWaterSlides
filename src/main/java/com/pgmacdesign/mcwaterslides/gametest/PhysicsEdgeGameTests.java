@@ -45,6 +45,43 @@ public class PhysicsEdgeGameTests {
         });
     }
 
+    /**
+     * Riding = never drowning. Slide-block water is intrinsic (no FluidState — air
+     * can't deplete there, transitively pinned by spongeCannotDryChannel below), but
+     * valve-flooded freeform tubes are REAL water: the ride tick must top up air.
+     */
+    @GameTest(template = "empty5", timeoutTicks = 300)
+    public static void ridingRefillsAirInRealWater(GameTestHelper helper) {
+        // Glass-boxed 2-deep water run: a sunk zombie is fully submerged (air depletes
+        // at 1/tick without the refill) and the jet's current makes it a rider.
+        for (int z = 1; z <= 4; z++) {
+            for (int y = 1; y <= 2; y++) {
+                helper.setBlock(new BlockPos(1, y, z), Blocks.GLASS);
+                helper.setBlock(new BlockPos(3, y, z), Blocks.GLASS);
+                helper.setBlock(new BlockPos(2, y, z), Blocks.WATER);
+            }
+        }
+        for (int y = 1; y <= 2; y++) {
+            helper.setBlock(new BlockPos(2, y, 5), Blocks.GLASS);
+        }
+        helper.setBlock(new BlockPos(2, 1, 0),
+                ModBlocks.JET.get().defaultBlockState().setValue(JetBlock.FACING, Direction.SOUTH));
+        if (!(helper.getBlockEntity(new BlockPos(2, 1, 0)) instanceof JetBlockEntity jet)) {
+            throw new GameTestAssertException("jet missing");
+        }
+        jet.fillBuffer();
+
+        var zombie = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, new BlockPos(2, 1, 2));
+        helper.runAfterDelay(20, () -> zombie.setAirSupply(30));
+        helper.runAfterDelay(120, () -> {
+            if (zombie.getAirSupply() < zombie.getMaxAirSupply()) {
+                helper.fail("riding zombie's air must stay topped up, got " + zombie.getAirSupply()
+                        + "/" + zombie.getMaxAirSupply());
+            }
+            helper.succeed();
+        });
+    }
+
     /** The channel's intrinsic water is untouchable: sponges do nothing to it. */
     @GameTest(template = "empty5", timeoutTicks = 60)
     public static void spongeCannotDryChannel(GameTestHelper helper) {

@@ -78,77 +78,89 @@ def all_sides(tex, tint=None):
     return {d: face(tex, tint=tint) for d in ("north", "south", "east", "west", "up", "down")}
 
 
+def floor_elements():
+    return [
+        element([0, 0, 0], [16, 2, 16], {
+            "down": face("#base", cull="down"), "up": face("#lining", tint=1),
+            "north": face("#base", cull="north"), "south": face("#base", cull="south"),
+            "east": face("#base", cull="east"), "west": face("#base", cull="west"),
+        }),
+    ]
+
+
+def straight_wall_elements():
+    return [
+        element([0, 2, 0], [2, WALL_H, 16], {
+            "west": face("#base", cull="west"), "east": face("#lining", tint=1),
+            "north": face("#base", cull="north"), "south": face("#base", cull="south"),
+        }),
+        element([14, 2, 0], [16, WALL_H, 16], {
+            "east": face("#base", cull="east"), "west": face("#lining", tint=1),
+            "north": face("#base", cull="north"), "south": face("#base", cull="south"),
+        }),
+    ]
+
+
+def straight_lid_elements():
+    # lid rails either side of the window strip
+    return [
+        element([0, WALL_H, 0], [5, 16, 16], {
+            "up": face("#base", cull="up"), "down": face("#lining", tint=1),
+            "west": face("#base", cull="west"), "east": face("#base"),
+            "north": face("#base", cull="north"), "south": face("#base", cull="south"),
+        }),
+        element([11, WALL_H, 0], [16, 16, 16], {
+            "up": face("#base", cull="up"), "down": face("#lining", tint=1),
+            "east": face("#base", cull="east"), "west": face("#base"),
+            "north": face("#base", cull="north"), "south": face("#base", cull="south"),
+        }),
+    ]
+
+
+def corner_wall_elements():
+    return [
+        element([0, 2, 0], [16, WALL_H, 2], {
+            "north": face("#base", cull="north"), "south": face("#lining", tint=1),
+            "east": face("#base", cull="east"), "west": face("#base", cull="west"),
+        }),
+        element([0, 2, 2], [2, WALL_H, 16], {
+            "west": face("#base", cull="west"), "east": face("#lining", tint=1),
+            "south": face("#base", cull="south"),
+        }),
+    ]
+
+
+def corner_lid_elements():
+    # full lid frame with center window opening
+    return [
+        element([0, WALL_H, 0], [16, 16, 5], {
+            "up": face("#base", cull="up"), "down": face("#lining", tint=1),
+            "north": face("#base", cull="north"), "south": face("#base"),
+            "east": face("#base", cull="east"), "west": face("#base", cull="west"),
+        }),
+        element([0, WALL_H, 11], [16, 16, 16], {
+            "up": face("#base", cull="up"), "down": face("#lining", tint=1),
+            "south": face("#base", cull="south"), "north": face("#base"),
+            "east": face("#base", cull="east"), "west": face("#base", cull="west"),
+        }),
+        element([0, WALL_H, 5], [5, 16, 11], {
+            "up": face("#base", cull="up"), "down": face("#lining", tint=1),
+            "west": face("#base", cull="west"), "east": face("#base"),
+        }),
+        element([11, WALL_H, 5], [16, 16, 11], {
+            "up": face("#base", cull="up"), "down": face("#lining", tint=1),
+            "east": face("#base", cull="east"), "west": face("#base"),
+        }),
+    ]
+
+
+def model_of(elements):
+    return {"textures": body_textures(), "elements": elements}
+
+
 def straight_tube_body():
-    """North-south run: channel body + lid side slabs (window strip lives in its own model)."""
-    return {
-        "textures": body_textures(),
-        "elements": [
-            element([0, 0, 0], [16, 2, 16], {
-                "down": face("#base", cull="down"), "up": face("#lining", tint=1),
-                "north": face("#base", cull="north"), "south": face("#base", cull="south"),
-                "east": face("#base", cull="east"), "west": face("#base", cull="west"),
-            }),
-            element([0, 2, 0], [2, WALL_H, 16], {
-                "west": face("#base", cull="west"), "east": face("#lining", tint=1),
-                "north": face("#base", cull="north"), "south": face("#base", cull="south"),
-            }),
-            element([14, 2, 0], [16, WALL_H, 16], {
-                "east": face("#base", cull="east"), "west": face("#lining", tint=1),
-                "north": face("#base", cull="north"), "south": face("#base", cull="south"),
-            }),
-            # lid rails either side of the window strip
-            element([0, WALL_H, 0], [5, 16, 16], {
-                "up": face("#base", cull="up"), "down": face("#lining", tint=1),
-                "west": face("#base", cull="west"), "east": face("#base"),
-                "north": face("#base", cull="north"), "south": face("#base", cull="south"),
-            }),
-            element([11, WALL_H, 0], [16, 16, 16], {
-                "up": face("#base", cull="up"), "down": face("#lining", tint=1),
-                "east": face("#base", cull="east"), "west": face("#base"),
-                "north": face("#base", cull="north"), "south": face("#base", cull="south"),
-            }),
-        ],
-    }
-
-
-def corner_tube_body():
-    """South-east corner body + full lid frame with center window opening."""
-    return {
-        "textures": body_textures(),
-        "elements": [
-            element([0, 0, 0], [16, 2, 16], {
-                "down": face("#base", cull="down"), "up": face("#lining", tint=1),
-                "north": face("#base", cull="north"), "south": face("#base", cull="south"),
-                "east": face("#base", cull="east"), "west": face("#base", cull="west"),
-            }),
-            element([0, 2, 0], [16, WALL_H, 2], {
-                "north": face("#base", cull="north"), "south": face("#lining", tint=1),
-                "east": face("#base", cull="east"), "west": face("#base", cull="west"),
-            }),
-            element([0, 2, 2], [2, WALL_H, 16], {
-                "west": face("#base", cull="west"), "east": face("#lining", tint=1),
-                "south": face("#base", cull="south"),
-            }),
-            element([0, WALL_H, 0], [16, 16, 5], {
-                "up": face("#base", cull="up"), "down": face("#lining", tint=1),
-                "north": face("#base", cull="north"), "south": face("#base"),
-                "east": face("#base", cull="east"), "west": face("#base", cull="west"),
-            }),
-            element([0, WALL_H, 11], [16, 16, 16], {
-                "up": face("#base", cull="up"), "down": face("#lining", tint=1),
-                "south": face("#base", cull="south"), "north": face("#base"),
-                "east": face("#base", cull="east"), "west": face("#base", cull="west"),
-            }),
-            element([0, WALL_H, 5], [5, 16, 11], {
-                "up": face("#base", cull="up"), "down": face("#lining", tint=1),
-                "west": face("#base", cull="west"), "east": face("#base"),
-            }),
-            element([11, WALL_H, 5], [16, 16, 11], {
-                "up": face("#base", cull="up"), "down": face("#lining", tint=1),
-                "east": face("#base", cull="east"), "west": face("#base"),
-            }),
-        ],
-    }
+    """Full straight body (inventory + legacy composite): floor + walls + lid."""
+    return model_of(floor_elements() + straight_wall_elements() + straight_lid_elements())
 
 
 def vertical_tube_body():
@@ -223,10 +235,19 @@ SHAPE_VARIANTS = {
     "vertical": ("slide_tube_vertical", 0),
 }
 
-# extra overlay models per family
-OVERLAYS = {
-    "slide_tube": ["slide_tube_water", "slide_tube_window_strip"],
-    "slide_tube_corner": ["slide_tube_corner_water", "slide_tube_corner_window"],
+# Flat families split into parts so tall bores (open_up/open_down) can drop the lid
+# and floor per-state. Ascending/vertical never pair — single model, flags ignored.
+# family -> (walls model, [floor-side models], [lid-side models])
+FLAT_PARTS = {
+    "slide_tube": ("slide_tube_walls",
+                   ["slide_tube_floor", "slide_tube_water"],
+                   ["slide_tube_lid", "slide_tube_window_strip"]),
+    "slide_tube_corner": ("slide_tube_corner_walls",
+                          ["slide_tube_floor", "slide_tube_corner_water"],
+                          ["slide_tube_corner_lid", "slide_tube_corner_window"]),
+}
+
+WHOLE_FAMILY_OVERLAYS = {
     "slide_tube_ascending": ["slide_channel_ascending_water"],  # reuse channel cascade
     "slide_tube_vertical": [],
 }
@@ -235,18 +256,35 @@ OVERLAYS = {
 def blockstate():
     parts = []
     for shape, (family, rot) in SHAPE_VARIANTS.items():
-        for model in [family] + OVERLAYS[family]:
+        def apply_of(model):
             apply = {"model": f"{MOD}:block/{model}"}
             if rot:
                 apply["y"] = rot
-            parts.append({"when": {"shape": shape}, "apply": apply})
+            return apply
+        if family in FLAT_PARTS:
+            walls, floor_side, lid_side = FLAT_PARTS[family]
+            parts.append({"when": {"shape": shape}, "apply": apply_of(walls)})
+            for model in floor_side:
+                parts.append({"when": {"shape": shape, "open_down": "false"}, "apply": apply_of(model)})
+            for model in lid_side:
+                parts.append({"when": {"shape": shape, "open_up": "false"}, "apply": apply_of(model)})
+        else:
+            for model in [family] + WHOLE_FAMILY_OVERLAYS[family]:
+                parts.append({"when": {"shape": shape}, "apply": apply_of(model)})
     return {"multipart": parts}
 
 
 def gen_data():
     models = RES / f"assets/{MOD}/models"
+    # composite (inventory parent) + the per-part models the blockstate composes
     write_json(models / "block/slide_tube.json", straight_tube_body())
-    write_json(models / "block/slide_tube_corner.json", corner_tube_body())
+    write_json(models / "block/slide_tube_floor.json", model_of(floor_elements()))
+    write_json(models / "block/slide_tube_walls.json", model_of(straight_wall_elements()))
+    write_json(models / "block/slide_tube_lid.json", model_of(straight_lid_elements()))
+    write_json(models / "block/slide_tube_corner_walls.json", model_of(corner_wall_elements()))
+    write_json(models / "block/slide_tube_corner_lid.json", model_of(corner_lid_elements()))
+    write_json(models / "block/slide_tube_corner.json",
+               model_of(floor_elements() + corner_wall_elements() + corner_lid_elements()))
     write_json(models / "block/slide_tube_vertical.json", vertical_tube_body())
     # ascending tube reuses the channel's stepped body (visually open-top on slopes)
     write_json(models / "block/slide_tube_ascending.json",

@@ -5,12 +5,22 @@
         "shape": "north_south"
       },
       "apply": {
-        "model": "mcwaterslides:block/slide_tube"
+        "model": "mcwaterslides:block/slide_tube_walls"
       }
     },
     {
       "when": {
-        "shape": "north_south"
+        "shape": "north_south",
+        "open_down": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_floor"
+      }
+    },
+    {
+      "when": {
+        "shape": "north_south",
+        "open_down": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_water"
@@ -18,7 +28,17 @@
     },
     {
       "when": {
-        "shape": "north_south"
+        "shape": "north_south",
+        "open_up": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_lid"
+      }
+    },
+    {
+      "when": {
+        "shape": "north_south",
+        "open_up": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_window_strip"
@@ -29,13 +49,24 @@
         "shape": "east_west"
       },
       "apply": {
-        "model": "mcwaterslides:block/slide_tube",
+        "model": "mcwaterslides:block/slide_tube_walls",
         "y": 90
       }
     },
     {
       "when": {
-        "shape": "east_west"
+        "shape": "east_west",
+        "open_down": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_floor",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "east_west",
+        "open_down": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_water",
@@ -44,7 +75,18 @@
     },
     {
       "when": {
-        "shape": "east_west"
+        "shape": "east_west",
+        "open_up": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_lid",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "east_west",
+        "open_up": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_window_strip",
@@ -126,12 +168,22 @@
         "shape": "south_east"
       },
       "apply": {
-        "model": "mcwaterslides:block/slide_tube_corner"
+        "model": "mcwaterslides:block/slide_tube_corner_walls"
       }
     },
     {
       "when": {
-        "shape": "south_east"
+        "shape": "south_east",
+        "open_down": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_floor"
+      }
+    },
+    {
+      "when": {
+        "shape": "south_east",
+        "open_down": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_corner_water"
@@ -139,7 +191,17 @@
     },
     {
       "when": {
-        "shape": "south_east"
+        "shape": "south_east",
+        "open_up": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_lid"
+      }
+    },
+    {
+      "when": {
+        "shape": "south_east",
+        "open_up": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_corner_window"
@@ -150,13 +212,24 @@
         "shape": "south_west"
       },
       "apply": {
-        "model": "mcwaterslides:block/slide_tube_corner",
+        "model": "mcwaterslides:block/slide_tube_corner_walls",
         "y": 90
       }
     },
     {
       "when": {
-        "shape": "south_west"
+        "shape": "south_west",
+        "open_down": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_floor",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "south_west",
+        "open_down": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_corner_water",
@@ -165,7 +238,18 @@
     },
     {
       "when": {
-        "shape": "south_west"
+        "shape": "south_west",
+        "open_up": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_lid",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "south_west",
+        "open_up": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_corner_window",
@@ -177,13 +261,24 @@
         "shape": "north_west"
       },
       "apply": {
-        "model": "mcwaterslides:block/slide_tube_corner",
+        "model": "mcwaterslides:block/slide_tube_corner_walls",
         "y": 180
       }
     },
     {
       "when": {
-        "shape": "north_west"
+        "shape": "north_west",
+        "open_down": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_floor",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "shape": "north_west",
+        "open_down": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_corner_water",
@@ -192,7 +287,18 @@
     },
     {
       "when": {
-        "shape": "north_west"
+        "shape": "north_west",
+        "open_up": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_lid",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "shape": "north_west",
+        "open_up": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_corner_window",
@@ -204,13 +310,24 @@
         "shape": "north_east"
       },
       "apply": {
-        "model": "mcwaterslides:block/slide_tube_corner",
+        "model": "mcwaterslides:block/slide_tube_corner_walls",
         "y": 270
       }
     },
     {
       "when": {
-        "shape": "north_east"
+        "shape": "north_east",
+        "open_down": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_floor",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "shape": "north_east",
+        "open_down": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_corner_water",
@@ -219,7 +336,18 @@
     },
     {
       "when": {
-        "shape": "north_east"
+        "shape": "north_east",
+        "open_up": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_lid",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "shape": "north_east",
+        "open_up": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_corner_window",

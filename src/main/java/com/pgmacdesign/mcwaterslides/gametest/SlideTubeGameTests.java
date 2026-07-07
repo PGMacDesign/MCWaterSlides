@@ -49,6 +49,70 @@ public class SlideTubeGameTests {
     }
 
     /**
+     * Stacking a same-shape tube on top merges the pair into a tall bore: the lower
+     * tube drops its lid (OPEN_UP), the upper drops its floor (OPEN_DOWN). Horizontal
+     * connectivity wins over vertical stacking — bare columns still go VERTICAL
+     * (pinned by tubeStackGoesVertical above).
+     */
+    @GameTest(template = "empty5", timeoutTicks = 60)
+    public static void stackedTubesMergeIntoTallBore(GameTestHelper helper) {
+        // Two-level run along z with a channel entry so both levels compute horizontal.
+        helper.setBlock(new BlockPos(2, 1, 1), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        helper.setBlock(new BlockPos(2, 2, 1), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        for (int z = 2; z <= 3; z++) {
+            helper.setBlock(new BlockPos(2, 1, z), ModBlocks.SLIDE_TUBES.get(null).get());
+            helper.setBlock(new BlockPos(2, 2, z), ModBlocks.SLIDE_TUBES.get(null).get());
+        }
+        helper.succeedWhen(() -> {
+            var lower = helper.getBlockState(new BlockPos(2, 1, 2));
+            var upper = helper.getBlockState(new BlockPos(2, 2, 2));
+            assertTubeShape(helper, new BlockPos(2, 1, 2), TubeShape.NORTH_SOUTH);
+            if (!lower.getValue(SlideTubeBlock.OPEN_UP) || lower.getValue(SlideTubeBlock.OPEN_DOWN)) {
+                helper.fail("lower tube should be OPEN_UP only, got up=" + lower.getValue(SlideTubeBlock.OPEN_UP)
+                        + " down=" + lower.getValue(SlideTubeBlock.OPEN_DOWN));
+            }
+            if (!upper.getValue(SlideTubeBlock.OPEN_DOWN) || upper.getValue(SlideTubeBlock.OPEN_UP)) {
+                helper.fail("upper tube should be OPEN_DOWN only, got up=" + upper.getValue(SlideTubeBlock.OPEN_UP)
+                        + " down=" + upper.getValue(SlideTubeBlock.OPEN_DOWN));
+            }
+            // The merged bore is physically open: no collision in the lower tube's lid band.
+            BlockPos abs = helper.absolutePos(new BlockPos(2, 1, 2));
+            var shape = helper.getLevel().getBlockState(abs).getCollisionShape(helper.getLevel(), abs);
+            var lidBand = new net.minecraft.world.phys.AABB(0.3, 14.5 / 16.0, 0.3, 0.7, 15.5 / 16.0, 0.7);
+            if (net.minecraft.world.phys.shapes.Shapes.joinIsNotEmpty(shape,
+                    net.minecraft.world.phys.shapes.Shapes.create(lidBand),
+                    net.minecraft.world.phys.shapes.BooleanOp.AND)) {
+                helper.fail("merged bore must have no lid collision on the lower tube");
+            }
+        });
+    }
+
+    /** Breaking the upper half of a bore reseals the lower tube (existence-based recompute). */
+    @GameTest(template = "empty5", timeoutTicks = 80)
+    public static void boreUnpairsWhenUpperRemoved(GameTestHelper helper) {
+        helper.setBlock(new BlockPos(2, 1, 1), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        helper.setBlock(new BlockPos(2, 2, 1), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        for (int z = 2; z <= 3; z++) {
+            helper.setBlock(new BlockPos(2, 1, z), ModBlocks.SLIDE_TUBES.get(null).get());
+            helper.setBlock(new BlockPos(2, 2, z), ModBlocks.SLIDE_TUBES.get(null).get());
+        }
+        helper.runAfterDelay(10, () -> {
+            if (!helper.getBlockState(new BlockPos(2, 1, 2)).getValue(SlideTubeBlock.OPEN_UP)) {
+                helper.fail("precondition: bore should be paired before removal");
+            }
+            for (int z = 2; z <= 3; z++) {
+                helper.setBlock(new BlockPos(2, 2, z), net.minecraft.world.level.block.Blocks.AIR);
+            }
+        });
+        helper.succeedWhen(() -> {
+            var lower = helper.getBlockState(new BlockPos(2, 1, 2));
+            if (lower.getValue(SlideTubeBlock.OPEN_UP)) {
+                helper.fail("lower tube must reseal (OPEN_UP=false) once the upper half is gone");
+            }
+        });
+    }
+
+    /**
      * Tube entry geometry: the forced swim pose (0.6 box, see RidePose) fits the 12px
      * bore; a standing player (1.8) is walled out. Pins the invariant that riders enter
      * tubes and walkers don't — full player traversal can't be gametested headless

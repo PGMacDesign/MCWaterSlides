@@ -76,6 +76,10 @@ public final class RideTicker {
             return;
         }
 
+        // Riding = never drowning. Slide water is intrinsic (no fluid, air untouched),
+        // but freeform valve-flooded tubes are REAL water — top the rider up every tick.
+        entity.setAirSupply(entity.getMaxAirSupply());
+
         SlidePhysics.Params params = params(shape != null);
 
         // Bail: consumed here, honored only where geometry allows (never latched).

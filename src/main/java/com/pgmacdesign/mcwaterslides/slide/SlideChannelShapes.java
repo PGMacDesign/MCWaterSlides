@@ -16,6 +16,7 @@ import net.minecraft.world.level.block.Block;
  */
 final class SlideChannelShapes {
     private static final Map<RailShape, VoxelShape> SHAPES = new EnumMap<>(RailShape.class);
+    private static final Map<RailShape, VoxelShape> WALLS = new EnumMap<>(RailShape.class);
 
     private SlideChannelShapes() {}
 
@@ -23,28 +24,33 @@ final class SlideChannelShapes {
         return SHAPES.get(shape);
     }
 
+    /** Just the side walls of a flat shape (no floor) — tube bores drop floors/lids. */
+    static VoxelShape walls(RailShape shape) {
+        return WALLS.get(shape);
+    }
+
+    static final VoxelShape FLOOR = Block.box(0, 0, 0, 16, 2, 16);
+
     private static final double WALL_H = 14;
 
     static {
-        VoxelShape floor = Block.box(0, 0, 0, 16, 2, 16);
-
         // Straight north-south: walls along east/west edges.
-        VoxelShape ns = Shapes.or(floor,
+        WALLS.put(RailShape.NORTH_SOUTH, Shapes.or(
                 Block.box(0, 2, 0, 2, WALL_H, 16),
-                Block.box(14, 2, 0, 16, WALL_H, 16));
+                Block.box(14, 2, 0, 16, WALL_H, 16)));
         // Straight east-west: walls along north/south edges.
-        VoxelShape ew = Shapes.or(floor,
+        WALLS.put(RailShape.EAST_WEST, Shapes.or(
                 Block.box(0, 2, 0, 16, WALL_H, 2),
-                Block.box(0, 2, 14, 16, WALL_H, 16));
-        SHAPES.put(RailShape.NORTH_SOUTH, ns);
-        SHAPES.put(RailShape.EAST_WEST, ew);
+                Block.box(0, 2, 14, 16, WALL_H, 16)));
 
         // Corners: outer walls on the two closed sides. SOUTH_EAST exits south+east →
         // walls on north + west.
-        SHAPES.put(RailShape.SOUTH_EAST, corner(true, true, false, false));
-        SHAPES.put(RailShape.SOUTH_WEST, corner(true, false, false, true));
-        SHAPES.put(RailShape.NORTH_WEST, corner(false, false, true, true));
-        SHAPES.put(RailShape.NORTH_EAST, corner(false, true, true, false));
+        WALLS.put(RailShape.SOUTH_EAST, cornerWalls(true, true, false, false));
+        WALLS.put(RailShape.SOUTH_WEST, cornerWalls(true, false, false, true));
+        WALLS.put(RailShape.NORTH_WEST, cornerWalls(false, false, true, true));
+        WALLS.put(RailShape.NORTH_EAST, cornerWalls(false, true, true, false));
+
+        WALLS.forEach((rail, walls) -> SHAPES.put(rail, Shapes.or(FLOOR, walls)));
 
         // Ascending: four steps rising along the axis toward the named direction.
         SHAPES.put(RailShape.ASCENDING_SOUTH, ascendingZ(false));
@@ -54,8 +60,8 @@ final class SlideChannelShapes {
     }
 
     /** Walls on the flagged sides (north wall, west wall, south wall, east wall). */
-    private static VoxelShape corner(boolean north, boolean west, boolean south, boolean east) {
-        VoxelShape shape = Block.box(0, 0, 0, 16, 2, 16);
+    private static VoxelShape cornerWalls(boolean north, boolean west, boolean south, boolean east) {
+        VoxelShape shape = Shapes.empty();
         if (north) shape = Shapes.or(shape, Block.box(0, 2, 0, 16, WALL_H, 2));
         if (south) shape = Shapes.or(shape, Block.box(0, 2, 14, 16, WALL_H, 16));
         if (west) shape = Shapes.or(shape, Block.box(0, 2, 0, 2, WALL_H, 16));
