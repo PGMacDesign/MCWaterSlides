@@ -1,0 +1,22 @@
+{
+  "replace": false,
+  "values": [
+    "mcwaterslides:black_slide_tube",
+    "mcwaterslides:blue_slide_tube",
+    "mcwaterslides:brown_slide_tube",
+    "mcwaterslides:cyan_slide_tube",
+    "mcwaterslides:gray_slide_tube",
+    "mcwaterslides:green_slide_tube",
+    "mcwaterslides:light_blue_slide_tube",
+    "mcwaterslides:light_gray_slide_tube",
+    "mcwaterslides:lime_slide_tube",
+    "mcwaterslides:magenta_slide_tube",
+    "mcwaterslides:orange_slide_tube",
+    "mcwaterslides:pink_slide_tube",
+    "mcwaterslides:purple_slide_tube",
+    "mcwaterslides:red_slide_tube",
+    "mcwaterslides:slide_tube",
+    "mcwaterslides:white_slide_tube",
+    "mcwaterslides:yellow_slide_tube"
+  ]
+}

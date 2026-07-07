@@ -26,7 +26,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * quad, biome-tinted), no FluidState. A real fluid here would spread over the
  * channel walls into the world; faking it also makes "can't be dried" free.
  */
-public class SlideChannelBlock extends Block {
+public class SlideChannelBlock extends Block implements SlideSurface {
     public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE;
 
     @Nullable

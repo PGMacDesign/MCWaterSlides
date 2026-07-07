@@ -26,7 +26,7 @@ public final class SlideConnections {
     private SlideConnections() {}
 
     public static boolean isSlide(BlockState state) {
-        return state.getBlock() instanceof SlideChannelBlock;
+        return state.getBlock() instanceof SlideSurface;
     }
 
     public static RailShape computeShape(LevelReader level, BlockPos pos, Direction.Axis fallbackAxis) {
@@ -86,7 +86,12 @@ public final class SlideConnections {
 
     /** Recompute this block's own shape in place (no-op when unchanged). */
     public static void refreshSelf(Level level, BlockPos pos, BlockState state) {
-        if (!isSlide(state)) {
+        if (state.getBlock() instanceof SlideTubeBlock tube) {
+            // Tubes own their shape logic (adds VERTICAL).
+            tube.refresh(level, pos, state);
+            return;
+        }
+        if (!(state.getBlock() instanceof SlideChannelBlock)) {
             return;
         }
         RailShape current = state.getValue(SlideChannelBlock.SHAPE);

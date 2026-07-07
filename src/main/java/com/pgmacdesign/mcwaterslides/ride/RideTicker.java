@@ -5,6 +5,9 @@ import javax.annotation.Nullable;
 import com.pgmacdesign.mcwaterslides.config.MCWaterslidesConfig;
 import com.pgmacdesign.mcwaterslides.current.CurrentFields;
 import com.pgmacdesign.mcwaterslides.slide.SlideChannelBlock;
+import com.pgmacdesign.mcwaterslides.slide.SlideSurface;
+import com.pgmacdesign.mcwaterslides.slide.SlideTubeBlock;
+import com.pgmacdesign.mcwaterslides.slide.TubeShape;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -29,8 +32,18 @@ public final class RideTicker {
         Level level = entity.level();
         BlockPos feet = BlockPos.containing(entity.position());
         BlockState feetState = level.getBlockState(feet);
-        RailShape shape = feetState.getBlock() instanceof SlideChannelBlock
-                ? feetState.getValue(SlideChannelBlock.SHAPE) : null;
+        RailShape shape = null;
+        boolean verticalTube = false;
+        if (feetState.getBlock() instanceof SlideTubeBlock) {
+            TubeShape tubeShape = feetState.getValue(SlideTubeBlock.SHAPE);
+            if (tubeShape == TubeShape.VERTICAL) {
+                verticalTube = true;
+            } else {
+                shape = tubeShape.toRail();
+            }
+        } else if (feetState.getBlock() instanceof SlideChannelBlock) {
+            shape = feetState.getValue(SlideChannelBlock.SHAPE);
+        }
 
         // Jet thrust sampled on both sides (b/s²) — smooth prediction, no packet lag.
         Vec3 thrustVec = CurrentFields.sampleThrust(level, entity, MCWaterslidesConfig.JET_THRUST.get());
@@ -47,7 +60,7 @@ public final class RideTicker {
         }
 
         if (!state.riding) {
-            maybeStart(entity, state, shape, thrustVec);
+            maybeStart(entity, state, shape, verticalTube, thrustVec);
             return;
         }
 
@@ -60,6 +73,19 @@ public final class RideTicker {
                 state.endRide();
                 return;
             }
+        }
+
+        if (verticalTube) {
+            // Drop shafts / jet climbs: gravity or lift moves the rider; a descent banks
+            // momentum at the slope-exchange rate so drops pay out at the bottom.
+            state.gapTicks = 0;
+            double dy = entity.getDeltaMovement().y;
+            if (dy < 0) {
+                SlidePhysics.Params p = params(true);
+                state.momentum = Math.min(state.momentum + p.slopeExchange() * (-dy), p.speedCap());
+                state.distanceRidden += -dy;
+            }
+            return;
         }
 
         if (shape != null) {
@@ -108,11 +134,19 @@ public final class RideTicker {
         }
     }
 
-    private static void maybeStart(LivingEntity entity, RideState state, @Nullable RailShape shape, Vec3 thrustVec) {
+    private static void maybeStart(LivingEntity entity, RideState state, @Nullable RailShape shape,
+                                   boolean verticalTube, Vec3 thrustVec) {
         if (entity.isSpectator()) {
             return;
         }
         Direction flow = dominantHorizontal(thrustVec);
+        if (verticalTube) {
+            // Entering a shaft (falling in, or a jet pushing up) starts the ride.
+            if (Math.abs(entity.getDeltaMovement().y) > 0.05 || thrustVec.y != 0) {
+                state.startRide(Math.max(entity.getDeltaMovement().horizontalDistance() * 20.0, 1.0), flow);
+            }
+            return;
+        }
         if (shape == null) {
             // Jets start rides in freeform water too (that's the enclosed-tube story).
             if (flow != null && entity.isInWater()) {
@@ -152,7 +186,7 @@ public final class RideTicker {
     /** Cheap pre-check used to avoid allocating ride state for entities nowhere near a slide. */
     public static boolean onSlideBlock(LivingEntity entity) {
         BlockPos feet = BlockPos.containing(entity.position());
-        return entity.level().getBlockState(feet).getBlock() instanceof SlideChannelBlock;
+        return entity.level().getBlockState(feet).getBlock() instanceof SlideSurface;
     }
 
     /** Fall-damage immunity: derived, never latched — riding AND currently over slide/water. */
@@ -161,7 +195,7 @@ public final class RideTicker {
             return false;
         }
         BlockPos feet = BlockPos.containing(entity.position());
-        return entity.level().getBlockState(feet).getBlock() instanceof SlideChannelBlock
+        return entity.level().getBlockState(feet).getBlock() instanceof SlideSurface
                 || entity.isInWater();
     }
 

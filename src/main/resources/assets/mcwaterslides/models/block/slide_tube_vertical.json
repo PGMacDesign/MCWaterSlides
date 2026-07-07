@@ -1,0 +1,145 @@
+{
+  "textures": {
+    "particle": "mcwaterslides:block/slide_channel_base",
+    "base": "mcwaterslides:block/slide_channel_base",
+    "lining": "mcwaterslides:block/slide_channel_lining"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        2,
+        16,
+        16
+      ],
+      "faces": {
+        "west": {
+          "texture": "#base",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "north": {
+          "texture": "#base",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#base",
+          "cullface": "south"
+        },
+        "up": {
+          "texture": "#base",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#base",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "east": {
+          "texture": "#base",
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "north": {
+          "texture": "#base",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#base",
+          "cullface": "south"
+        },
+        "up": {
+          "texture": "#base",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#base",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        0,
+        0
+      ],
+      "to": [
+        14,
+        16,
+        2
+      ],
+      "faces": {
+        "north": {
+          "texture": "#base",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "up": {
+          "texture": "#base",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#base",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        0,
+        14
+      ],
+      "to": [
+        14,
+        16,
+        16
+      ],
+      "faces": {
+        "south": {
+          "texture": "#base",
+          "cullface": "south"
+        },
+        "north": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "up": {
+          "texture": "#base",
+          "cullface": "up"
+        },
+        "down": {
+          "texture": "#base",
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

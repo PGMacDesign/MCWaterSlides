@@ -18,6 +18,7 @@ public final class ModCreativeTabs {
                     .icon(() -> new ItemStack(ModItems.SLIDE_CHANNEL_ITEMS.get(null).get()))
                     .displayItems((parameters, output) -> {
                         ModItems.SLIDE_CHANNEL_ITEMS.values().forEach(output::accept);
+                        ModItems.SLIDE_TUBE_ITEMS.values().forEach(output::accept);
                         output.accept(ModItems.JET.get());
                         output.accept(ModItems.PUMP_HOUSE.get());
                         output.accept(ModItems.WATER_CONDUIT.get());

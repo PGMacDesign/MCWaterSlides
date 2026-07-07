@@ -12,7 +12,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
-import com.pgmacdesign.mcwaterslides.slide.SlideChannelBlock;
+import com.pgmacdesign.mcwaterslides.slide.SlideSurface;
 
 /**
  * An immutable directed current: the set of water/slide cells a jet energizes. Computed
@@ -113,6 +113,6 @@ public final class CurrentField {
 
     private static boolean isPassable(BlockState state) {
         return state.getFluidState().is(FluidTags.WATER)
-                || state.getBlock() instanceof SlideChannelBlock;
+                || state.getBlock() instanceof SlideSurface;
     }
 }

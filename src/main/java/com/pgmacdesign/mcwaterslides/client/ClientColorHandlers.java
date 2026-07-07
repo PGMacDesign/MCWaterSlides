@@ -4,6 +4,7 @@ import com.pgmacdesign.mcwaterslides.MCWaterSlides;
 import com.pgmacdesign.mcwaterslides.registry.ModBlocks;
 import com.pgmacdesign.mcwaterslides.registry.ModItems;
 import com.pgmacdesign.mcwaterslides.slide.SlideChannelBlock;
+import com.pgmacdesign.mcwaterslides.slide.SlideTubeBlock;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
@@ -37,6 +38,15 @@ public final class ClientColorHandlers {
                     }
                     return liningColor(((SlideChannelBlock) state.getBlock()).color());
                 }, holder.get()));
+        ModBlocks.SLIDE_TUBES.values().forEach(holder ->
+                event.register((state, level, pos, tintIndex) -> {
+                    if (tintIndex == 0) {
+                        return level != null && pos != null
+                                ? 0xFF000000 | BiomeColors.getAverageWaterColor(level, pos)
+                                : DEFAULT_WATER;
+                    }
+                    return liningColor(((SlideTubeBlock) state.getBlock()).color());
+                }, holder.get()));
     }
 
     @SubscribeEvent
@@ -48,6 +58,14 @@ public final class ClientColorHandlers {
                     }
                     var block = ((BlockItem) stack.getItem()).getBlock();
                     return liningColor(((SlideChannelBlock) block).color());
+                }, holder.get()));
+        ModItems.SLIDE_TUBE_ITEMS.values().forEach(holder ->
+                event.register((stack, tintIndex) -> {
+                    if (tintIndex == 0) {
+                        return DEFAULT_WATER;
+                    }
+                    var block = ((BlockItem) stack.getItem()).getBlock();
+                    return liningColor(((SlideTubeBlock) block).color());
                 }, holder.get()));
     }
 

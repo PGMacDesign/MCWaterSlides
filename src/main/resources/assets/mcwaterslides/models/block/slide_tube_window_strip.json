@@ -1,0 +1,30 @@
+{
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "particle": "mcwaterslides:block/slide_tube_window",
+    "w": "mcwaterslides:block/slide_tube_window"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        14,
+        0
+      ],
+      "to": [
+        11,
+        16,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#w"
+        },
+        "down": {
+          "texture": "#w"
+        }
+      },
+      "shade": false
+    }
+  ]
+}

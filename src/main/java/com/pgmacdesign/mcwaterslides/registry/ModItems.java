@@ -16,6 +16,7 @@ public final class ModItems {
 
     /** Keyed like {@link ModBlocks#SLIDE_CHANNELS} — null = the natural channel. */
     public static final Map<DyeColor, DeferredItem<BlockItem>> SLIDE_CHANNEL_ITEMS = new LinkedHashMap<>();
+    public static final Map<DyeColor, DeferredItem<BlockItem>> SLIDE_TUBE_ITEMS = new LinkedHashMap<>();
 
     public static final DeferredItem<BlockItem> JET;
     public static final DeferredItem<BlockItem> PUMP_HOUSE;
@@ -24,6 +25,8 @@ public final class ModItems {
     static {
         ModBlocks.SLIDE_CHANNELS.forEach((color, block) ->
                 SLIDE_CHANNEL_ITEMS.put(color, ITEMS.registerSimpleBlockItem(block)));
+        ModBlocks.SLIDE_TUBES.forEach((color, block) ->
+                SLIDE_TUBE_ITEMS.put(color, ITEMS.registerSimpleBlockItem(block)));
         JET = ITEMS.registerSimpleBlockItem(ModBlocks.JET);
         PUMP_HOUSE = ITEMS.registerSimpleBlockItem(ModBlocks.PUMP_HOUSE);
         WATER_CONDUIT = ITEMS.registerSimpleBlockItem(ModBlocks.WATER_CONDUIT);

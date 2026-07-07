@@ -18,12 +18,25 @@ public final class ModBlocks {
 
     /** Natural (undyed, null key) channel first, then the 16 dye colors — iteration order is tab order. */
     public static final Map<DyeColor, DeferredBlock<SlideChannelBlock>> SLIDE_CHANNELS = new LinkedHashMap<>();
+    /** Keyed like the channels — null = natural. */
+    public static final Map<DyeColor, DeferredBlock<com.pgmacdesign.mcwaterslides.slide.SlideTubeBlock>> SLIDE_TUBES = new LinkedHashMap<>();
 
     static {
         SLIDE_CHANNELS.put(null, registerChannel("slide_channel", null));
+        SLIDE_TUBES.put(null, registerTube("slide_tube", null));
         for (DyeColor color : DyeColor.values()) {
             SLIDE_CHANNELS.put(color, registerChannel(color.getName() + "_slide_channel", color));
+            SLIDE_TUBES.put(color, registerTube(color.getName() + "_slide_tube", color));
         }
+    }
+
+    private static DeferredBlock<com.pgmacdesign.mcwaterslides.slide.SlideTubeBlock> registerTube(String name, DyeColor color) {
+        return BLOCKS.registerBlock(name,
+                props -> new com.pgmacdesign.mcwaterslides.slide.SlideTubeBlock(color, props),
+                BlockBehaviour.Properties.of()
+                        .strength(1.5f, 6.0f)
+                        .sound(SoundType.STONE)
+                        .noOcclusion());
     }
 
     public static final DeferredBlock<com.pgmacdesign.mcwaterslides.machine.JetBlock> JET =
