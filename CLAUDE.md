@@ -95,7 +95,9 @@ blocks), `machine/` (Jet, Pump House, Flood Valve, Splash Pool, Conduit), `curre
   = same 160,000 RF/coal, double rate — never an efficiency upgrade over it.
 - **No fall damage while riding**; closed tube = committed (no bail); Splash Pool contact
   negates landing damage.
-- Channels/tubes are **permanently waterlogged** (intrinsic water, can't be dried).
+- Channels/tubes carry **intrinsic water, cauldron-style** (model-rendered animated
+  water overlay, biome-tinted, NO FluidState — real waterlogging would spread water over
+  the walls). Nothing can dry them. Jets energize real water volumes AND slide blocks.
 
 **Soft-dep compat pattern** (when valuing/handling other mods' content): an
 `onCommonSetup` hook that **returns early unless `ModList.get().isLoaded("<id>")`**, then
