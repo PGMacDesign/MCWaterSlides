@@ -1,0 +1,157 @@
+package com.pgmacdesign.mcwaterslides.ride;
+
+import javax.annotation.Nullable;
+
+import com.pgmacdesign.mcwaterslides.config.MCWaterslidesConfig;
+import com.pgmacdesign.mcwaterslides.slide.SlideChannelBlock;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.RailShape;
+import net.minecraft.world.phys.Vec3;
+
+/**
+ * The one integration step both sides run: the server for every rider (state of record,
+ * plus actual motion for non-players), the client for the local player only (prediction —
+ * players are client-authoritative for position within vanilla tolerances, which is what
+ * makes 22 b/s rubber-band-free by construction).
+ */
+public final class RideTicker {
+    private static final double END_THRESHOLD = 0.3;
+
+    private RideTicker() {}
+
+    public static void tick(LivingEntity entity, RideState state, boolean braking, boolean applyMotion) {
+        Level level = entity.level();
+        BlockPos feet = BlockPos.containing(entity.position());
+        BlockState feetState = level.getBlockState(feet);
+        RailShape shape = feetState.getBlock() instanceof SlideChannelBlock
+                ? feetState.getValue(SlideChannelBlock.SHAPE) : null;
+
+        if (!state.riding) {
+            maybeStart(entity, state, shape);
+            return;
+        }
+
+        SlidePhysics.Params params = params(shape != null);
+
+        // Bail: consumed here, honored only where geometry allows (never latched).
+        if (state.bailRequested) {
+            state.bailRequested = false;
+            if (!isEnclosed(level, feet)) {
+                state.endRide();
+                return;
+            }
+        }
+
+        if (shape != null) {
+            state.gapTicks = 0;
+            Direction travel = state.travel != null ? state.travel : travelFromVelocity(entity);
+            travel = SlidePhysics.redirect(shape, travel);
+            int slopeSign = SlidePhysics.slopeSign(shape, travel);
+            state.travel = travel;
+            state.momentum = SlidePhysics.tickMomentum(state.momentum, slopeSign, braking, params);
+            state.distanceRidden += state.momentum / 20.0;
+            if (state.momentum < END_THRESHOLD) {
+                state.endRide();
+                return;
+            }
+            if (applyMotion) {
+                Vec3 v = SlidePhysics.velocity(state.momentum, travel, slopeSign);
+                double vy = slopeSign < 0 ? v.y : entity.getDeltaMovement().y;
+                entity.setDeltaMovement(v.x, vy, v.z);
+                centerInChannel(entity, feet, travel, applyMotionStrength(state.momentum));
+            }
+        } else if (entity.isInWater()) {
+            // Plain water: momentum coasts (jets will govern thrust here — PGM current fields).
+            state.gapTicks = 0;
+            state.momentum = SlidePhysics.tickMomentum(state.momentum, 0, braking, params);
+            state.distanceRidden += state.momentum / 20.0;
+            if (state.momentum < END_THRESHOLD) {
+                state.endRide();
+                return;
+            }
+            if (applyMotion && state.travel != null) {
+                Vec3 v = SlidePhysics.velocity(state.momentum, state.travel, 0);
+                entity.setDeltaMovement(v.x, entity.getDeltaMovement().y, v.z);
+            }
+        } else {
+            // Airborne: the continuity window is the only momentum carrier (ramp jumps).
+            state.gapTicks++;
+            if (state.gapTicks > MCWaterslidesConfig.RIDE_CONTINUITY_TICKS.get()) {
+                state.endRide();
+            }
+        }
+    }
+
+    private static void maybeStart(LivingEntity entity, RideState state, @Nullable RailShape shape) {
+        if (shape == null || entity.isSpectator()) {
+            return;
+        }
+        double entrySpeed = entity.getDeltaMovement().horizontalDistance() * 20.0;
+        Direction ascent = SlidePhysics.ascentDirection(shape);
+        if (entrySpeed >= MCWaterslidesConfig.MIN_START_SPEED.get()) {
+            state.startRide(entrySpeed, travelFromVelocity(entity));
+        } else if (ascent != null) {
+            // Standing on a slope: gravity starts the ride down it.
+            state.startRide(Math.max(entrySpeed, 1.0), ascent.getOpposite());
+        }
+    }
+
+    /** Cheap pre-check used to avoid allocating ride state for entities nowhere near a slide. */
+    public static boolean onSlideBlock(LivingEntity entity) {
+        BlockPos feet = BlockPos.containing(entity.position());
+        return entity.level().getBlockState(feet).getBlock() instanceof SlideChannelBlock;
+    }
+
+    /** Fall-damage immunity: derived, never latched — riding AND currently over slide/water. */
+    public static boolean immuneToFall(LivingEntity entity, RideState state) {
+        if (!state.riding) {
+            return false;
+        }
+        BlockPos feet = BlockPos.containing(entity.position());
+        return entity.level().getBlockState(feet).getBlock() instanceof SlideChannelBlock
+                || entity.isInWater();
+    }
+
+    /** Committed when something with collision sits over the rider's head (tubes, roofs). */
+    public static boolean isEnclosed(Level level, BlockPos feet) {
+        BlockPos head = feet.above();
+        return !level.getBlockState(head).getCollisionShape(level, head).isEmpty();
+    }
+
+    private static SlidePhysics.Params params(boolean inChannel) {
+        return new SlidePhysics.Params(
+                MCWaterslidesConfig.SPEED_CAP.get(),
+                inChannel ? MCWaterslidesConfig.CHANNEL_DRAG.get() : MCWaterslidesConfig.OPEN_WATER_DRAG.get(),
+                MCWaterslidesConfig.SLOPE_EXCHANGE.get());
+    }
+
+    private static Direction travelFromVelocity(LivingEntity entity) {
+        Vec3 v = entity.getDeltaMovement();
+        if (Math.abs(v.x) >= Math.abs(v.z)) {
+            return v.x >= 0 ? Direction.EAST : Direction.WEST;
+        }
+        return v.z >= 0 ? Direction.SOUTH : Direction.NORTH;
+    }
+
+    /** Gentle pull toward the channel centerline so corners sweep instead of scrape. */
+    private static void centerInChannel(LivingEntity entity, BlockPos feet, Direction travel, double strength) {
+        if (travel.getAxis() == Direction.Axis.Z) {
+            double center = feet.getX() + 0.5;
+            double off = center - entity.getX();
+            entity.setDeltaMovement(entity.getDeltaMovement().add(off * strength, 0, 0));
+        } else {
+            double center = feet.getZ() + 0.5;
+            double off = center - entity.getZ();
+            entity.setDeltaMovement(entity.getDeltaMovement().add(0, 0, off * strength));
+        }
+    }
+
+    private static double applyMotionStrength(double momentum) {
+        // Faster riders get pulled to center harder — keeps corners survivable at cap.
+        return Math.min(0.05 + momentum / 400.0, 0.12);
+    }
+}
