@@ -2,6 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
+**[Website](https://pgmacdesign.github.io/MCWaterSlides/)** · **[Guide](https://pgmacdesign.github.io/MCWaterSlides/guide.html)**
+
 **Build enormous waterslides — and ride them fast.** A multi-version NeoForge mod
 where RF-powered jets push riders downhill, **uphill**, and through enclosed tubes
 of any size. Slides can loop, climb, and go on effectively forever.

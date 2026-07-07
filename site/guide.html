@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Guide — MC Waterslides</title>
+  <meta name="description" content="How to build and ride waterslides in MC Waterslides: channels, tubes, jets, RF power, flood valves, splash pools, and mega-parks." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌊</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;550;600;650;700;750&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="wordmark" href="./"><span class="drop">▼</span>MC&nbsp;Waterslides</a>
+    <div class="nav-links">
+      <a href="guide.html">Guide</a>
+      <a href="./#versions">Versions</a>
+      <a href="https://github.com/PGMacDesign/MCWaterSlides">GitHub</a>
+      <a class="btn btn-primary" href="https://github.com/PGMacDesign/MCWaterSlides/releases">Download</a>
+    </div>
+  </div>
+</nav>
+
+<header class="section guide-head">
+  <div class="wrap">
+    <span class="eyebrow">The guide</span>
+    <h1>Build it. Ride it.</h1>
+    <p class="lede">Everything here is cheap, fast, and wet. This page mirrors the
+      in-game <em>Park Builder's Manual</em> (install
+      <a href="https://www.curseforge.com/minecraft/mc-mods/patchouli">Patchouli</a>
+      and craft a book with any slide channel to read it in-game).</p>
+    <div class="dye-ramp" style="max-width:300px; margin-top:1.4rem" aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span>
+    </div>
+    <nav class="toc">
+      <a href="#install">Install</a> · <a href="#first-slide">Your first slide</a> ·
+      <a href="#tubes">Slide Tubes</a> · <a href="#jets">The Jet</a> ·
+      <a href="#power">Pump House &amp; power</a> · <a href="#freeform">Glass megastructures</a> ·
+      <a href="#pools">Splash Pools</a> · <a href="#mega-parks">Mega-parks</a> ·
+      <a href="#config">Config</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap guide-body">
+
+  <section id="install">
+    <h2>Install</h2>
+    <p>MC Waterslides is a <strong>NeoForge</strong> mod. Grab the jar matching your
+      Minecraft version from
+      <a href="https://github.com/PGMacDesign/MCWaterSlides/releases">GitHub Releases</a>
+      and drop it in your instance's <code>mods/</code> folder. One jar per version:
+      1.21.1 · 1.21.8 · 1.21.9 · 1.21.10 · 1.21.11 · 26.1 · 26.2.</p>
+    <p>No required dependencies. Optional: <strong>Patchouli</strong> enables the
+      in-game guide book; any RF tech mod can power the jets alongside (or instead
+      of) the built-in Pump House.</p>
+  </section>
+
+  <section id="first-slide">
+    <h2>Your first slide</h2>
+    <p><strong>Slide Channels</strong> snap together like rails — straights, corners,
+      and slopes sort themselves out as you place them. No supports needed; slides
+      float wherever you build them. They carry their own water: nothing can dry
+      them, and they never spill. Lay a run downhill and hop in —
+      <strong>gravity alone gets you sliding.</strong></p>
+    <div class="recipe card">
+      <pre class="pat">C K C
+S S S</pre>
+      <div class="legend">
+        <span><b>C</b> copper ingot</span><span><b>K</b> clay ball</span>
+        <span><b>S</b> smooth stone</span>
+        <span class="yield">→ 16 Slide Channels</span>
+      </div>
+    </div>
+    <p>While riding:</p>
+    <ul>
+      <li><kbd>Crouch</kbd> to brake</li>
+      <li><kbd>Jump</kbd> to bail out (not inside a tube!)</li>
+      <li>Downhill speeds you up, uphill slows you down — unless a Jet pays for the climb</li>
+      <li>You take <strong>no fall damage</strong> while riding a slide</li>
+    </ul>
+    <p><strong>Colors:</strong> recolor channels like concrete — surround a dye with
+      eight of them. Sixteen colors, one water park. Mobs and dropped items ride
+      too (both can be turned off in the config).</p>
+  </section>
+
+  <section id="tubes">
+    <h2>Slide Tubes</h2>
+    <p><strong>Slide Tubes</strong> are enclosed channels: you slip in from an open
+      section and ride the bore, watching the world through the window strip.
+      Inside a tube you're <strong>committed</strong> — no bailing until an opening.
+      Stack tubes vertically for <strong>drop shafts</strong>: drops bank speed, and
+      you exit the bottom moving <em>fast</em>.</p>
+    <div class="recipe card">
+      <pre class="pat">G C G
+C · C
+G C G</pre>
+      <div class="legend">
+        <span><b>C</b> slide channel</span><span><b>G</b> glass</span>
+        <span class="yield">→ 4 Slide Tubes</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="jets">
+    <h2>The Jet</h2>
+    <p>The <strong>Jet</strong> is the engine of everything. It shoves a current
+      through the water ahead of it — about <strong>24 blocks</strong> — and riders
+      in the current accelerate hard. It energizes <em>any</em> connected water,
+      not just slide blocks.</p>
+    <div class="recipe card">
+      <pre class="pat">C I C
+· R ·
+C I C</pre>
+      <div class="legend">
+        <span><b>C</b> copper ingot</span><span><b>I</b> iron ingot</span>
+        <span><b>R</b> redstone</span>
+        <span class="yield">→ 2 Jets</span>
+      </div>
+    </div>
+    <ul>
+      <li><strong>Aim the nozzle into the water.</strong> A jet mounted above the
+        waterline pushes nothing.</li>
+      <li>Spacing is your speed dial: sparse jets = lazy river, dense jets = screamer.</li>
+      <li>A redstone signal switches a jet off.</li>
+      <li>Jets aim all six ways — <strong>straight up included</strong>. An up-jet
+        under a water column or tube shaft launches riders skyward, and a climb
+        costs exactly what a drop pays, so a well-jetted slide can run uphill…
+        or forever.</li>
+    </ul>
+  </section>
+
+  <section id="power">
+    <h2>Pump House &amp; power</h2>
+    <p>Jets and valves drink <strong>RF</strong>. No tech mods? The
+      <strong>Pump House</strong> has you covered: feed it furnace fuel (one coal
+      runs a long while), or just park it beside water for a slow trickle. It
+      glows while burning; right-click for the gauge.</p>
+    <div class="recipe card">
+      <pre class="pat">I B I
+C F C
+I I I</pre>
+      <div class="legend">
+        <span><b>I</b> iron ingot</span><span><b>C</b> copper ingot</span>
+        <span><b>B</b> bucket</span><span><b>F</b> furnace</span>
+        <span class="yield">→ 1 Pump House</span>
+      </div>
+    </div>
+    <p><strong>Water Conduits</strong> carry the power along your slide's spine —
+      or use any other RF mod's cables; both work.</p>
+    <div class="recipe card">
+      <pre class="pat">C C C
+K · K
+C C C</pre>
+      <div class="legend">
+        <span><b>C</b> copper ingot</span><span><b>K</b> clay ball</span>
+        <span class="yield">→ 12 Water Conduits</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="freeform">
+    <h2>Glass megastructures &amp; the Flood Valve</h2>
+    <p>Because jets push riders through <em>any</em> water, a watertight glass tube
+      of any size — 2×2, 4×4, a whale — is a slide once it's flooded and lined
+      with jets. Filling by bucket is misery; use a <strong>Flood Valve</strong>:
+      give it redstone and RF, and signal ON fills the sealed space it faces while
+      signal OFF drains it.</p>
+    <div class="recipe card">
+      <pre class="pat">I C I
+C B C
+I R I</pre>
+      <div class="legend">
+        <span><b>I</b> iron ingot</span><span><b>C</b> copper ingot</span>
+        <span><b>B</b> bucket</span><span><b>R</b> redstone</span>
+        <span class="yield">→ 1 Flood Valve</span>
+      </div>
+    </div>
+    <p><strong>Finding leaks:</strong> if your build isn't watertight, the valve
+      refuses and points at the hole — smoke rises at the leak and the coordinates
+      land in your action bar. Patch it and flip the lever again.</p>
+  </section>
+
+  <section id="pools">
+    <h2>Splash Pools</h2>
+    <p>End every ride in a <strong>Splash Pool</strong>: it swallows your speed in
+      about a block and cancels <strong>all</strong> landing damage — even a
+      full-speed launch off an open ramp end. Pools tile; place a grid and the
+      inner walls disappear. Mobs and dropped items get caught too.</p>
+    <div class="recipe card">
+      <pre class="pat">W K W
+C C C</pre>
+      <div class="legend">
+        <span><b>W</b> white wool</span><span><b>K</b> clay ball</span>
+        <span><b>C</b> any slide channel</span>
+        <span class="yield">→ 2 Splash Pools</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="mega-parks">
+    <h2>Mega-parks &amp; chunk loading</h2>
+    <p>Build as big as you dare — a park can span a hundred chunks and more.
+      <strong>You</strong> load the world as you ride: the slide ahead is always
+      ready before you arrive, no chunk loaders needed. The mod ships
+      <strong>no chunk loading, on purpose</strong> — server cost scales with
+      players, not park size.</p>
+    <p>Mobs and items only ride while a player is near enough to keep the world
+      ticking. Wander off and your villager pauses mid-slide; come back and the
+      ride picks up again. <strong>That's by design</strong> — slides are for
+      riding, not unattended freight. Want a cross-map item line anyway? Pair the
+      slides with a chunk-loading mod: currents run fine in any chunk something
+      else keeps loaded.</p>
+  </section>
+
+  <section id="config">
+    <h2>Config</h2>
+    <p>Everything tunable lives in <code>config/mcwaterslides-common.toml</code>
+      (generated on first launch): top speed (default ~22 blocks/sec), slope
+      exchange, drag, jet current strength and cost, Pump House rates, Flood Valve
+      limits, and toggles for mob and item riding.</p>
+  </section>
+
+  <hr />
+  <p class="center">
+    <a class="btn btn-primary" href="https://github.com/PGMacDesign/MCWaterSlides/releases">Download the mod</a>
+    &nbsp;
+    <a class="btn btn-ghost" href="https://github.com/PGMacDesign/MCWaterSlides/issues">Report a bug</a>
+  </p>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <span>MIT © PGMacDesign · <a href="https://github.com/PGMacDesign/MCWaterSlides">Source on GitHub</a></span>
+    <span>Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.</span>
+  </div>
+</footer>
+
+<style>
+  .guide-head { padding-block: clamp(2.5rem, 6vw, 4rem) 0; }
+  .guide-head h1 { margin: 0.6rem 0 1rem; }
+  .toc { margin-top: 1.6rem; font-size: 0.95rem; color: var(--ink-faint); }
+  .guide-body { padding-block: 1rem 4rem; max-width: 820px; }
+  .guide-body section { padding-top: 2.4rem; }
+  .guide-body h2 { margin: 0 0 0.8rem; }
+  .guide-body ul { color: var(--ink-soft); padding-left: 1.2rem; }
+  .guide-body li { margin-block: 0.3rem; }
+
+  .recipe {
+    display: flex; gap: 1.4rem; align-items: center; flex-wrap: wrap;
+    margin-block: 1.2rem; padding: 1rem 1.2rem;
+  }
+  .pat {
+    margin: 0; padding: 0.7rem 0.9rem; border: none;
+    background: var(--panel-2); border-radius: var(--radius-sm);
+    font-size: 1rem; line-height: 1.7; letter-spacing: 0.25em;
+    color: var(--water-hi); font-weight: 700;
+  }
+  .legend { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.9rem; color: var(--ink-soft); }
+  .legend b { color: var(--copper-hi); font-family: var(--mono); margin-right: 0.3rem; }
+  .legend .yield { margin-top: 0.4rem; color: var(--ink); font-weight: 600; }
+</style>
+
+</body>
+</html>

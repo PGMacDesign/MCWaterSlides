@@ -112,10 +112,10 @@ it's invisible (no crash/warn/config) when the mod is absent.
 - **Git:** commit → push every change, direct to `main` (solo repo). **Never** add
   `Co-Authored-By: Claude` or "Generated with Claude Code" to commits/PRs. Commit style:
   conventional prefix + scope, terse subject — `feat(block): …`, `fix(gui): …`.
-- **Two doc surfaces — keep both in sync with code** (once they exist): a player-facing
-  change means updating BOTH the in-game Patchouli guide (soft/optional dep) AND the
-  website guide. They mirror each other and silently drift — verify claims against the
-  Java before writing.
+- **Two doc surfaces — keep both in sync with code**: a player-facing change means
+  updating BOTH the in-game Patchouli guide (`tools/gen_patchouli_book.py`, soft dep) AND
+  the website guide (`site/guide.html` → GitHub Pages via `pages.yml`). They mirror each
+  other and silently drift — verify claims against the Java before writing.
 - **Skills:** repo-specific skills live in `.claude/skills/` (committed), prefixed
   `mcws-` (MC3DPrint uses `mc3dp-`). Create via `/skill-creator`, with trigger evals.
 - **Generated assets:** if textures/GUIs are script-generated, generators live in

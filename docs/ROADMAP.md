@@ -42,4 +42,5 @@ config toggles are global (toggle gametests need their own serialized batches).
 ## Later / v2 candidates
 
 Race timers + checkpoints · slide rafts (boats done properly) · ascending-tube lid art ·
-custom particle/sound assets · website (mc3dprint.dev-style) · pool-entry splash burst.
+custom particle/sound assets · richer website (custom domain, media, gallery — a simple
+GitHub Pages site ships from `site/`) · pool-entry splash burst.
