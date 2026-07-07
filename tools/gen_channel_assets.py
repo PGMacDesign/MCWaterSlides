@@ -95,24 +95,24 @@ def straight_floor_element():
 
 
 def straight_wall_neg_element():
-    """West wall (neg X for a north-south run). Inner (east) face tinted."""
+    """West wall (neg X for a north-south run). Tinted on every face (color shows outside too)."""
     return element([0, 2, 0], [2, WALL_H, 16], {
-        "west": face("#base", cull="west"),
+        "west": face("#lining", tint=1, cull="west"),
         "east": face("#lining", tint=1),
-        "up": face("#base"),
-        "north": face("#base", cull="north"),
-        "south": face("#base", cull="south"),
+        "up": face("#lining", tint=1),
+        "north": face("#lining", tint=1, cull="north"),
+        "south": face("#lining", tint=1, cull="south"),
     })
 
 
 def straight_wall_pos_element():
-    """East wall (pos X for a north-south run). Inner (west) face tinted."""
+    """East wall (pos X for a north-south run). Tinted on every face."""
     return element([14, 2, 0], [16, WALL_H, 16], {
-        "east": face("#base", cull="east"),
+        "east": face("#lining", tint=1, cull="east"),
         "west": face("#lining", tint=1),
-        "up": face("#base"),
-        "north": face("#base", cull="north"),
-        "south": face("#base", cull="south"),
+        "up": face("#lining", tint=1),
+        "north": face("#lining", tint=1, cull="north"),
+        "south": face("#lining", tint=1, cull="south"),
     })
 
 
@@ -142,17 +142,17 @@ def corner_body():
                 "west": face("#base", cull="west"),
             }),
             element([0, 2, 0], [16, WALL_H, 2], {
-                "north": face("#base", cull="north"),
+                "north": face("#lining", tint=1, cull="north"),
                 "south": face("#lining", tint=1),
-                "up": face("#base"),
-                "east": face("#base", cull="east"),
-                "west": face("#base", cull="west"),
+                "up": face("#lining", tint=1),
+                "east": face("#lining", tint=1, cull="east"),
+                "west": face("#lining", tint=1, cull="west"),
             }),
             element([0, 2, 2], [2, WALL_H, 16], {
-                "west": face("#base", cull="west"),
+                "west": face("#lining", tint=1, cull="west"),
                 "east": face("#lining", tint=1),
-                "up": face("#base"),
-                "south": face("#base", cull="south"),
+                "up": face("#lining", tint=1),
+                "south": face("#lining", tint=1, cull="south"),
             }),
         ],
     }
@@ -162,18 +162,18 @@ def ascending_body():
     """Rises toward south (+Z): four 4px steps, full-height walls E/W."""
     elements = [
         element([0, 2, 0], [2, 16, 16], {
-            "west": face("#base", cull="west"),
+            "west": face("#lining", tint=1, cull="west"),
             "east": face("#lining", tint=1),
-            "up": face("#base", cull="up"),
-            "north": face("#base", cull="north"),
-            "south": face("#base", cull="south"),
+            "up": face("#lining", tint=1, cull="up"),
+            "north": face("#lining", tint=1, cull="north"),
+            "south": face("#lining", tint=1, cull="south"),
         }),
         element([14, 2, 0], [16, 16, 16], {
-            "east": face("#base", cull="east"),
+            "east": face("#lining", tint=1, cull="east"),
             "west": face("#lining", tint=1),
-            "up": face("#base", cull="up"),
-            "north": face("#base", cull="north"),
-            "south": face("#base", cull="south"),
+            "up": face("#lining", tint=1, cull="up"),
+            "north": face("#lining", tint=1, cull="north"),
+            "south": face("#lining", tint=1, cull="south"),
         }),
     ]
     for i in range(4):

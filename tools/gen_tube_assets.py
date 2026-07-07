@@ -89,30 +89,31 @@ def floor_elements():
 
 
 def straight_wall_elements():
+    # Fully tinted so the dye reads from outside too (and in the inventory GUI).
     return [
         element([0, 2, 0], [2, WALL_H, 16], {
-            "west": face("#base", cull="west"), "east": face("#lining", tint=1),
-            "north": face("#base", cull="north"), "south": face("#base", cull="south"),
+            "west": face("#lining", tint=1, cull="west"), "east": face("#lining", tint=1),
+            "north": face("#lining", tint=1, cull="north"), "south": face("#lining", tint=1, cull="south"),
         }),
         element([14, 2, 0], [16, WALL_H, 16], {
-            "east": face("#base", cull="east"), "west": face("#lining", tint=1),
-            "north": face("#base", cull="north"), "south": face("#base", cull="south"),
+            "east": face("#lining", tint=1, cull="east"), "west": face("#lining", tint=1),
+            "north": face("#lining", tint=1, cull="north"), "south": face("#lining", tint=1, cull="south"),
         }),
     ]
 
 
 def straight_lid_elements():
-    # lid rails either side of the window strip
+    # lid rails either side of the window strip — tinted top so color shows from above
     return [
         element([0, WALL_H, 0], [5, 16, 16], {
-            "up": face("#base", cull="up"), "down": face("#lining", tint=1),
-            "west": face("#base", cull="west"), "east": face("#base"),
-            "north": face("#base", cull="north"), "south": face("#base", cull="south"),
+            "up": face("#lining", tint=1, cull="up"), "down": face("#lining", tint=1),
+            "west": face("#lining", tint=1, cull="west"), "east": face("#lining", tint=1),
+            "north": face("#lining", tint=1, cull="north"), "south": face("#lining", tint=1, cull="south"),
         }),
         element([11, WALL_H, 0], [16, 16, 16], {
-            "up": face("#base", cull="up"), "down": face("#lining", tint=1),
-            "east": face("#base", cull="east"), "west": face("#base"),
-            "north": face("#base", cull="north"), "south": face("#base", cull="south"),
+            "up": face("#lining", tint=1, cull="up"), "down": face("#lining", tint=1),
+            "east": face("#lining", tint=1, cull="east"), "west": face("#lining", tint=1),
+            "north": face("#lining", tint=1, cull="north"), "south": face("#lining", tint=1, cull="south"),
         }),
     ]
 
@@ -120,12 +121,12 @@ def straight_lid_elements():
 def corner_wall_elements():
     return [
         element([0, 2, 0], [16, WALL_H, 2], {
-            "north": face("#base", cull="north"), "south": face("#lining", tint=1),
-            "east": face("#base", cull="east"), "west": face("#base", cull="west"),
+            "north": face("#lining", tint=1, cull="north"), "south": face("#lining", tint=1),
+            "east": face("#lining", tint=1, cull="east"), "west": face("#lining", tint=1, cull="west"),
         }),
         element([0, 2, 2], [2, WALL_H, 16], {
-            "west": face("#base", cull="west"), "east": face("#lining", tint=1),
-            "south": face("#base", cull="south"),
+            "west": face("#lining", tint=1, cull="west"), "east": face("#lining", tint=1),
+            "south": face("#lining", tint=1, cull="south"),
         }),
     ]
 
@@ -134,22 +135,22 @@ def corner_lid_elements():
     # full lid frame with center window opening
     return [
         element([0, WALL_H, 0], [16, 16, 5], {
-            "up": face("#base", cull="up"), "down": face("#lining", tint=1),
-            "north": face("#base", cull="north"), "south": face("#base"),
-            "east": face("#base", cull="east"), "west": face("#base", cull="west"),
+            "up": face("#lining", tint=1, cull="up"), "down": face("#lining", tint=1),
+            "north": face("#lining", tint=1, cull="north"), "south": face("#lining", tint=1),
+            "east": face("#lining", tint=1, cull="east"), "west": face("#lining", tint=1, cull="west"),
         }),
         element([0, WALL_H, 11], [16, 16, 16], {
-            "up": face("#base", cull="up"), "down": face("#lining", tint=1),
-            "south": face("#base", cull="south"), "north": face("#base"),
-            "east": face("#base", cull="east"), "west": face("#base", cull="west"),
+            "up": face("#lining", tint=1, cull="up"), "down": face("#lining", tint=1),
+            "south": face("#lining", tint=1, cull="south"), "north": face("#lining", tint=1),
+            "east": face("#lining", tint=1, cull="east"), "west": face("#lining", tint=1, cull="west"),
         }),
         element([0, WALL_H, 5], [5, 16, 11], {
-            "up": face("#base", cull="up"), "down": face("#lining", tint=1),
-            "west": face("#base", cull="west"), "east": face("#base"),
+            "up": face("#lining", tint=1, cull="up"), "down": face("#lining", tint=1),
+            "west": face("#lining", tint=1, cull="west"), "east": face("#lining", tint=1),
         }),
         element([11, WALL_H, 5], [16, 16, 11], {
-            "up": face("#base", cull="up"), "down": face("#lining", tint=1),
-            "east": face("#base", cull="east"), "west": face("#base"),
+            "up": face("#lining", tint=1, cull="up"), "down": face("#lining", tint=1),
+            "east": face("#lining", tint=1, cull="east"), "west": face("#lining", tint=1),
         }),
     ]
 
@@ -169,22 +170,22 @@ def vertical_tube_body():
         "textures": body_textures(),
         "elements": [
             element([0, 0, 0], [2, 16, 16], {
-                "west": face("#base", cull="west"), "east": face("#lining", tint=1),
-                "north": face("#base", cull="north"), "south": face("#base", cull="south"),
-                "up": face("#base", cull="up"), "down": face("#base", cull="down"),
+                "west": face("#lining", tint=1, cull="west"), "east": face("#lining", tint=1),
+                "north": face("#lining", tint=1, cull="north"), "south": face("#lining", tint=1, cull="south"),
+                "up": face("#lining", tint=1, cull="up"), "down": face("#lining", tint=1, cull="down"),
             }),
             element([14, 0, 0], [16, 16, 16], {
-                "east": face("#base", cull="east"), "west": face("#lining", tint=1),
-                "north": face("#base", cull="north"), "south": face("#base", cull="south"),
-                "up": face("#base", cull="up"), "down": face("#base", cull="down"),
+                "east": face("#lining", tint=1, cull="east"), "west": face("#lining", tint=1),
+                "north": face("#lining", tint=1, cull="north"), "south": face("#lining", tint=1, cull="south"),
+                "up": face("#lining", tint=1, cull="up"), "down": face("#lining", tint=1, cull="down"),
             }),
             element([2, 0, 0], [14, 16, 2], {
-                "north": face("#base", cull="north"), "south": face("#lining", tint=1),
-                "up": face("#base", cull="up"), "down": face("#base", cull="down"),
+                "north": face("#lining", tint=1, cull="north"), "south": face("#lining", tint=1),
+                "up": face("#lining", tint=1, cull="up"), "down": face("#lining", tint=1, cull="down"),
             }),
             element([2, 0, 14], [14, 16, 16], {
-                "south": face("#base", cull="south"), "north": face("#lining", tint=1),
-                "up": face("#base", cull="up"), "down": face("#base", cull="down"),
+                "south": face("#lining", tint=1, cull="south"), "north": face("#lining", tint=1),
+                "up": face("#lining", tint=1, cull="up"), "down": face("#lining", tint=1, cull="down"),
             }),
         ],
     }
