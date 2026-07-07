@@ -19,5 +19,7 @@ public final class ModCapabilities {
                 (be, side) -> be.energyHandler());
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModBlockEntities.PUMP_HOUSE.get(),
                 (be, side) -> be.itemHandler(side));
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModBlockEntities.WATER_CONDUIT.get(),
+                (be, side) -> be.energyHandler());
     }
 }

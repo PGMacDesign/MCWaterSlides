@@ -21,5 +21,10 @@ public final class ModBlockEntities {
                     BlockEntityType.Builder.of(com.pgmacdesign.mcwaterslides.machine.PumpHouseBlockEntity::new,
                             ModBlocks.PUMP_HOUSE.get()).build(null));
 
+    public static final Supplier<BlockEntityType<com.pgmacdesign.mcwaterslides.machine.WaterConduitBlockEntity>> WATER_CONDUIT =
+            BLOCK_ENTITIES.register("water_conduit", () ->
+                    BlockEntityType.Builder.of(com.pgmacdesign.mcwaterslides.machine.WaterConduitBlockEntity::new,
+                            ModBlocks.WATER_CONDUIT.get()).build(null));
+
     private ModBlockEntities() {}
 }

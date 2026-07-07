@@ -19,12 +19,14 @@ public final class ModItems {
 
     public static final DeferredItem<BlockItem> JET;
     public static final DeferredItem<BlockItem> PUMP_HOUSE;
+    public static final DeferredItem<BlockItem> WATER_CONDUIT;
 
     static {
         ModBlocks.SLIDE_CHANNELS.forEach((color, block) ->
                 SLIDE_CHANNEL_ITEMS.put(color, ITEMS.registerSimpleBlockItem(block)));
         JET = ITEMS.registerSimpleBlockItem(ModBlocks.JET);
         PUMP_HOUSE = ITEMS.registerSimpleBlockItem(ModBlocks.PUMP_HOUSE);
+        WATER_CONDUIT = ITEMS.registerSimpleBlockItem(ModBlocks.WATER_CONDUIT);
     }
 
     private ModItems() {}

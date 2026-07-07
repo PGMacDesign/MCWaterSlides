@@ -41,6 +41,14 @@ public final class ModBlocks {
                             .sound(SoundType.COPPER)
                             .lightLevel(state -> state.getValue(com.pgmacdesign.mcwaterslides.machine.PumpHouseBlock.LIT) ? 10 : 0));
 
+    public static final DeferredBlock<com.pgmacdesign.mcwaterslides.machine.WaterConduitBlock> WATER_CONDUIT =
+            BLOCKS.registerBlock("water_conduit",
+                    com.pgmacdesign.mcwaterslides.machine.WaterConduitBlock::new,
+                    BlockBehaviour.Properties.of()
+                            .strength(1.0f, 4.0f)
+                            .sound(SoundType.COPPER)
+                            .noOcclusion());
+
     private static DeferredBlock<SlideChannelBlock> registerChannel(String name, DyeColor color) {
         return BLOCKS.registerBlock(name,
                 props -> new SlideChannelBlock(color, props),

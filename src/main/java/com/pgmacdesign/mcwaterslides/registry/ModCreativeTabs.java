@@ -20,6 +20,7 @@ public final class ModCreativeTabs {
                         ModItems.SLIDE_CHANNEL_ITEMS.values().forEach(output::accept);
                         output.accept(ModItems.JET.get());
                         output.accept(ModItems.PUMP_HOUSE.get());
+                        output.accept(ModItems.WATER_CONDUIT.get());
                     })
                     .build());
 
