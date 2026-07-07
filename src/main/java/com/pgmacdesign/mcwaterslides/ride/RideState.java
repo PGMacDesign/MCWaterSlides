@@ -26,6 +26,8 @@ public class RideState {
     public double distanceRidden;
     /** Blocks ridden while enclosed (tubes) this session. */
     public double enclosedDistance;
+    /** True while WE hold the player's forcedPose (owned by {@link RidePose#reconcile}). */
+    public boolean poseForced;
 
     /** Idempotent exit — the ONLY way a ride ends (invariant: exit clears exactly once). */
     public void endRide() {

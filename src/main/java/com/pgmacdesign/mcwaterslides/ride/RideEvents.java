@@ -48,9 +48,11 @@ public final class RideEvents {
         if (living instanceof ServerPlayer player) {
             if (player.getAbilities().flying) {
                 state.endRide();
+                RidePose.reconcile(player, state);
                 return;
             }
             RideTicker.tick(player, state, player.isShiftKeyDown(), false);
+            RidePose.reconcile(player, state);
             if (state.riding && player.tickCount % 20 == 0) {
                 var trigger = com.pgmacdesign.mcwaterslides.advancement.ModCriteria.RIDE_STAT.get();
                 trigger.trigger(player, "distance", state.distanceRidden);

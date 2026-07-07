@@ -4,6 +4,7 @@ import com.pgmacdesign.mcwaterslides.MCWaterSlides;
 import com.pgmacdesign.mcwaterslides.network.BailInputPayload;
 import com.pgmacdesign.mcwaterslides.network.RideSyncPayload;
 import com.pgmacdesign.mcwaterslides.registry.ModAttachments;
+import com.pgmacdesign.mcwaterslides.ride.RidePose;
 import com.pgmacdesign.mcwaterslides.ride.RideState;
 import com.pgmacdesign.mcwaterslides.ride.RideTicker;
 import net.minecraft.client.Minecraft;
@@ -33,10 +34,16 @@ public final class ClientRideHandler {
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         LocalPlayer player = mc.player;
-        if (player == null || mc.isPaused() || player.isSpectator() || player.getAbilities().flying) {
+        if (player == null || mc.isPaused()) {
             return;
         }
         RideState state = player.getData(ModAttachments.RIDE_STATE.get());
+        if (player.isSpectator() || player.getAbilities().flying) {
+            // Mirror the server's flight exit so the local forced pose can't stick.
+            state.endRide();
+            RidePose.reconcile(player, state);
+            return;
+        }
 
         if (state.riding && player.input.jumping) {
             BlockPos feet = BlockPos.containing(player.position());
@@ -48,6 +55,7 @@ public final class ClientRideHandler {
         }
 
         RideTicker.tick(player, state, player.isShiftKeyDown(), true);
+        RidePose.reconcile(player, state);
     }
 
     /** S2C sync handler (invoked from the network layer on the client thread). */
