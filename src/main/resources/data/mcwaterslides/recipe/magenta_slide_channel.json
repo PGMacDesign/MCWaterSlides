@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "slide_channel_dye",
+  "pattern": [
+    "###",
+    "#D#",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "tag": "mcwaterslides:slide_channels"
+    },
+    "D": {
+      "item": "minecraft:magenta_dye"
+    }
+  },
+  "result": {
+    "id": "mcwaterslides:magenta_slide_channel",
+    "count": 8
+  }
+}

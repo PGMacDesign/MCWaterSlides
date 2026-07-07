@@ -1,0 +1,178 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "shape": "north_south"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel"
+      }
+    },
+    {
+      "when": {
+        "shape": "north_south"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_water"
+      }
+    },
+    {
+      "when": {
+        "shape": "east_west"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "east_west"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_water",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "ascending_south"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_ascending"
+      }
+    },
+    {
+      "when": {
+        "shape": "ascending_south"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_ascending_water"
+      }
+    },
+    {
+      "when": {
+        "shape": "ascending_west"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_ascending",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "ascending_west"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_ascending_water",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "ascending_north"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_ascending",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "shape": "ascending_north"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_ascending_water",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "shape": "ascending_east"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_ascending",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "shape": "ascending_east"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_ascending_water",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "shape": "south_east"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_corner"
+      }
+    },
+    {
+      "when": {
+        "shape": "south_east"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_corner_water"
+      }
+    },
+    {
+      "when": {
+        "shape": "south_west"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_corner",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "south_west"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_corner_water",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "north_west"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_corner",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "shape": "north_west"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_corner_water",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "shape": "north_east"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_corner",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "shape": "north_east"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_channel_corner_water",
+        "y": 270
+      }
+    }
+  ]
+}

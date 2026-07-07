@@ -5,7 +5,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -16,12 +15,9 @@ public final class ModCreativeTabs {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN_TAB =
             CREATIVE_MODE_TABS.register("main", () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.mcwaterslides"))
-                    // Placeholder icon until the Slide Channel exists (PGM tab icon follows the roster).
-                    .icon(() -> new ItemStack(Items.WATER_BUCKET))
-                    .displayItems((parameters, output) -> {
-                        // Roster items register themselves here as they land (channel, tube,
-                        // jet, pump house, conduit, flood valve, splash pool).
-                    })
+                    .icon(() -> new ItemStack(ModItems.SLIDE_CHANNEL_ITEMS.get(null).get()))
+                    .displayItems((parameters, output) ->
+                            ModItems.SLIDE_CHANNEL_ITEMS.values().forEach(output::accept))
                     .build());
 
     private ModCreativeTabs() {}

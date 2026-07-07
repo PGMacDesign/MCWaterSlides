@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "random_sequence": "mcwaterslides:blocks/slide_channel",
+  "pools": [
+    {
+      "rolls": 1,
+      "bonus_rolls": 0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mcwaterslides:slide_channel"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ]
+}
