@@ -58,6 +58,7 @@
   "message.mcwaterslides.flood_valve.mode_drain": "Mode: draining (no redstone)",
   "message.mcwaterslides.flood_valve.mode_fill": "Mode: filling (redstone on)",
   "message.mcwaterslides.flood_valve.no_rf": "Out of RF \u2014 connect a Pump House or RF source",
+  "message.mcwaterslides.flood_valve.no_target": "\u26a0 Facing a solid block \u2014 aim the wheel at the open space to fill",
   "message.mcwaterslides.flood_valve.placed": "Give it RF + a redstone signal to flood the space it faces",
   "message.mcwaterslides.flood_valve.status": "Flood Valve",
   "message.mcwaterslides.flood_valve.volume": "Sealed volume: %s blocks",

@@ -143,6 +143,7 @@ def gen_lang():
         f"message.{MOD}.flood_valve.mode_drain": "Mode: draining (no redstone)",
         f"message.{MOD}.flood_valve.energy": "Energy: %s / %s RF",
         f"message.{MOD}.flood_valve.volume": "Sealed volume: %s blocks",
+        f"message.{MOD}.flood_valve.no_target": "⚠ Facing a solid block — aim the wheel at the open space to fill",
         f"message.{MOD}.flood_valve.leak_at": "⚠ Leak at %s, %s, %s — not watertight",
         f"message.{MOD}.flood_valve.no_rf": "Out of RF — connect a Pump House or RF source",
         f"message.{MOD}.flood_valve.placed": "Give it RF + a redstone signal to flood the space it faces",

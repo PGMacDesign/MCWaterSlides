@@ -85,6 +85,11 @@ public class FloodValveBlock extends DirectionalBlock implements EntityBlock {
             if (st.leak() != null) {
                 player.displayClientMessage(Component.translatable("message.mcwaterslides.flood_valve.leak_at",
                         st.leak().getX(), st.leak().getY(), st.leak().getZ()).withStyle(ChatFormatting.RED), false);
+            } else if (st.powered() && st.volume() == 0) {
+                // Zero volume + no leak = the seed cell in front of the face is solid. The
+                // green "0 blocks" read like success and confused testers; call it out.
+                player.displayClientMessage(Component.translatable("message.mcwaterslides.flood_valve.no_target")
+                        .withStyle(ChatFormatting.YELLOW), false);
             } else if (st.powered()) {
                 player.displayClientMessage(Component.translatable("message.mcwaterslides.flood_valve.volume",
                         st.volume()).withStyle(ChatFormatting.GREEN), false);
