@@ -95,6 +95,58 @@ public final class SlidePhysics {
         };
     }
 
+    public static boolean isCorner(RailShape shape) {
+        return switch (shape) {
+            case SOUTH_EAST, SOUTH_WEST, NORTH_WEST, NORTH_EAST -> true;
+            default -> false;
+        };
+    }
+
+    /**
+     * Flow direction inside a corner cell: the unit tangent of the quarter-circle arc
+     * around the corner's inner pivot, plus a radial spring toward the ideal 0.5-block
+     * radius. Riders CARVE corners instead of axis-snapping into the outer wall — and
+     * because the tangent always has a component along the exit, a wall graze slides
+     * instead of dead-stopping (walls stay the guardrails).
+     *
+     * @param exit   the direction the ride leaves through (redirect()'s output)
+     * @param localX rider x within the cell, 0..1
+     * @param localZ rider z within the cell, 0..1
+     */
+    public static Vec3 cornerFlow(RailShape shape, Direction exit, double localX, double localZ) {
+        Direction[] exits = exits(shape);
+        // Pivot = the cell corner between the two open faces.
+        double px = (exits[0] == Direction.EAST || exits[1] == Direction.EAST) ? 1.0 : 0.0;
+        double pz = (exits[0] == Direction.SOUTH || exits[1] == Direction.SOUTH) ? 1.0 : 0.0;
+        double rx = localX - px, rz = localZ - pz;
+        double r = Math.sqrt(rx * rx + rz * rz);
+        if (r < 1e-4) {
+            return new Vec3(exit.getStepX(), 0, exit.getStepZ());
+        }
+        // Tangent (perpendicular to radial), signed to sweep toward the exit.
+        Direction entry = cornerEntry(shape, exit);
+        double tx = -rz, tz = rx;
+        double refX = entry.getStepX() + exit.getStepX();
+        double refZ = entry.getStepZ() + exit.getStepZ();
+        if (tx * refX + tz * refZ < 0) {
+            tx = -tx;
+            tz = -tz;
+        }
+        double tLen = Math.sqrt(tx * tx + tz * tz);
+        // Radial spring: pull the radius toward 0.5 so riders track the arc lane.
+        double err = r - 0.5;
+        double cx = tx / tLen - err * (rx / r) * 0.8;
+        double cz = tz / tLen - err * (rz / r) * 0.8;
+        double cLen = Math.sqrt(cx * cx + cz * cz);
+        return new Vec3(cx / cLen, 0, cz / cLen);
+    }
+
+    /** The direction a rider was traveling when it entered a corner it exits via {@code exit}. */
+    public static Direction cornerEntry(RailShape shape, Direction exit) {
+        Direction[] exits = exits(shape);
+        return exit == exits[0] ? exits[1].getOpposite() : exits[0].getOpposite();
+    }
+
     public static Direction[] exits(RailShape shape) {
         return switch (shape) {
             case NORTH_SOUTH, ASCENDING_NORTH, ASCENDING_SOUTH -> new Direction[]{Direction.NORTH, Direction.SOUTH};

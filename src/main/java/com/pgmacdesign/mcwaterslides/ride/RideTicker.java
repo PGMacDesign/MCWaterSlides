@@ -138,10 +138,19 @@ public final class RideTicker {
                 return;
             }
             if (applyMotion) {
-                Vec3 v = SlidePhysics.velocity(state.momentum, travel, slopeSign);
-                double vy = slopeSign < 0 ? v.y : entity.getDeltaMovement().y;
-                entity.setDeltaMovement(v.x, vy, v.z);
-                centerInChannel(entity, feet, travel, applyMotionStrength(state.momentum));
+                if (SlidePhysics.isCorner(shape)) {
+                    // Carve the corner: tangent flow field around the inner pivot. The
+                    // block-center pull is wrong mid-turn, so it's skipped here.
+                    Vec3 dir = SlidePhysics.cornerFlow(shape, travel,
+                            entity.getX() - feet.getX(), entity.getZ() - feet.getZ());
+                    double perTick = state.momentum / 20.0;
+                    entity.setDeltaMovement(dir.x * perTick, entity.getDeltaMovement().y, dir.z * perTick);
+                } else {
+                    Vec3 v = SlidePhysics.velocity(state.momentum, travel, slopeSign);
+                    double vy = slopeSign < 0 ? v.y : entity.getDeltaMovement().y;
+                    entity.setDeltaMovement(v.x, vy, v.z);
+                    centerInChannel(entity, feet, travel, applyMotionStrength(state.momentum));
+                }
             }
         } else if (entity.isInWater()) {
             // Freeform water: jets steer (their flow becomes travel) and momentum coasts.

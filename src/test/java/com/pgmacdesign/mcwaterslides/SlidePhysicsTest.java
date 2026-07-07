@@ -99,4 +99,52 @@ class SlidePhysicsTest {
         // Even absurd thrust lands under the cap (cap is terminal).
         assertTrue(SlidePhysics.tickMomentum(10.0, 0, false, 1000.0, P) <= P.speedCap());
     }
+
+    // ── corner flow field (the carve — 90° bends used to dead-stop riders) ──
+
+    @Test
+    void cornerFlowIsAlwaysUnitLength() {
+        for (double x = 0.05; x < 1.0; x += 0.3) {
+            for (double z = 0.05; z < 1.0; z += 0.3) {
+                var v = SlidePhysics.cornerFlow(RailShape.SOUTH_EAST, Direction.EAST, x, z);
+                assertEquals(1.0, v.horizontalDistance(), 1e-6, "at (" + x + "," + z + ")");
+            }
+        }
+    }
+
+    @Test
+    void cornerFlowSweepsEntryToExit() {
+        // SE corner (exits south+east, pivot at local 1,1), entered heading north.
+        var atEntry = SlidePhysics.cornerFlow(RailShape.SOUTH_EAST, Direction.EAST, 0.5, 1.0);
+        assertEquals(-1.0, atEntry.z, 1e-6, "entry point flows due north");
+        var atApex = SlidePhysics.cornerFlow(RailShape.SOUTH_EAST, Direction.EAST, 0.6464, 0.6464);
+        assertEquals(0.7071, atApex.x, 0.01, "apex flows northeast");
+        assertEquals(-0.7071, atApex.z, 0.01);
+        var atExit = SlidePhysics.cornerFlow(RailShape.SOUTH_EAST, Direction.EAST, 1.0, 0.5);
+        assertEquals(1.0, atExit.x, 1e-6, "exit point flows due east");
+    }
+
+    @Test
+    void cornerFlowNeverReversesAgainstTheTurn() {
+        // Everywhere in the cell the flow keeps a forward component (dot with entry+exit
+        // direction sum ≥ 0) — a wall graze slides onward instead of dead-stopping.
+        for (double x = 0.1; x < 1.0; x += 0.2) {
+            for (double z = 0.1; z < 1.0; z += 0.2) {
+                var v = SlidePhysics.cornerFlow(RailShape.SOUTH_EAST, Direction.EAST, x, z);
+                assertTrue(v.x - v.z > -1e-6, "flow reverses at (" + x + "," + z + "): " + v);
+            }
+        }
+    }
+
+    @Test
+    void cornerEntryInvertsRedirect() {
+        for (RailShape shape : new RailShape[]{RailShape.SOUTH_EAST, RailShape.SOUTH_WEST,
+                RailShape.NORTH_WEST, RailShape.NORTH_EAST}) {
+            for (Direction exit : SlidePhysics.exits(shape)) {
+                Direction entry = SlidePhysics.cornerEntry(shape, exit);
+                assertEquals(exit, SlidePhysics.redirect(shape, entry),
+                        shape + " entry " + entry + " must redirect to " + exit);
+            }
+        }
+    }
 }

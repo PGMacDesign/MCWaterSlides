@@ -82,6 +82,48 @@ public class PhysicsEdgeGameTests {
         });
     }
 
+    /**
+     * The carve: a rider must clear a 90° bend without dead-stopping. Arrival alone
+     * can't discriminate (momentum survives stalls by design and re-accelerates), so
+     * the assertion is time-bounded: once the husk enters the corner cell it must
+     * reach the far arm within a tight tick budget.
+     */
+    @GameTest(template = "empty5", timeoutTicks = 400)
+    public static void cornerKeepsSpeed(GameTestHelper helper) {
+        helper.setBlock(new BlockPos(2, 1, 1), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        helper.setBlock(new BlockPos(2, 1, 2), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        helper.setBlock(new BlockPos(2, 1, 3), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        helper.setBlock(new BlockPos(3, 1, 3), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        helper.setBlock(new BlockPos(4, 1, 3), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        helper.setBlock(new BlockPos(2, 1, 0),
+                ModBlocks.JET.get().defaultBlockState().setValue(JetBlock.FACING, Direction.SOUTH));
+        if (!(helper.getBlockEntity(new BlockPos(2, 1, 0)) instanceof JetBlockEntity jet)) {
+            throw new GameTestAssertException("jet missing");
+        }
+        jet.fillBuffer();
+
+        var husk = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(2, 2, 1));
+        long[] cornerEntryTick = {-1};
+        helper.succeedWhen(() -> {
+            var origin = helper.absoluteVec(net.minecraft.world.phys.Vec3.ZERO);
+            double relX = husk.position().x - origin.x;
+            double relZ = husk.position().z - origin.z;
+            if (cornerEntryTick[0] < 0 && relZ > 3.0) {
+                cornerEntryTick[0] = helper.getTick();
+            }
+            if (relX < 3.8) {
+                var st = husk.getData(com.pgmacdesign.mcwaterslides.registry.ModAttachments.RIDE_STATE.get());
+                helper.fail("husk has not cleared the bend: x=" + relX + " z=" + relZ
+                        + " riding=" + st.riding + " momentum=" + st.momentum
+                        + " travel=" + st.travel + " v=" + husk.getDeltaMovement());
+            }
+            if (cornerEntryTick[0] >= 0 && helper.getTick() - cornerEntryTick[0] > 40) {
+                throw new GameTestAssertException(
+                        "bend took " + (helper.getTick() - cornerEntryTick[0]) + " ticks — rider stalled");
+            }
+        });
+    }
+
     /** The channel's intrinsic water is untouchable: sponges do nothing to it. */
     @GameTest(template = "empty5", timeoutTicks = 60)
     public static void spongeCannotDryChannel(GameTestHelper helper) {

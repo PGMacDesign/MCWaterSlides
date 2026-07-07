@@ -60,6 +60,9 @@ public class SlideChannelBlock extends Block implements SlideSurface {
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         if (!level.isClientSide && !oldState.is(this)) {
+            // Self-refresh covers raw setBlock placements (pistons, commands, tests) that
+            // bypass getStateForPlacement; a player placement is already computed (no-op).
+            SlideConnections.refreshSelf(level, pos, state);
             SlideConnections.refreshNeighbors(level, pos);
         }
     }
