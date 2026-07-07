@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "random_sequence": "mcwaterslides:blocks/flood_valve",
+  "pools": [
+    {
+      "rolls": 1,
+      "bonus_rolls": 0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "mcwaterslides:flood_valve"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ]
+}

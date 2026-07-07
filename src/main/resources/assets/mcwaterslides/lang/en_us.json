@@ -7,6 +7,7 @@
   "block.mcwaterslides.brown_slide_tube": "Brown Slide Tube",
   "block.mcwaterslides.cyan_slide_channel": "Cyan Slide Channel",
   "block.mcwaterslides.cyan_slide_tube": "Cyan Slide Tube",
+  "block.mcwaterslides.flood_valve": "Flood Valve",
   "block.mcwaterslides.gray_slide_channel": "Gray Slide Channel",
   "block.mcwaterslides.gray_slide_tube": "Gray Slide Tube",
   "block.mcwaterslides.green_slide_channel": "Green Slide Channel",
@@ -36,5 +37,6 @@
   "block.mcwaterslides.white_slide_tube": "White Slide Tube",
   "block.mcwaterslides.yellow_slide_channel": "Yellow Slide Channel",
   "block.mcwaterslides.yellow_slide_tube": "Yellow Slide Tube",
-  "itemGroup.mcwaterslides": "MC Waterslides"
+  "itemGroup.mcwaterslides": "MC Waterslides",
+  "message.mcwaterslides.flood_valve_leak": "Flood Valve: volume not sealed \u2014 leak near %s, %s, %s"
 }

@@ -26,5 +26,10 @@ public final class ModBlockEntities {
                     BlockEntityType.Builder.of(com.pgmacdesign.mcwaterslides.machine.WaterConduitBlockEntity::new,
                             ModBlocks.WATER_CONDUIT.get()).build(null));
 
+    public static final Supplier<BlockEntityType<com.pgmacdesign.mcwaterslides.machine.FloodValveBlockEntity>> FLOOD_VALVE =
+            BLOCK_ENTITIES.register("flood_valve", () ->
+                    BlockEntityType.Builder.of(com.pgmacdesign.mcwaterslides.machine.FloodValveBlockEntity::new,
+                            ModBlocks.FLOOD_VALVE.get()).build(null));
+
     private ModBlockEntities() {}
 }

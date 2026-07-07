@@ -62,6 +62,13 @@ public final class ModBlocks {
                             .sound(SoundType.COPPER)
                             .noOcclusion());
 
+    public static final DeferredBlock<com.pgmacdesign.mcwaterslides.machine.FloodValveBlock> FLOOD_VALVE =
+            BLOCKS.registerBlock("flood_valve",
+                    com.pgmacdesign.mcwaterslides.machine.FloodValveBlock::new,
+                    BlockBehaviour.Properties.of()
+                            .strength(2.5f, 6.0f)
+                            .sound(SoundType.COPPER));
+
     private static DeferredBlock<SlideChannelBlock> registerChannel(String name, DyeColor color) {
         return BLOCKS.registerBlock(name,
                 props -> new SlideChannelBlock(color, props),

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "mcwaterslides:block/flood_valve_side",
+    "north": "mcwaterslides:block/flood_valve_front",
+    "south": "mcwaterslides:block/flood_valve_side",
+    "east": "mcwaterslides:block/flood_valve_side",
+    "west": "mcwaterslides:block/flood_valve_side",
+    "up": "mcwaterslides:block/flood_valve_side",
+    "down": "mcwaterslides:block/flood_valve_side"
+  }
+}

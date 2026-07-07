@@ -24,6 +24,8 @@ public final class MCWaterslidesConfig {
     public static final ModConfigSpec.IntValue PUMP_HOUSE_RF_PER_TICK;
     public static final ModConfigSpec.IntValue PUMP_HOUSE_BURN_MULTIPLIER;
     public static final ModConfigSpec.IntValue PUMP_HOUSE_PASSIVE_RF;
+    public static final ModConfigSpec.IntValue FLOOD_VALVE_RF_PER_BLOCK;
+    public static final ModConfigSpec.IntValue FLOOD_VALVE_MAX_VOLUME;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -90,6 +92,15 @@ public final class MCWaterslidesConfig {
         PUMP_HOUSE_PASSIVE_RF = builder
                 .comment("Token passive RF/t while adjacent to water and not burning (lazy rivers).")
                 .defineInRange("pumpHousePassiveRf", 2, 0, Integer.MAX_VALUE);
+        builder.pop();
+
+        builder.comment("Flood Valve").push("floodValve");
+        FLOOD_VALVE_RF_PER_BLOCK = builder
+                .comment("RF per water block placed while filling. Draining is free.")
+                .defineInRange("rfPerBlock", 10, 0, Integer.MAX_VALUE);
+        FLOOD_VALVE_MAX_VOLUME = builder
+                .comment("Largest sealed volume a valve will fill; bigger scans report a leak.")
+                .defineInRange("maxVolume", 32_768, 1, 1_000_000);
         builder.pop();
 
         SPEC = builder.build();
