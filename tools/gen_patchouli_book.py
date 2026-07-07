@@ -11,6 +11,10 @@ ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "src/main/resources"
 MOD = "mcwaterslides"
 BOOK = RES / f"assets/{MOD}/patchouli_books/guide"
+# Patchouli REGISTERS the book from data/ (so the item resolves & opens); it loads the
+# CONTENT from assets/ when use_resource_pack is true. book.json must live in BOTH — the
+# data/ copy is what was missing (book content loaded, but the book itself never registered).
+BOOK_DATA = RES / f"data/{MOD}/patchouli_books/guide"
 
 
 def write_json(path: Path, data):
@@ -49,7 +53,7 @@ def entry(category, name, icon, pages, priority=False):
 
 
 def gen():
-    write_json(BOOK / "book.json", {
+    book_json = {
         "name": f"book.{MOD}.guide.name",
         "landing_text": f"book.{MOD}.guide.landing",
         "version": 1,
@@ -63,7 +67,9 @@ def gen():
         "show_progress": False,
         "index_icon": f"{MOD}:slide_channel",
         "dont_generate_book": False,
-    })
+    }
+    write_json(BOOK / "book.json", book_json)       # assets/ — content loading
+    write_json(BOOK_DATA / "book.json", book_json)  # data/ — book registration (the fix)
 
     cats = BOOK / "en_us/categories"
     write_json(cats / "building.json", {
