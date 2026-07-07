@@ -32,7 +32,7 @@ public final class RideEvents {
             return;
         }
         // Don't allocate ride state for the 99% of mobs that never touch a slide.
-        if (!living.hasData(ModAttachments.RIDE_STATE.get()) && !RideTicker.onSlideBlock(living)) {
+        if (!living.hasData(ModAttachments.RIDE_STATE.get()) && !RideTicker.onSlideBlock(living) && !living.isInWater()) {
             return;
         }
         RideState state = living.getData(ModAttachments.RIDE_STATE.get());
@@ -50,6 +50,13 @@ public final class RideEvents {
             }
         } else {
             RideTicker.tick(living, state, false, true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onNeighborNotify(net.neoforged.neoforge.event.level.BlockEvent.NeighborNotifyEvent event) {
+        if (event.getLevel() instanceof net.minecraft.world.level.Level level && !level.isClientSide) {
+            com.pgmacdesign.mcwaterslides.current.CurrentFields.invalidateAt(level, event.getPos());
         }
     }
 

@@ -17,24 +17,24 @@ class SlidePhysicsTest {
     @Test
     void capIsTerminalOnEveryPath() {
         // Absurd stacked gain in one tick still lands under the cap.
-        double m = SlidePhysics.tickMomentum(21.9, 1, false, new SlidePhysics.Params(22.0, 0.0, 500.0));
+        double m = SlidePhysics.tickMomentum(21.9, 1, false, 0.0, new SlidePhysics.Params(22.0, 0.0, 500.0));
         assertTrue(m <= 22.0, "cap must be the last operation, got " + m);
         // And clamping never goes below zero on hard braking.
-        assertEquals(0.0, SlidePhysics.tickMomentum(0.01, -1, true, P), 0.05);
+        assertEquals(0.0, SlidePhysics.tickMomentum(0.01, -1, true, 0.0, P), 0.05);
     }
 
     @Test
     void dragBleedsAndBrakeBleedsFaster() {
-        double coast = SlidePhysics.tickMomentum(20.0, 0, false, P);
-        double braked = SlidePhysics.tickMomentum(20.0, 0, true, P);
+        double coast = SlidePhysics.tickMomentum(20.0, 0, false, 0.0, P);
+        double braked = SlidePhysics.tickMomentum(20.0, 0, true, 0.0, P);
         assertTrue(coast < 20.0 && coast > 19.5);
         assertTrue(braked < coast);
     }
 
     @Test
     void slopeExchangeIsSymmetric() {
-        double down = SlidePhysics.tickMomentum(10.0, 1, false, new SlidePhysics.Params(22.0, 0.0, 2.0));
-        double up = SlidePhysics.tickMomentum(10.0, -1, false, new SlidePhysics.Params(22.0, 0.0, 2.0));
+        double down = SlidePhysics.tickMomentum(10.0, 1, false, 0.0, new SlidePhysics.Params(22.0, 0.0, 2.0));
+        double up = SlidePhysics.tickMomentum(10.0, -1, false, 0.0, new SlidePhysics.Params(22.0, 0.0, 2.0));
         assertEquals(down - 10.0, 10.0 - up, 1e-9, "climb must cost exactly what descent grants");
     }
 
@@ -61,7 +61,7 @@ class SlidePhysicsTest {
         int ticks = 0;
         while (m >= 0.3 && ticks++ < 20_000) {
             distance += m / 20.0;
-            m = SlidePhysics.tickMomentum(m, 0, false, P);
+            m = SlidePhysics.tickMomentum(m, 0, false, 0.0, P);
         }
         assertTrue(distance > 90 && distance < 130, "coast was " + distance + " blocks");
     }
@@ -88,5 +88,15 @@ class SlidePhysicsTest {
         state.endRide();
         state.startRide(5.0, Direction.EAST);
         assertTrue(state.sessionId > first, "each ride start must advance the epoch");
+    }
+
+    @Test
+    void thrustAcceleratesAndOpposingThrustDecelerates() {
+        double boosted = SlidePhysics.tickMomentum(10.0, 0, false, 0.4, P);
+        double opposed = SlidePhysics.tickMomentum(10.0, 0, false, -0.4, P);
+        assertTrue(boosted > 10.0 && boosted < 10.5);
+        assertTrue(opposed < 10.0 && opposed > 9.4);
+        // Even absurd thrust lands under the cap (cap is terminal).
+        assertTrue(SlidePhysics.tickMomentum(10.0, 0, false, 1000.0, P) <= P.speedCap());
     }
 }

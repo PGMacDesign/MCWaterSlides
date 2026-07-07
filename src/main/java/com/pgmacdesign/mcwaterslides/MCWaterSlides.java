@@ -18,6 +18,7 @@ public class MCWaterSlides {
         ModBlocks.BLOCKS.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
+        com.pgmacdesign.mcwaterslides.registry.ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         com.pgmacdesign.mcwaterslides.registry.ModAttachments.ATTACHMENTS.register(modEventBus);
 
         modEventBus.addListener(com.pgmacdesign.mcwaterslides.network.MCWaterslidesNetwork::register);

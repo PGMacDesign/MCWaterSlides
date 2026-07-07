@@ -251,6 +251,12 @@ def write_json(path: Path, data):
     path.write_text(json.dumps(data, indent=2) + "\n")
 
 
+def merge_tag(path: Path, values):
+    existing = json.loads(path.read_text())["values"] if path.exists() else []
+    merged = sorted(set(existing) | set(values))
+    write_json(path, {"replace": False, "values": merged})
+
+
 def loot_table(name):
     return {
         "type": "minecraft:block",
@@ -280,11 +286,11 @@ def gen_data():
         write_json(models / f"item/{name}.json", {"parent": f"{MOD}:block/slide_channel_inventory"})
         write_json(RES / f"data/{MOD}/loot_table/blocks/{name}.json", loot_table(name))
 
-    # tags
+    # tags (merge-write so other generators' entries survive a re-run)
     ids = [f"{MOD}:{n}" for n in ALL_NAMES]
-    write_json(RES / f"data/{MOD}/tags/item/slide_channels.json", {"replace": False, "values": ids})
-    write_json(RES / f"data/{MOD}/tags/block/slide_channels.json", {"replace": False, "values": ids})
-    write_json(RES / "data/minecraft/tags/block/mineable/pickaxe.json", {"replace": False, "values": ids})
+    merge_tag(RES / f"data/{MOD}/tags/item/slide_channels.json", ids)
+    merge_tag(RES / f"data/{MOD}/tags/block/slide_channels.json", ids)
+    merge_tag(RES / "data/minecraft/tags/block/mineable/pickaxe.json", ids)
 
     # recipes (1.21.1 ingredient form; build.gradle rewrites for >=1.21.2 nodes)
     write_json(RES / f"data/{MOD}/recipe/slide_channel.json", {

@@ -16,8 +16,10 @@ public final class ModCreativeTabs {
             CREATIVE_MODE_TABS.register("main", () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.mcwaterslides"))
                     .icon(() -> new ItemStack(ModItems.SLIDE_CHANNEL_ITEMS.get(null).get()))
-                    .displayItems((parameters, output) ->
-                            ModItems.SLIDE_CHANNEL_ITEMS.values().forEach(output::accept))
+                    .displayItems((parameters, output) -> {
+                        ModItems.SLIDE_CHANNEL_ITEMS.values().forEach(output::accept);
+                        output.accept(ModItems.JET.get());
+                    })
                     .build());
 
     private ModCreativeTabs() {}

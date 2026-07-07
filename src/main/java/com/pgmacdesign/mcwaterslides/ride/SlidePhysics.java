@@ -22,16 +22,18 @@ public final class SlidePhysics {
     public record Params(double speedCap, double dragPerTick, double slopeExchange) {}
 
     /**
-     * One integration step. Order is fixed: slope exchange → drag → brake → clamp.
-     * The clamp is the LAST operation on every path (invariant: cap is terminal).
+     * One integration step. Order is fixed: thrust → slope exchange → drag → brake →
+     * clamp. The clamp is the LAST operation on every path (invariant: cap is terminal).
      *
-     * @param momentum  blocks/second entering the tick
-     * @param slopeSign +1 descending, -1 climbing, 0 flat
+     * @param momentum      blocks/second entering the tick
+     * @param slopeSign     +1 descending, -1 climbing, 0 flat
+     * @param thrustPerTick signed jet thrust along travel this tick, b/s (negative = opposing jet)
      * @return momentum for the next tick, in [0, cap]
      */
-    public static double tickMomentum(double momentum, int slopeSign, boolean braking, Params p) {
+    public static double tickMomentum(double momentum, int slopeSign, boolean braking,
+                                      double thrustPerTick, Params p) {
         double blocksThisTick = momentum / 20.0;
-        double next = momentum + slopeSign * p.slopeExchange() * blocksThisTick;
+        double next = momentum + thrustPerTick + slopeSign * p.slopeExchange() * blocksThisTick;
         next *= (1.0 - p.dragPerTick());
         if (braking) {
             next *= (1.0 - BRAKE_PER_TICK);

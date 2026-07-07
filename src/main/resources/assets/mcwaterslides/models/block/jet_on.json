@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "mcwaterslides:block/jet_side",
+    "north": "mcwaterslides:block/jet_front_on",
+    "south": "mcwaterslides:block/jet_back",
+    "east": "mcwaterslides:block/jet_side",
+    "west": "mcwaterslides:block/jet_side",
+    "up": "mcwaterslides:block/jet_side",
+    "down": "mcwaterslides:block/jet_side"
+  }
+}

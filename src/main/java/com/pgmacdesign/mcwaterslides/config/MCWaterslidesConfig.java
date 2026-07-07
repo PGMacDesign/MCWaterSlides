@@ -15,6 +15,12 @@ public final class MCWaterslidesConfig {
     public static final ModConfigSpec.DoubleValue SLOPE_EXCHANGE;
     public static final ModConfigSpec.IntValue RIDE_CONTINUITY_TICKS;
     public static final ModConfigSpec.DoubleValue MIN_START_SPEED;
+    public static final ModConfigSpec.DoubleValue JET_THRUST;
+    public static final ModConfigSpec.IntValue JET_RANGE;
+    public static final ModConfigSpec.IntValue JET_IDLE_RF;
+    public static final ModConfigSpec.IntValue JET_PUSH_RF;
+    public static final ModConfigSpec.IntValue JET_BUFFER_RF;
+    public static final ModConfigSpec.IntValue MAX_PUSHED_ENTITIES_PER_JET;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -43,6 +49,27 @@ public final class MCWaterslidesConfig {
                 .comment("Horizontal speed (b/s) needed to start riding a flat channel.",
                         "Slopes always start you regardless.")
                 .defineInRange("minStartSpeed", 1.0, 0.0, 10.0);
+        builder.pop();
+
+        builder.comment("Jets").push("jet");
+        JET_THRUST = builder
+                .comment("Acceleration a jet's current applies to riders, in blocks/sec per second.")
+                .defineInRange("thrust", 8.0, 0.0, 100.0);
+        JET_RANGE = builder
+                .comment("How far a jet's current travels through connected water/channels (blocks).")
+                .defineInRange("range", 24, 1, 128);
+        JET_IDLE_RF = builder
+                .comment("RF per tick to keep a current energized with no riders in it.")
+                .defineInRange("idleRf", 4, 0, Integer.MAX_VALUE);
+        JET_PUSH_RF = builder
+                .comment("Additional RF per tick while at least one rider is being pushed.")
+                .defineInRange("pushRf", 80, 0, Integer.MAX_VALUE);
+        JET_BUFFER_RF = builder
+                .comment("Internal RF buffer per jet — rides don't stutter on a flickering supply.")
+                .defineInRange("bufferRf", 20_000, 0, Integer.MAX_VALUE);
+        MAX_PUSHED_ENTITIES_PER_JET = builder
+                .comment("Per-tick entity cap per jet (mega-park performance guard).")
+                .defineInRange("maxPushedEntitiesPerJet", 16, 1, 1024);
         builder.pop();
 
         SPEC = builder.build();

@@ -1,22 +1,23 @@
 {
   "replace": false,
   "values": [
-    "mcwaterslides:slide_channel",
-    "mcwaterslides:white_slide_channel",
-    "mcwaterslides:orange_slide_channel",
-    "mcwaterslides:magenta_slide_channel",
-    "mcwaterslides:light_blue_slide_channel",
-    "mcwaterslides:yellow_slide_channel",
-    "mcwaterslides:lime_slide_channel",
-    "mcwaterslides:pink_slide_channel",
-    "mcwaterslides:gray_slide_channel",
-    "mcwaterslides:light_gray_slide_channel",
-    "mcwaterslides:cyan_slide_channel",
-    "mcwaterslides:purple_slide_channel",
+    "mcwaterslides:black_slide_channel",
     "mcwaterslides:blue_slide_channel",
     "mcwaterslides:brown_slide_channel",
+    "mcwaterslides:cyan_slide_channel",
+    "mcwaterslides:gray_slide_channel",
     "mcwaterslides:green_slide_channel",
+    "mcwaterslides:jet",
+    "mcwaterslides:light_blue_slide_channel",
+    "mcwaterslides:light_gray_slide_channel",
+    "mcwaterslides:lime_slide_channel",
+    "mcwaterslides:magenta_slide_channel",
+    "mcwaterslides:orange_slide_channel",
+    "mcwaterslides:pink_slide_channel",
+    "mcwaterslides:purple_slide_channel",
     "mcwaterslides:red_slide_channel",
-    "mcwaterslides:black_slide_channel"
+    "mcwaterslides:slide_channel",
+    "mcwaterslides:white_slide_channel",
+    "mcwaterslides:yellow_slide_channel"
   ]
 }

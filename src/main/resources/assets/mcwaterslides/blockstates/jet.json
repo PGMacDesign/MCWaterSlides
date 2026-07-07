@@ -1,0 +1,50 @@
+{
+  "variants": {
+    "facing=north,energized=false": {
+      "model": "mcwaterslides:block/jet"
+    },
+    "facing=north,energized=true": {
+      "model": "mcwaterslides:block/jet_on"
+    },
+    "facing=south,energized=false": {
+      "model": "mcwaterslides:block/jet",
+      "y": 180
+    },
+    "facing=south,energized=true": {
+      "model": "mcwaterslides:block/jet_on",
+      "y": 180
+    },
+    "facing=east,energized=false": {
+      "model": "mcwaterslides:block/jet",
+      "y": 90
+    },
+    "facing=east,energized=true": {
+      "model": "mcwaterslides:block/jet_on",
+      "y": 90
+    },
+    "facing=west,energized=false": {
+      "model": "mcwaterslides:block/jet",
+      "y": 270
+    },
+    "facing=west,energized=true": {
+      "model": "mcwaterslides:block/jet_on",
+      "y": 270
+    },
+    "facing=up,energized=false": {
+      "model": "mcwaterslides:block/jet",
+      "x": 270
+    },
+    "facing=up,energized=true": {
+      "model": "mcwaterslides:block/jet_on",
+      "x": 270
+    },
+    "facing=down,energized=false": {
+      "model": "mcwaterslides:block/jet",
+      "x": 90
+    },
+    "facing=down,energized=true": {
+      "model": "mcwaterslides:block/jet_on",
+      "x": 90
+    }
+  }
+}

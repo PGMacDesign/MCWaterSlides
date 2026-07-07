@@ -3,9 +3,11 @@ package com.pgmacdesign.mcwaterslides.ride;
 import javax.annotation.Nullable;
 
 import com.pgmacdesign.mcwaterslides.config.MCWaterslidesConfig;
+import com.pgmacdesign.mcwaterslides.current.CurrentFields;
 import com.pgmacdesign.mcwaterslides.slide.SlideChannelBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -30,8 +32,22 @@ public final class RideTicker {
         RailShape shape = feetState.getBlock() instanceof SlideChannelBlock
                 ? feetState.getValue(SlideChannelBlock.SHAPE) : null;
 
+        // Jet thrust sampled on both sides (b/s²) — smooth prediction, no packet lag.
+        Vec3 thrustVec = CurrentFields.sampleThrust(level, entity, MCWaterslidesConfig.JET_THRUST.get());
+        double lift = thrustVec.y / 20.0;
+
+        // Vertical currents (geysers, tube climbs) act on anything in the field, ridden or
+        // not — a ride is a horizontal concept; lift is just water behaving strongly.
+        // Gated on field membership rather than isInWater: water contact flickers at the
+        // surface and traps riders in a bob loop; the field only spans water/slide cells,
+        // so this launches geysers clear instead.
+        if (applyMotion && lift != 0) {
+            Vec3 d = entity.getDeltaMovement();
+            entity.setDeltaMovement(d.x, Mth.clamp(d.y + lift, -1.2, 1.2), d.z);
+        }
+
         if (!state.riding) {
-            maybeStart(entity, state, shape);
+            maybeStart(entity, state, shape, thrustVec);
             return;
         }
 
@@ -52,7 +68,8 @@ public final class RideTicker {
             travel = SlidePhysics.redirect(shape, travel);
             int slopeSign = SlidePhysics.slopeSign(shape, travel);
             state.travel = travel;
-            state.momentum = SlidePhysics.tickMomentum(state.momentum, slopeSign, braking, params);
+            state.momentum = SlidePhysics.tickMomentum(state.momentum, slopeSign, braking,
+                    thrustAlong(thrustVec, travel), params);
             state.distanceRidden += state.momentum / 20.0;
             if (state.momentum < END_THRESHOLD) {
                 state.endRide();
@@ -65,9 +82,14 @@ public final class RideTicker {
                 centerInChannel(entity, feet, travel, applyMotionStrength(state.momentum));
             }
         } else if (entity.isInWater()) {
-            // Plain water: momentum coasts (jets will govern thrust here — PGM current fields).
+            // Freeform water: jets steer (their flow becomes travel) and momentum coasts.
             state.gapTicks = 0;
-            state.momentum = SlidePhysics.tickMomentum(state.momentum, 0, braking, params);
+            Direction flow = dominantHorizontal(thrustVec);
+            if (flow != null) {
+                state.travel = flow;
+            }
+            double along = state.travel != null ? thrustAlong(thrustVec, state.travel) : 0;
+            state.momentum = SlidePhysics.tickMomentum(state.momentum, 0, braking, along, params);
             state.distanceRidden += state.momentum / 20.0;
             if (state.momentum < END_THRESHOLD) {
                 state.endRide();
@@ -86,8 +108,16 @@ public final class RideTicker {
         }
     }
 
-    private static void maybeStart(LivingEntity entity, RideState state, @Nullable RailShape shape) {
-        if (shape == null || entity.isSpectator()) {
+    private static void maybeStart(LivingEntity entity, RideState state, @Nullable RailShape shape, Vec3 thrustVec) {
+        if (entity.isSpectator()) {
+            return;
+        }
+        Direction flow = dominantHorizontal(thrustVec);
+        if (shape == null) {
+            // Jets start rides in freeform water too (that's the enclosed-tube story).
+            if (flow != null && entity.isInWater()) {
+                state.startRide(Math.max(entity.getDeltaMovement().horizontalDistance() * 20.0, 1.0), flow);
+            }
             return;
         }
         double entrySpeed = entity.getDeltaMovement().horizontalDistance() * 20.0;
@@ -97,7 +127,26 @@ public final class RideTicker {
         } else if (ascent != null) {
             // Standing on a slope: gravity starts the ride down it.
             state.startRide(Math.max(entrySpeed, 1.0), ascent.getOpposite());
+        } else if (flow != null) {
+            // A powered current starts you from standstill.
+            state.startRide(Math.max(entrySpeed, 1.0), flow);
         }
+    }
+
+    /** Signed thrust (b/s per tick) along the travel axis; opposing jets decelerate. */
+    private static double thrustAlong(Vec3 thrustVec, Direction travel) {
+        return (thrustVec.x * travel.getStepX() + thrustVec.z * travel.getStepZ()) / 20.0;
+    }
+
+    @Nullable
+    private static Direction dominantHorizontal(Vec3 thrustVec) {
+        if (Math.abs(thrustVec.x) < 1e-4 && Math.abs(thrustVec.z) < 1e-4) {
+            return null;
+        }
+        if (Math.abs(thrustVec.x) >= Math.abs(thrustVec.z)) {
+            return thrustVec.x >= 0 ? Direction.EAST : Direction.WEST;
+        }
+        return thrustVec.z >= 0 ? Direction.SOUTH : Direction.NORTH;
     }
 
     /** Cheap pre-check used to avoid allocating ride state for entities nowhere near a slide. */
