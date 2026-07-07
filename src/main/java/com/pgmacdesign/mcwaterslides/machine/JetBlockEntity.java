@@ -95,6 +95,14 @@ public class JetBlockEntity extends BlockEntity {
         boolean energizedState = state.getValue(JetBlock.ENERGIZED);
         if (energizedState != jet.energizedThisTick) {
             level.setBlock(pos, state.setValue(JetBlock.ENERGIZED, jet.energizedThisTick), Block.UPDATE_ALL);
+            if (jet.energizedThisTick) {
+                // First-power advancement for whoever is standing nearby.
+                var trigger = com.pgmacdesign.mcwaterslides.advancement.ModCriteria.RIDE_STAT.get();
+                for (var player : level.getEntitiesOfClass(net.minecraft.server.level.ServerPlayer.class,
+                        new net.minecraft.world.phys.AABB(pos).inflate(10))) {
+                    trigger.trigger(player, "jet_energized", 1);
+                }
+            }
         }
     }
 

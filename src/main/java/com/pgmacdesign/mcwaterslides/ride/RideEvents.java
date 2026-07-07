@@ -51,6 +51,14 @@ public final class RideEvents {
                 return;
             }
             RideTicker.tick(player, state, player.isShiftKeyDown(), false);
+            if (state.riding && player.tickCount % 20 == 0) {
+                var trigger = com.pgmacdesign.mcwaterslides.advancement.ModCriteria.RIDE_STAT.get();
+                trigger.trigger(player, "distance", state.distanceRidden);
+                trigger.trigger(player, "enclosed_distance", state.enclosedDistance);
+                if (state.momentum >= com.pgmacdesign.mcwaterslides.config.MCWaterslidesConfig.SPEED_CAP.get() - 0.1) {
+                    trigger.trigger(player, "speed", state.momentum);
+                }
+            }
             if (state.riding && player.tickCount % SYNC_INTERVAL_TICKS == 0 || state.riding != wasRiding) {
                 PacketDistributor.sendToPlayer(player,
                         new RideSyncPayload(state.sessionId, state.riding, (float) state.momentum));

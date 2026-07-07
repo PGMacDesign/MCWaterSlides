@@ -1,0 +1,35 @@
+{
+  "display": {
+    "icon": {
+      "id": "mcwaterslides:slide_channel"
+    },
+    "title": {
+      "translate": "advancement.mcwaterslides.making_a_splash.title"
+    },
+    "description": {
+      "translate": "advancement.mcwaterslides.making_a_splash.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false,
+    "background": "minecraft:textures/gui/advancements/backgrounds/husbandry.png"
+  },
+  "criteria": {
+    "placed_channel": {
+      "trigger": "minecraft:placed_block",
+      "conditions": {
+        "location": [
+          {
+            "condition": "minecraft:location_check",
+            "predicate": {
+              "block": {
+                "blocks": "#mcwaterslides:slide_channels"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

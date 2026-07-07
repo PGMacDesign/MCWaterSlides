@@ -1,0 +1,27 @@
+{
+  "parent": "mcwaterslides:lazy_river",
+  "display": {
+    "icon": {
+      "id": "mcwaterslides:slide_tube"
+    },
+    "title": {
+      "translate": "advancement.mcwaterslides.tube_rat.title"
+    },
+    "description": {
+      "translate": "advancement.mcwaterslides.tube_rat.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "enclosed_50": {
+      "trigger": "mcwaterslides:ride_stat",
+      "conditions": {
+        "stat": "enclosed_distance",
+        "min": 50
+      }
+    }
+  }
+}

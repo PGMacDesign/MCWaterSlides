@@ -1,0 +1,27 @@
+{
+  "parent": "mcwaterslides:hydraulic_engineer",
+  "display": {
+    "icon": {
+      "id": "minecraft:water_bucket"
+    },
+    "title": {
+      "translate": "advancement.mcwaterslides.lazy_river.title"
+    },
+    "description": {
+      "translate": "advancement.mcwaterslides.lazy_river.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "rode_100": {
+      "trigger": "mcwaterslides:ride_stat",
+      "conditions": {
+        "stat": "distance",
+        "min": 100
+      }
+    }
+  }
+}

@@ -103,6 +103,7 @@ public final class RideTicker {
                 state.momentum = Math.min(state.momentum + p.slopeExchange() * (-dy), p.speedCap());
                 state.distanceRidden += -dy;
             }
+            state.enclosedDistance += Math.abs(dy);
             return;
         }
 
@@ -115,6 +116,9 @@ public final class RideTicker {
             state.momentum = SlidePhysics.tickMomentum(state.momentum, slopeSign, braking,
                     thrustAlong(thrustVec, travel), params);
             state.distanceRidden += state.momentum / 20.0;
+            if (feetState.getBlock() instanceof SlideTubeBlock) {
+                state.enclosedDistance += state.momentum / 20.0;
+            }
             if (state.momentum < END_THRESHOLD) {
                 state.endRide();
                 return;

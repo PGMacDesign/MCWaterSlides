@@ -1,0 +1,27 @@
+{
+  "parent": "mcwaterslides:screamer",
+  "display": {
+    "icon": {
+      "id": "minecraft:heart_of_the_sea"
+    },
+    "title": {
+      "translate": "advancement.mcwaterslides.around_the_world.title"
+    },
+    "description": {
+      "translate": "advancement.mcwaterslides.around_the_world.description"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "criteria": {
+    "rode_10000": {
+      "trigger": "mcwaterslides:ride_stat",
+      "conditions": {
+        "stat": "distance",
+        "min": 10000
+      }
+    }
+  }
+}

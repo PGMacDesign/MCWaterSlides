@@ -24,6 +24,8 @@ public class RideState {
     public boolean bailRequested;
     /** Total blocks ridden this session (advancement fuel, server only). */
     public double distanceRidden;
+    /** Blocks ridden while enclosed (tubes) this session. */
+    public double enclosedDistance;
 
     /** Idempotent exit — the ONLY way a ride ends (invariant: exit clears exactly once). */
     public void endRide() {
@@ -36,6 +38,7 @@ public class RideState {
         gapTicks = 0;
         bailRequested = false;
         distanceRidden = 0;
+        enclosedDistance = 0;
     }
 
     public void startRide(double initialMomentum, @Nullable Direction initialTravel) {
@@ -46,5 +49,6 @@ public class RideState {
         gapTicks = 0;
         bailRequested = false;
         distanceRidden = 0;
+        enclosedDistance = 0;
     }
 }
