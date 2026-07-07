@@ -95,6 +95,10 @@ def gen():
              "$(thing)gravity alone$() gets you sliding."),
         crafting(f"{MOD}:slide_channel",
                  "Cheap on purpose. One craft paves 16 blocks of slide — build BIG."),
+        text("$(bold)Extending a run:$() just aim at the last channel and click — the next "
+             "one drops in ahead of you, climbing over a step if it must.$(br2)$(bold)Going "
+             "wide:$() lay a second run right alongside the first and the wall between them "
+             "vanishes — two lanes become one broad slide you can drift across.", title="Building fast"),
         text("While riding:$(br)$(li)$(thing)Crouch$() to brake$(li)$(thing)Jump$() to bail "
              "out (not inside a tube!)$(li)Downhill speeds you up, uphill slows you down — "
              "unless a Jet pays for the climb.$(br2)You take $(bold)no fall damage$() while "
@@ -111,6 +115,10 @@ def gen():
              "vertically for $(thing)drop shafts$(). Drops bank speed — you exit the "
              "bottom moving FAST."),
         crafting(f"{MOD}:slide_tube", "Four channels, four glass, four tubes."),
+        text("A single tube is a snug crawl-bore — perfect and fast, but cosy. Want "
+             "headroom? $(bold)Stack a second tube directly on top$() and the pair merges "
+             "into a full standing-height bore.$(br2)You never drown while riding — any "
+             "tube, flooded or not.", title="Tall tubes"),
     ]))
 
     write_json(entries / "building/freeform.json", entry("building", "Glass Megastructures",
@@ -124,7 +132,8 @@ def gen():
                  "signal OFF drains it."),
         text("If your build isn't watertight, the valve refuses and $(bold)points at the "
              "leak$() — smoke rises at the hole and the coordinates land in your action "
-             "bar. Patch it and flip the lever again.", title="Finding leaks"),
+             "bar. Patch it and flip the lever again.$(br2)$(bold)Right-click the valve$() "
+             "any time to read its mode, power, sealed volume, or leak spot.", title="Finding leaks"),
     ]))
 
     write_json(entries / "building/mega_parks.json", entry("building", "Mega-Parks",
@@ -152,6 +161,10 @@ def gen():
              "water column or tube shaft launches riders skyward, and a climb costs "
              "exactly what a drop pays, so a well-jetted slide can run uphill... or "
              "forever.", title="Uphill & geysers"),
+        text("Don't want jets on show? $(bold)Tuck one under the floor or against a side "
+             "wall$() of a slide and it still pushes along the run — the current finds the "
+             "water it's touching. Hide the whole engine and keep the ride looking clean.",
+             title="Hidden jets"),
     ], priority=True))
 
     write_json(entries / "power/pump_house.json", entry("power", "Pump House & Conduits",

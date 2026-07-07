@@ -11,6 +11,11 @@
       "type": "patchouli:crafting",
       "recipe": "mcwaterslides:slide_tube",
       "text": "Four channels, four glass, four tubes."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "A single tube is a snug crawl-bore \u2014 perfect and fast, but cosy. Want headroom? $(bold)Stack a second tube directly on top$() and the pair merges into a full standing-height bore.$(br2)You never drown while riding \u2014 any tube, flooded or not.",
+      "title": "Tall tubes"
     }
   ]
 }

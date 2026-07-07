@@ -14,7 +14,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "If your build isn't watertight, the valve refuses and $(bold)points at the leak$() \u2014 smoke rises at the hole and the coordinates land in your action bar. Patch it and flip the lever again.",
+      "text": "If your build isn't watertight, the valve refuses and $(bold)points at the leak$() \u2014 smoke rises at the hole and the coordinates land in your action bar. Patch it and flip the lever again.$(br2)$(bold)Right-click the valve$() any time to read its mode, power, sealed volume, or leak spot.",
       "title": "Finding leaks"
     }
   ]

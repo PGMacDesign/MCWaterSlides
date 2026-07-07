@@ -14,6 +14,11 @@
     },
     {
       "type": "patchouli:text",
+      "text": "$(bold)Extending a run:$() just aim at the last channel and click \u2014 the next one drops in ahead of you, climbing over a step if it must.$(br2)$(bold)Going wide:$() lay a second run right alongside the first and the wall between them vanishes \u2014 two lanes become one broad slide you can drift across.",
+      "title": "Building fast"
+    },
+    {
+      "type": "patchouli:text",
       "text": "While riding:$(br)$(li)$(thing)Crouch$() to brake$(li)$(thing)Jump$() to bail out (not inside a tube!)$(li)Downhill speeds you up, uphill slows you down \u2014 unless a Jet pays for the climb.$(br2)You take $(bold)no fall damage$() while riding a slide."
     },
     {

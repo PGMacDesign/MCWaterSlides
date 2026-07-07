@@ -16,6 +16,11 @@
       "type": "patchouli:text",
       "text": "Jets aim all six ways \u2014 $(bold)straight up included$(). An up-jet under a water column or tube shaft launches riders skyward, and a climb costs exactly what a drop pays, so a well-jetted slide can run uphill... or forever.",
       "title": "Uphill & geysers"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Don't want jets on show? $(bold)Tuck one under the floor or against a side wall$() of a slide and it still pushes along the run \u2014 the current finds the water it's touching. Hide the whole engine and keep the ride looking clean.",
+      "title": "Hidden jets"
     }
   ],
   "priority": true
