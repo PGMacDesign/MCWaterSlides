@@ -3,8 +3,14 @@ package com.pgmacdesign.mcwaterslides.machine;
 import javax.annotation.Nullable;
 
 import com.pgmacdesign.mcwaterslides.registry.ModBlockEntities;
+import com.pgmacdesign.mcwaterslides.slide.SlideChannelBlock;
+import com.pgmacdesign.mcwaterslides.slide.SlideTubeBlock;
+import com.pgmacdesign.mcwaterslides.slide.TubeShape;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.state.properties.RailShape;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DirectionalBlock;
@@ -48,10 +54,51 @@ public class JetBlock extends DirectionalBlock implements EntityBlock {
     @Override
     @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        // Aim along the player's view: the jet pushes where you're looking.
+        // Aim along the player's view — except when mounting against a slide, where the
+        // thrust projects onto the run's axis (sign from the look direction): hidden
+        // side/floor jets push along the slide, not into it.
+        Direction facing = context.getNearestLookingDirection();
+        BlockPos clicked = context.getClickedPos().relative(context.getClickedFace().getOpposite());
+        Direction projected = runProjectedFacing(context.getLevel().getBlockState(clicked), context.getRotation());
+        if (projected != null) {
+            facing = projected;
+        }
         return defaultBlockState()
-                .setValue(FACING, context.getNearestLookingDirection())
+                .setValue(FACING, facing)
                 .setValue(ENABLED, !context.getLevel().hasNeighborSignal(context.getClickedPos()));
+    }
+
+    /** The run-projected thrust direction, or null when the clicked block isn't a slide run. */
+    @Nullable
+    private static Direction runProjectedFacing(BlockState clicked, float yawDegrees) {
+        Direction.Axis axis;
+        if (clicked.getBlock() instanceof SlideChannelBlock) {
+            axis = runAxis(clicked.getValue(SlideChannelBlock.SHAPE));
+        } else if (clicked.getBlock() instanceof SlideTubeBlock) {
+            TubeShape shape = clicked.getValue(SlideTubeBlock.SHAPE);
+            if (shape == TubeShape.VERTICAL) {
+                return Direction.UP; // shaft mount: the geyser/climb story
+            }
+            axis = runAxis(shape.toRail());
+        } else {
+            return null;
+        }
+        if (axis == null) {
+            return null; // corners span two axes — keep aim-where-you-look
+        }
+        float yaw = yawDegrees * Mth.DEG_TO_RAD;
+        double component = axis == Direction.Axis.X ? -Mth.sin(yaw) : Mth.cos(yaw);
+        return Direction.fromAxisAndDirection(axis,
+                component >= 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
+    }
+
+    @Nullable
+    private static Direction.Axis runAxis(RailShape rail) {
+        return switch (rail) {
+            case NORTH_SOUTH, ASCENDING_NORTH, ASCENDING_SOUTH -> Direction.Axis.Z;
+            case EAST_WEST, ASCENDING_EAST, ASCENDING_WEST -> Direction.Axis.X;
+            default -> null;
+        };
     }
 
     @Override

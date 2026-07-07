@@ -7,6 +7,7 @@ import com.pgmacdesign.mcwaterslides.registry.ModBlockEntities;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
@@ -158,9 +159,26 @@ public class JetBlockEntity extends BlockEntity {
     }
 
     private CurrentField computeNow(Level level) {
-        return CurrentField.compute(level, getBlockPos(),
-                getBlockState().getValue(JetBlock.FACING),
-                MCWaterslidesConfig.JET_RANGE.get());
+        Direction facing = getBlockState().getValue(JetBlock.FACING);
+        BlockPos origin = getBlockPos();
+        if (!CurrentField.isEnergizable(level.getBlockState(origin.relative(facing)))) {
+            // Side/bottom mount: the nozzle isn't inline with the water. Adopt the first
+            // adjacent energizable cell and project the beam as if the jet sat one step
+            // behind it along FACING — hidden jets push "as if mounted behind". No
+            // energizable neighbor at all keeps the inline origin → empty field → dead
+            // jet (the nozzle-must-touch-water rule survives).
+            for (Direction d : Direction.values()) {
+                if (d == facing) {
+                    continue;
+                }
+                BlockPos n = origin.relative(d);
+                if (CurrentField.isEnergizable(level.getBlockState(n))) {
+                    origin = n.relative(facing.getOpposite());
+                    break;
+                }
+            }
+        }
+        return CurrentField.compute(level, origin, facing, MCWaterslidesConfig.JET_RANGE.get());
     }
 
     /** Idempotent: marking dirty twice schedules exactly one recompute (next sample). */

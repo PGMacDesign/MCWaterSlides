@@ -132,8 +132,13 @@ public final class CurrentField {
         return Math.max(Math.abs(rx), Math.abs(rz)) <= 1 && Math.abs(ry) <= axial;
     }
 
-    private static boolean isPassable(BlockState state) {
+    /** A cell a current can occupy: real water or any slide block (intrinsic water). */
+    public static boolean isEnergizable(BlockState state) {
         return state.getFluidState().is(FluidTags.WATER)
                 || state.getBlock() instanceof SlideSurface;
+    }
+
+    private static boolean isPassable(BlockState state) {
+        return isEnergizable(state);
     }
 }

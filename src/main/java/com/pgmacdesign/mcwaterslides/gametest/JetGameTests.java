@@ -144,4 +144,83 @@ public class JetGameTests {
             }
         });
     }
+
+    /**
+     * A hidden jet UNDER the channel floor pushes along the run: the field seed adopts
+     * the adjacent slide cell and projects the beam as if the jet sat behind it.
+     */
+    @GameTest(template = "empty5", timeoutTicks = 200)
+    public static void hiddenJetBelowFloorPushes(GameTestHelper helper) {
+        for (int z = 1; z <= 4; z++) {
+            helper.setBlock(new BlockPos(2, 2, z), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        }
+        placeJet(helper, new BlockPos(2, 1, 2), Direction.SOUTH, true);
+
+        var husk = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(2, 3, 2));
+        helper.succeedWhen(() -> {
+            double relZ = husk.position().z - helper.absoluteVec(net.minecraft.world.phys.Vec3.ZERO).z;
+            if (relZ < 3.5) {
+                helper.fail("buried jet did not push the husk along the run: z=" + relZ);
+            }
+        });
+    }
+
+    /** A jet mounted BESIDE the run pushes along it too (the other hiding spot). */
+    @GameTest(template = "empty5", timeoutTicks = 200)
+    public static void hiddenJetBesideRunPushes(GameTestHelper helper) {
+        for (int z = 1; z <= 4; z++) {
+            helper.setBlock(new BlockPos(2, 1, z), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        }
+        placeJet(helper, new BlockPos(1, 1, 2), Direction.SOUTH, true);
+
+        var husk = helper.spawnWithNoFreeWill(EntityType.HUSK, new BlockPos(2, 2, 2));
+        helper.succeedWhen(() -> {
+            double relZ = husk.position().z - helper.absoluteVec(net.minecraft.world.phys.Vec3.ZERO).z;
+            if (relZ < 3.5) {
+                helper.fail("side-mounted jet did not push the husk along the run: z=" + relZ);
+            }
+        });
+    }
+
+    /** A jet with no adjacent water or slide stays dead (nozzle-must-touch-water rule). */
+    @GameTest(template = "empty5", timeoutTicks = 60)
+    public static void jetWithNoWaterStaysDead(GameTestHelper helper) {
+        JetBlockEntity jet = placeJet(helper, new BlockPos(2, 2, 2), Direction.SOUTH, true);
+        helper.runAfterDelay(10, () -> {
+            if (!jet.field().isEmpty()) {
+                helper.fail("dry jet must have an empty field");
+            }
+            helper.succeed();
+        });
+    }
+
+    /** Placing a jet against a slide projects FACING onto the run's axis (look picks the sign). */
+    @GameTest(template = "empty5", timeoutTicks = 60)
+    public static void placementProjectsThrustOntoRun(GameTestHelper helper) {
+        helper.setBlock(new BlockPos(2, 1, 1), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        helper.setBlock(new BlockPos(2, 1, 2), ModBlocks.SLIDE_CHANNELS.get(null).get());
+
+        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        player.setYRot(0); // facing south — thrust sign should project to SOUTH
+        BlockPos abs = helper.absolutePos(new BlockPos(2, 1, 2));
+        var stack = new net.minecraft.world.item.ItemStack(
+                com.pgmacdesign.mcwaterslides.registry.ModItems.JET.get());
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack);
+        // Click the run's WEST outer face: the jet lands beside the channel.
+        var hit = new net.minecraft.world.phys.BlockHitResult(
+                new net.minecraft.world.phys.Vec3(abs.getX(), abs.getY() + 0.5, abs.getZ() + 0.5),
+                Direction.WEST, abs, false);
+        stack.useOn(new net.minecraft.world.item.context.UseOnContext(
+                player, net.minecraft.world.InteractionHand.MAIN_HAND, hit));
+
+        helper.succeedWhen(() -> {
+            var placed = helper.getBlockState(new BlockPos(1, 1, 2));
+            if (!(placed.getBlock() instanceof JetBlock)) {
+                helper.fail("jet was not placed beside the run");
+            } else if (placed.getValue(JetBlock.FACING) != Direction.SOUTH) {
+                helper.fail("thrust should project onto the run axis (SOUTH), got "
+                        + placed.getValue(JetBlock.FACING));
+            }
+        });
+    }
 }
