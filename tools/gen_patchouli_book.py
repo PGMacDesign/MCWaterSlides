@@ -54,7 +54,9 @@ def gen():
         "landing_text": f"book.{MOD}.guide.landing",
         "version": 1,
         "subtitle": "Build it. Ride it.",
-        "creative_tab": f"{MOD}:main",
+        # No creative_tab: ModCreativeTabs inserts the book stack into our tab
+        # explicitly (Patchouli's modded-tab auto-insert is unreliable). Leaving this
+        # set too would double-list it.
         "model": "patchouli:book_blue",
         "book_texture": "patchouli:textures/gui/book_blue.png",
         "use_resource_pack": True,
