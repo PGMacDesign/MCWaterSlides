@@ -5,8 +5,10 @@ import java.util.Map;
 
 
 import com.pgmacdesign.mcwaterslides.MCWaterSlides;
+import com.pgmacdesign.mcwaterslides.slide.SlideChannelBlockItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -25,8 +27,12 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> SPLASH_POOL;
 
     static {
+        // Channels get run-extending placement (open-top raycast lands on interior
+        // faces; vanilla resolves those as "place above"). Tubes stay vanilla: their
+        // lid-top click is how tall bores are stacked.
         ModBlocks.SLIDE_CHANNELS.forEach((color, block) ->
-                SLIDE_CHANNEL_ITEMS.put(color, ITEMS.registerSimpleBlockItem(block)));
+                SLIDE_CHANNEL_ITEMS.put(color, ITEMS.register(block.getId().getPath(),
+                        () -> new SlideChannelBlockItem(block.get(), new Item.Properties()))));
         ModBlocks.SLIDE_TUBES.forEach((color, block) ->
                 SLIDE_TUBE_ITEMS.put(color, ITEMS.registerSimpleBlockItem(block)));
         JET = ITEMS.registerSimpleBlockItem(ModBlocks.JET);
