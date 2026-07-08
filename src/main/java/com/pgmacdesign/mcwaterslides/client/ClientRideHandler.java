@@ -56,6 +56,15 @@ public final class ClientRideHandler {
 
         RideTicker.tick(player, state, player.isShiftKeyDown(), true);
         RidePose.reconcile(player, state);
+
+        if (state.riding) {
+            // Riders glide, they don't run. The swim POSE is set, but view-bob and limb
+            // swing are driven separately by horizontal speed — our velocity-push makes
+            // the game think you're sprinting, so the camera bobs and the model run-cycles.
+            // Zero both each tick (runs post-tick, so the reset wins before the frame renders).
+            player.bob = 0.0f;
+            player.walkAnimation.setSpeed(0.0f);
+        }
     }
 
     /** S2C sync handler (invoked from the network layer on the client thread). */
