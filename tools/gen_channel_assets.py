@@ -204,11 +204,13 @@ def water_quad(fr, to):
     return element(fr, to, {"up": face("#water", tint=0)}, shade=False)
 
 
-def straight_water():
+def straight_water(x0=2, x1=14):
+    """Water sheet across the channel. x0/x1 push it out to the block edge (0/16) on any
+    merged side so wide slides show continuous water — no bare floor strip at the seam."""
     return {
         "render_type": "minecraft:translucent",
         "textures": {"particle": "minecraft:block/water_still", "water": "minecraft:block/water_still"},
-        "elements": [water_quad([2, WATER_Y - 0.2, 0], [14, WATER_Y, 16])],
+        "elements": [water_quad([x0, WATER_Y - 0.2, 0], [x1, WATER_Y, 16])],
     }
 
 
@@ -246,6 +248,10 @@ def inventory_model():
 # per-state (wall_neg/wall_pos). shape -> y rotation.
 STRAIGHT_VARIANTS = {"north_south": 0, "east_west": 90}
 
+# (wall_neg, wall_pos) present -> water model suffix. A dropped wall (false) pushes the
+# water to that edge: neg→x0, pos→x16.
+WATER_SUFFIX = {(True, True): "", (False, True): "_neg", (True, False): "_pos", (False, False): "_full"}
+
 # Corner/ascending shapes keep the whole body baked in. shape -> (family, y rotation).
 WHOLE_VARIANTS = {
     "ascending_south": ("slide_channel_ascending", 0),
@@ -270,7 +276,13 @@ def blockstate():
 
     for shape, rot in STRAIGHT_VARIANTS.items():
         parts.append({"when": {"shape": shape}, "apply": apply_of("slide_channel_floor", rot)})
-        parts.append({"when": {"shape": shape}, "apply": apply_of("slide_channel_water", rot)})
+        # Water extends to the block edge on any merged side (wall dropped) so lanes read
+        # as one continuous sheet. neg = west (x→0), pos = east (x→16) before rotation.
+        for (neg, pos), suffix in WATER_SUFFIX.items():
+            parts.append({
+                "when": {"shape": shape, "wall_neg": str(neg).lower(), "wall_pos": str(pos).lower()},
+                "apply": apply_of("slide_channel_water" + suffix, rot),
+            })
         parts.append({"when": {"shape": shape, "wall_neg": "true"},
                       "apply": apply_of("slide_channel_wall_neg", rot)})
         parts.append({"when": {"shape": shape, "wall_pos": "true"},
@@ -314,7 +326,9 @@ def gen_data():
     write_json(models / "block/slide_channel_wall_pos.json", model_of(straight_wall_pos_element()))
     write_json(models / "block/slide_channel_corner.json", corner_body())
     write_json(models / "block/slide_channel_ascending.json", ascending_body())
-    write_json(models / "block/slide_channel_water.json", straight_water())
+    # 4 water spans keyed on which walls merged (default 2-14; extend to 0/16 per side).
+    for suffix, (x0, x1) in {"": (2, 14), "_neg": (0, 14), "_pos": (2, 16), "_full": (0, 16)}.items():
+        write_json(models / f"block/slide_channel_water{suffix}.json", straight_water(x0, x1))
     write_json(models / "block/slide_channel_corner_water.json", corner_water())
     write_json(models / "block/slide_channel_ascending_water.json", ascending_water())
     write_json(models / "block/slide_channel_inventory.json", inventory_model())
