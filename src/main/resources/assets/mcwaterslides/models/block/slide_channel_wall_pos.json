@@ -44,13 +44,13 @@
     },
     {
       "from": [
-        13,
-        2,
+        10.5,
+        -0.5,
         0
       ],
       "to": [
-        14,
-        8,
+        15.449747468305834,
+        2,
         16
       ],
       "faces": {
@@ -65,117 +65,16 @@
         "south": {
           "texture": "#lining",
           "tintindex": 1
-        },
-        "east": {
-          "texture": "#lining",
-          "tintindex": 1
-        },
-        "west": {
-          "texture": "#lining",
-          "tintindex": 1
         }
-      }
-    },
-    {
-      "from": [
-        12,
-        2,
-        0
-      ],
-      "to": [
-        13,
-        6,
-        16
-      ],
-      "faces": {
-        "up": {
-          "texture": "#lining",
-          "tintindex": 1
-        },
-        "north": {
-          "texture": "#lining",
-          "tintindex": 1
-        },
-        "south": {
-          "texture": "#lining",
-          "tintindex": 1
-        },
-        "east": {
-          "texture": "#lining",
-          "tintindex": 1
-        },
-        "west": {
-          "texture": "#lining",
-          "tintindex": 1
-        }
-      }
-    },
-    {
-      "from": [
-        11,
-        2,
-        0
-      ],
-      "to": [
-        12,
-        4,
-        16
-      ],
-      "faces": {
-        "up": {
-          "texture": "#lining",
-          "tintindex": 1
-        },
-        "north": {
-          "texture": "#lining",
-          "tintindex": 1
-        },
-        "south": {
-          "texture": "#lining",
-          "tintindex": 1
-        },
-        "east": {
-          "texture": "#lining",
-          "tintindex": 1
-        },
-        "west": {
-          "texture": "#lining",
-          "tintindex": 1
-        }
-      }
-    },
-    {
-      "from": [
-        10,
-        2,
-        0
-      ],
-      "to": [
-        11,
-        3,
-        16
-      ],
-      "faces": {
-        "up": {
-          "texture": "#lining",
-          "tintindex": 1
-        },
-        "north": {
-          "texture": "#lining",
-          "tintindex": 1
-        },
-        "south": {
-          "texture": "#lining",
-          "tintindex": 1
-        },
-        "east": {
-          "texture": "#lining",
-          "tintindex": 1
-        },
-        "west": {
-          "texture": "#lining",
-          "tintindex": 1
-        }
+      },
+      "rotation": {
+        "origin": [
+          10.5,
+          2,
+          8
+        ],
+        "axis": "z",
+        "angle": 45
       }
     }
   ]
