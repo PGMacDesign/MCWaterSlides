@@ -123,11 +123,33 @@ def straight_wall_pos_element():
     })
 
 
+def _fillet_faces():
+    return {d: face("#lining", tint=1) for d in ("up", "down", "north", "south", "east", "west")}
+
+
+def wall_neg_fillet():
+    """Round the concave floor↔west-wall corner: stepped tinted fill (rounded trough).
+    Model-only — collision stays the flat-floor U, so ride physics/containment are unchanged."""
+    return [
+        element([2, 2, 0], [3, 4, 16], _fillet_faces()),
+        element([3, 2, 0], [4, 3, 16], _fillet_faces()),
+    ]
+
+
+def wall_pos_fillet():
+    """Mirror of {@link wall_neg_fillet} for the east wall."""
+    return [
+        element([13, 2, 0], [14, 4, 16], _fillet_faces()),
+        element([12, 2, 0], [13, 3, 16], _fillet_faces()),
+    ]
+
+
 def straight_body():
-    """North-south run: open ends N/S, walls E/W (composite for inventory)."""
+    """North-south run: open ends N/S, walls E/W + rounded corners (composite for inventory)."""
     return {
         "textures": body_textures(),
-        "elements": [straight_floor_element(), straight_wall_neg_element(), straight_wall_pos_element()],
+        "elements": [straight_floor_element(), straight_wall_neg_element(), straight_wall_pos_element(),
+                     *wall_neg_fillet(), *wall_pos_fillet()],
     }
 
 
@@ -322,8 +344,10 @@ def gen_data():
     models = RES / f"assets/{MOD}/models"
     write_json(models / "block/slide_channel.json", straight_body())
     write_json(models / "block/slide_channel_floor.json", model_of(straight_floor_element()))
-    write_json(models / "block/slide_channel_wall_neg.json", model_of(straight_wall_neg_element()))
-    write_json(models / "block/slide_channel_wall_pos.json", model_of(straight_wall_pos_element()))
+    write_json(models / "block/slide_channel_wall_neg.json",
+               model_of(straight_wall_neg_element(), *wall_neg_fillet()))
+    write_json(models / "block/slide_channel_wall_pos.json",
+               model_of(straight_wall_pos_element(), *wall_pos_fillet()))
     write_json(models / "block/slide_channel_corner.json", corner_body())
     write_json(models / "block/slide_channel_ascending.json", ascending_body())
     # 4 water spans keyed on which walls merged (default 2-14; extend to 0/16 per side).
