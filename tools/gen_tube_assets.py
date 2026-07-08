@@ -88,6 +88,49 @@ def floor_elements():
     ]
 
 
+# Rounded bore: a stepped quarter-curve in each of the four bore corners, ~4px deep, leaving
+# flat mid-edges → a rounded-rectangle bore that reads as a cylinder (not the "giant oval").
+# (offset, fill_top_y) per 1px column, steep near the wall = concave curve. Model-only —
+# collision stays the square bore (SlideTubeBlock), so containment/feel are unchanged.
+# The fillets ride the WALL model, which already varies by height band (yb/yt): a bottom
+# fillet is emitted only when the floor is present (yb==2), a top fillet only when the lid is
+# present (yt==WALL_H) — so on a stacked bore they drop exactly with the surface they round.
+_BORE_CURVE = [(2, 3, 6), (3, 4, 5), (4, 5, 4), (5, 6, 3)]
+
+
+def _fillet_faces(bottom):
+    # Bottom steps sit on the floor (skip the coincident down face); top steps hang under the
+    # lid (skip up). Remaining faces tinted so the dye reads on the rounded bore surface.
+    skip = "down" if bottom else "up"
+    return {d: face("#lining", tint=1) for d in ("up", "down", "north", "south", "east", "west")
+            if d != skip}
+
+
+def _ns_fillets(yb, yt):
+    """West/east bore-corner rounding for a straight (N-S) tube, extruded along z."""
+    els = []
+    if yb == 2:  # floor present → round the two bottom corners
+        els += [element([x0, 2, 0], [x1, h, 16], _fillet_faces(True)) for (x0, x1, h) in _BORE_CURVE]
+        els += [element([16 - x1, 2, 0], [16 - x0, h, 16], _fillet_faces(True)) for (x0, x1, h) in _BORE_CURVE]
+    if yt == WALL_H:  # lid present → round the two top corners (vertical mirror)
+        els += [element([x0, 16 - h, 0], [x1, 14, 16], _fillet_faces(False)) for (x0, x1, h) in _BORE_CURVE]
+        els += [element([16 - x1, 16 - h, 0], [16 - x0, 14, 16], _fillet_faces(False)) for (x0, x1, h) in _BORE_CURVE]
+    return els
+
+
+def _corner_fillets(yb, yt):
+    """North/west bore-corner rounding for a corner tube (walls on N + W), extruded along the
+    open axis so the curve runs out to each exit mouth."""
+    els = []
+    if yb == 2:
+        els += [element([2, 2, z0], [16, h, z1], _fillet_faces(True)) for (z0, z1, h) in _BORE_CURVE]
+        els += [element([x0, 2, 2], [x1, h, 16], _fillet_faces(True)) for (x0, x1, h) in _BORE_CURVE]
+    if yt == WALL_H:
+        els += [element([2, 16 - h, z0], [16, 14, z1], _fillet_faces(False)) for (z0, z1, h) in _BORE_CURVE]
+        els += [element([x0, 16 - h, 2], [x1, 14, 16], _fillet_faces(False)) for (x0, x1, h) in _BORE_CURVE]
+    return els
+
+
 def straight_wall_elements(yb=2, yt=WALL_H):
     # Fully tinted so the dye reads from outside too (and in the inventory GUI). yb/yt let
     # stacked bores extend the walls into the dropped lid (yt=16) / floor (yb=0) bands.
@@ -102,7 +145,7 @@ def straight_wall_elements(yb=2, yt=WALL_H):
             "north": face("#lining", tint=1, cull="north"), "south": face("#lining", tint=1, cull="south"),
             "up": face("#lining", tint=1), "down": face("#lining", tint=1),
         }),
-    ]
+    ] + _ns_fillets(yb, yt)
 
 
 def straight_lid_elements():
@@ -133,7 +176,7 @@ def corner_wall_elements(yb=2, yt=WALL_H):
             "south": face("#lining", tint=1, cull="south"),
             "up": face("#lining", tint=1), "down": face("#lining", tint=1),
         }),
-    ]
+    ] + _corner_fillets(yb, yt)
 
 
 def corner_lid_elements():

@@ -124,24 +124,31 @@ def straight_wall_pos_element():
 
 
 def _fillet_faces():
-    return {d: face("#lining", tint=1) for d in ("up", "down", "north", "south", "east", "west")}
+    # No down face — the steps sit on the floor top (y=2); a down quad there z-fights the floor.
+    return {d: face("#lining", tint=1) for d in ("up", "north", "south", "east", "west")}
+
+
+# Rounded trough: a stepped quarter-bowl in each floor↔wall corner, rising steeply toward the
+# wall so the cross-section reads as a deep half-pipe (a real waterslide flume, not a sharp U).
+# (x0, x1, fill_top_y) per 1px column; heights accelerate toward the wall = concave curve.
+# Model-only — collision stays the flat-floor U in SlideChannelShapes, so ride physics,
+# containment and no-clip are all unchanged; the curve lives outside where the rider can go.
+_WEST_BOWL = [(2, 3, 8), (3, 4, 6), (4, 5, 4), (5, 6, 3)]
+_EAST_BOWL = [(13, 14, 8), (12, 13, 6), (11, 12, 4), (10, 11, 3)]
+
+
+def _bowl_steps(profile):
+    return [element([x0, 2, 0], [x1, yt, 16], _fillet_faces()) for (x0, x1, yt) in profile]
 
 
 def wall_neg_fillet():
-    """Round the concave floor↔west-wall corner: stepped tinted fill (rounded trough).
-    Model-only — collision stays the flat-floor U, so ride physics/containment are unchanged."""
-    return [
-        element([2, 2, 0], [3, 4, 16], _fillet_faces()),
-        element([3, 2, 0], [4, 3, 16], _fillet_faces()),
-    ]
+    """West-side trough rounding — rides the west wall model, so it drops on a merged side."""
+    return _bowl_steps(_WEST_BOWL)
 
 
 def wall_pos_fillet():
-    """Mirror of {@link wall_neg_fillet} for the east wall."""
-    return [
-        element([13, 2, 0], [14, 4, 16], _fillet_faces()),
-        element([12, 2, 0], [13, 3, 16], _fillet_faces()),
-    ]
+    """East-side trough rounding (mirror of {@link wall_neg_fillet})."""
+    return _bowl_steps(_EAST_BOWL)
 
 
 def straight_body():
