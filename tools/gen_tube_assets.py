@@ -46,12 +46,10 @@ def face(texture, tint=None, cull=None):
     return f
 
 
-def element(fr, to, faces, shade=None, rotation=None):
+def element(fr, to, faces, shade=None):
     e = {"from": fr, "to": to, "faces": faces}
     if shade is not None:
         e["shade"] = shade
-    if rotation is not None:
-        e["rotation"] = rotation
     return e
 
 
@@ -108,36 +106,15 @@ def _fillet_faces(bottom):
             if d != skip}
 
 
-# Octagonal bore: cut each of the four straight-tube corners with a SOLID 45° wedge (a plate
-# rotated about Z so its rendered face is the chamfer diagonal; the body buries into the
-# wall/floor/lid, so there are no see-through gaps). D=3.5 → a near-regular octagon (~5px flat
-# sides, ~5px diagonals) in the 12-wide bore. Model-only — SlideTubeBlock collision stays the
-# square bore, so containment/feel are unchanged. Gated like the walls (bottom wedges only with
-# the floor present, top only with the lid) so a stacked bore stays a continuous octagon.
-_CHAMFER_D = 3.5
-_CHAMFER_TH = 2.5   # perpendicular thickness; > corner depth (D/√2≈2.47) so it fully fills the corner
-
-
-def _wedge_faces(bottom):
-    key = "up" if bottom else "down"   # the rendered chamfer face; the rest buries into solid
-    return {d: face("#lining", tint=1) for d in (key, "north", "south")}
-
-
 def _ns_fillets(yb, yt):
-    """Straight (N-S) tube bore corners as 45° chamfers → octagonal bore, extruded along z."""
-    d, th = _CHAMFER_D, _CHAMFER_TH
-    diag = d * (2 ** 0.5)
+    """West/east bore-corner rounding for a straight (N-S) tube, extruded along z."""
     els = []
-    if yb == 2:  # floor present → chamfer the two bottom corners
-        els.append(element([2 + d - diag, 2 - th, 0], [2 + d, 2, 16], _wedge_faces(True),
-                           rotation={"origin": [2 + d, 2, 8], "axis": "z", "angle": -45}))
-        els.append(element([14 - d, 2 - th, 0], [14 - d + diag, 2, 16], _wedge_faces(True),
-                           rotation={"origin": [14 - d, 2, 8], "axis": "z", "angle": 45}))
-    if yt == WALL_H:  # lid present → chamfer the two top corners
-        els.append(element([2 + d - diag, 14, 0], [2 + d, 14 + th, 16], _wedge_faces(False),
-                           rotation={"origin": [2 + d, 14, 8], "axis": "z", "angle": 45}))
-        els.append(element([14 - d, 14, 0], [14 - d + diag, 14 + th, 16], _wedge_faces(False),
-                           rotation={"origin": [14 - d, 14, 8], "axis": "z", "angle": -45}))
+    if yb == 2:  # floor present → round the two bottom corners
+        els += [element([x0, 2, 0], [x1, h, 16], _fillet_faces(True)) for (x0, x1, h) in _BORE_CURVE]
+        els += [element([16 - x1, 2, 0], [16 - x0, h, 16], _fillet_faces(True)) for (x0, x1, h) in _BORE_CURVE]
+    if yt == WALL_H:  # lid present → round the two top corners (vertical mirror)
+        els += [element([x0, 16 - h, 0], [x1, 14, 16], _fillet_faces(False)) for (x0, x1, h) in _BORE_CURVE]
+        els += [element([16 - x1, 16 - h, 0], [16 - x0, 14, 16], _fillet_faces(False)) for (x0, x1, h) in _BORE_CURVE]
     return els
 
 
