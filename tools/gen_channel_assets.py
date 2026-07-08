@@ -14,7 +14,6 @@ Emits, under src/main/resources:
 Deterministic: fixed RNG seed, sorted iteration. Rerun any time; output is stable.
 """
 import json
-import math
 import random
 from pathlib import Path
 
@@ -124,56 +123,32 @@ def straight_wall_pos_element():
     })
 
 
-def _facet_faces():
-    return {d: face("#lining", tint=1) for d in ("up", "down", "north", "south")}
+def _fillet_faces():
+    # No down face — the steps sit on the floor top (y=2); a down quad there z-fights the floor.
+    return {d: face("#lining", tint=1) for d in ("up", "north", "south", "east", "west")}
 
 
-# Tilted-panel trough: instead of a blocky staircase, each side is flat lining PANELS tangent
-# to a concave curve — a gentle 22.5° panel off the flat center, then a steep 45° panel up to
-# the wall. Read as a smooth (16-gon) curve, not steps. The panels connect end-to-end: the
-# 22.5° panel's top edge is the 45° panel's pivot. Model-only — collision stays the flat-floor
-# U in SlideChannelShapes, so ride physics/containment/no-clip are unchanged; the curve lives
-# outside where the rider can physically go.
-_TAN = {22.5: math.tan(math.radians(22.5)), 45.0: 1.0}
+# Rounded trough: a stepped quarter-bowl in each floor↔wall corner, rising steeply toward the
+# wall so the cross-section reads as a deep half-pipe (a real waterslide flume, not a sharp U).
+# (x0, x1, fill_top_y) per 1px column; heights accelerate toward the wall = concave curve.
+# Model-only — collision stays the flat-floor U in SlideChannelShapes, so ride physics,
+# containment and no-clip are all unchanged; the curve lives outside where the rider can go.
+_WEST_BOWL = [(2, 3, 8), (3, 4, 6), (4, 5, 4), (5, 6, 3)]
+_EAST_BOWL = [(13, 14, 8), (12, 13, 6), (11, 12, 4), (10, 11, 3)]
 
 
-def _facet(px, py, angle_deg, dx, west):
-    """One tilted lining panel rising from inner top point (px,py) toward the wall over
-    horizontal span dx at angle_deg. Rotated about (px,py) so its horizontal projection is
-    exactly dx (no rescale = true angle). Returns (element, end_x, end_y) so panels chain."""
-    rad = math.radians(angle_deg)
-    chord = dx / math.cos(rad)          # pre-rotation length so the projection stays dx
-    thickness = 2.0
-    if west:
-        box = ([px - chord, py - thickness, 0], [px, py, 16])
-        angle = -angle_deg
-        end_x, end_y = px - dx, py + dx * _TAN[angle_deg]
-    else:
-        box = ([px, py - thickness, 0], [px + chord, py, 16])
-        angle = angle_deg
-        end_x, end_y = px + dx, py + dx * _TAN[angle_deg]
-    el = element(box[0], box[1], _facet_faces(),
-                 rotation={"origin": [px, py, 8], "axis": "z", "angle": angle, "rescale": False})
-    return el, end_x, end_y
-
-
-def _trough_side(west):
-    """Two chained panels (22.5° then 45°) from the flat center (x=7 west / x=9 east, y=2)
-    up to the wall. West rises toward -x, east toward +x."""
-    px = 7 if west else 9
-    gentle, gx, gy = _facet(px, 2, 22.5, 2, west)   # flat-center → mid
-    steep, _, _ = _facet(gx, gy, 45.0, 3, west)     # mid → wall (meets x2/x14 near y5.8)
-    return [gentle, steep]
+def _bowl_steps(profile):
+    return [element([x0, 2, 0], [x1, yt, 16], _fillet_faces()) for (x0, x1, yt) in profile]
 
 
 def wall_neg_fillet():
-    """West-side trough curve — rides the west wall model, so it drops on a merged side."""
-    return _trough_side(True)
+    """West-side trough rounding — rides the west wall model, so it drops on a merged side."""
+    return _bowl_steps(_WEST_BOWL)
 
 
 def wall_pos_fillet():
-    """East-side trough curve (mirror of {@link wall_neg_fillet})."""
-    return _trough_side(False)
+    """East-side trough rounding (mirror of {@link wall_neg_fillet})."""
+    return _bowl_steps(_EAST_BOWL)
 
 
 def straight_body():
