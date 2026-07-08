@@ -58,14 +58,34 @@ public class JetBlock extends DirectionalBlock implements EntityBlock {
         // thrust projects onto the run's axis (sign from the look direction): hidden
         // side/floor jets push along the slide, not into it.
         Direction facing = context.getNearestLookingDirection();
+        Level level = context.getLevel();
         BlockPos clicked = context.getClickedPos().relative(context.getClickedFace().getOpposite());
-        Direction projected = runProjectedFacing(context.getLevel().getBlockState(clicked), context.getRotation());
+        Direction projected = runProjectedFacing(level.getBlockState(clicked), context.getRotation());
+        if (projected == null) {
+            // Not placed onto a slide face, but dropped beside/under/over one — still aim
+            // ALONG the run so a jet touching a slide just works (the common "row of jets
+            // next to the slide" build). Without this the jet keeps the look direction and
+            // pushes sideways/up, energizing the water but adding no forward thrust.
+            projected = adjacentRunFacing(level, context.getClickedPos(), context.getRotation());
+        }
         if (projected != null) {
             facing = projected;
         }
         return defaultBlockState()
                 .setValue(FACING, facing)
                 .setValue(ENABLED, !context.getLevel().hasNeighborSignal(context.getClickedPos()));
+    }
+
+    /** Run-projected facing from any adjacent slide (first neighbor that resolves an axis). */
+    @Nullable
+    private static Direction adjacentRunFacing(Level level, BlockPos pos, float yawDegrees) {
+        for (Direction d : Direction.values()) {
+            Direction projected = runProjectedFacing(level.getBlockState(pos.relative(d)), yawDegrees);
+            if (projected != null) {
+                return projected;
+            }
+        }
+        return null;
     }
 
     /** The run-projected thrust direction, or null when the clicked block isn't a slide run. */
