@@ -187,7 +187,12 @@ public final class SlideConnections {
         };
     }
 
-    /** Recompute every slide block that could connect to {@code pos} (place/remove ripple). */
+    /**
+     * Recompute every slide block that could connect to {@code pos} (place/remove ripple).
+     * Includes the four same-level DIAGONALS: the wide-area rule ({@link #isFlatAreaCell})
+     * reads a cell's diagonal, so completing a 2×2 must re-shape the diagonally-opposite
+     * cell too — otherwise it keeps a stale shape and its wall never merges.
+     */
     public static void refreshNeighbors(Level level, BlockPos pos) {
         for (Direction d : ORDER) {
             BlockPos side = pos.relative(d);
@@ -195,6 +200,15 @@ public final class SlideConnections {
                 BlockState ns = level.getBlockState(np);
                 if (isSlide(ns)) {
                     refreshSelf(level, np, ns);
+                }
+            }
+        }
+        for (Direction a : new Direction[]{Direction.NORTH, Direction.SOUTH}) {
+            for (Direction b : new Direction[]{Direction.EAST, Direction.WEST}) {
+                BlockPos diag = pos.relative(a).relative(b);
+                BlockState ns = level.getBlockState(diag);
+                if (isSlide(ns)) {
+                    refreshSelf(level, diag, ns);
                 }
             }
         }
