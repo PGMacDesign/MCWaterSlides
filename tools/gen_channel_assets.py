@@ -123,35 +123,32 @@ def straight_wall_pos_element():
     })
 
 
-def _wedge_faces():
-    # Only the chamfer face (up) + the z-caps render; the rest buries into the wall/floor.
-    return {d: face("#lining", tint=1) for d in ("up", "north", "south")}
+def _fillet_faces():
+    # No down face — the steps sit on the floor top (y=2); a down quad there z-fights the floor.
+    return {d: face("#lining", tint=1) for d in ("up", "north", "south", "east", "west")}
 
 
-# Octagonal trough bottom: cut each floor↔wall corner with a SOLID 45° wedge (a plate rotated
-# about Z whose rendered face is the chamfer diagonal, body buried in the wall/floor so there
-# are no see-through gaps). Same technique as the straight-tube bore — reads as a clean beveled
-# trough, not a staircase. D=3.5 → a ~5px flat bottom + 45° sides rising to the wall (then the
-# vertical wall lip above). Model-only: collision stays the flat-floor U in SlideChannelShapes,
-# and each wedge rides the conditional wall model, so it drops with the wall on a merged side.
-_CHAMFER_D = 3.5
-_CHAMFER_TH = 2.5   # perpendicular thickness > corner depth (D/√2≈2.47) so it fully fills the corner
+# Rounded trough: a stepped quarter-bowl in each floor↔wall corner, rising steeply toward the
+# wall so the cross-section reads as a deep half-pipe (a real waterslide flume, not a sharp U).
+# (x0, x1, fill_top_y) per 1px column; heights accelerate toward the wall = concave curve.
+# Model-only — collision stays the flat-floor U in SlideChannelShapes, so ride physics,
+# containment and no-clip are all unchanged; the curve lives outside where the rider can go.
+_WEST_BOWL = [(2, 3, 8), (3, 4, 6), (4, 5, 4), (5, 6, 3)]
+_EAST_BOWL = [(13, 14, 8), (12, 13, 6), (11, 12, 4), (10, 11, 3)]
+
+
+def _bowl_steps(profile):
+    return [element([x0, 2, 0], [x1, yt, 16], _fillet_faces()) for (x0, x1, yt) in profile]
 
 
 def wall_neg_fillet():
-    """West floor↔wall corner as a 45° chamfer (rides the west wall model)."""
-    d, th = _CHAMFER_D, _CHAMFER_TH
-    diag = d * (2 ** 0.5)
-    return [element([2 + d - diag, 2 - th, 0], [2 + d, 2, 16], _wedge_faces(),
-                    rotation={"origin": [2 + d, 2, 8], "axis": "z", "angle": -45})]
+    """West-side trough rounding — rides the west wall model, so it drops on a merged side."""
+    return _bowl_steps(_WEST_BOWL)
 
 
 def wall_pos_fillet():
-    """East floor↔wall corner as a 45° chamfer (mirror of {@link wall_neg_fillet})."""
-    d, th = _CHAMFER_D, _CHAMFER_TH
-    diag = d * (2 ** 0.5)
-    return [element([14 - d, 2 - th, 0], [14 - d + diag, 2, 16], _wedge_faces(),
-                    rotation={"origin": [14 - d, 2, 8], "axis": "z", "angle": 45})]
+    """East-side trough rounding (mirror of {@link wall_neg_fillet})."""
+    return _bowl_steps(_EAST_BOWL)
 
 
 def straight_body():
