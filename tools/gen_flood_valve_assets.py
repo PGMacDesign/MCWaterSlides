@@ -134,7 +134,7 @@ def gen_lang():
     lang.update({
         f"block.{MOD}.flood_valve": "Flood Valve",
         # item tooltip
-        f"tooltip.{MOD}.flood_valve.what": "Floods the sealed space it faces with water.",
+        f"tooltip.{MOD}.flood_valve.what": "Floods a sealed space it faces with water.",
         f"tooltip.{MOD}.flood_valve.how": "Redstone ON fills · OFF drains. Needs RF.",
         f"tooltip.{MOD}.flood_valve.leaks": "Not watertight? It points at the leak.",
         # right-click status readout

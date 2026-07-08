@@ -212,6 +212,17 @@ def straight_tube_body():
     return model_of(floor_elements() + straight_wall_elements() + straight_lid_elements())
 
 
+def tube_inventory_model():
+    """Inventory icon: the full body PLUS the bore's water sheet — without it the icon reads
+    as a hollow shell (the tubes looked 'incomplete' in the creative menu)."""
+    m = straight_tube_body()
+    m["elements"] = m["elements"] + water_overlay(((2, 0), (14, 16)))["elements"]
+    m["textures"]["water"] = "minecraft:block/water_still"
+    m["render_type"] = "minecraft:translucent"
+    m["parent"] = "minecraft:block/block"
+    return m
+
+
 def vertical_tube_body():
     """Four walls, open top/bottom."""
     return {
@@ -353,9 +364,8 @@ def gen_data():
     write_json(models / "block/slide_tube_window_strip.json", window_strip())
     write_json(models / "block/slide_tube_corner_window.json", corner_window())
 
-    # inventory model: straight body reused directly (tint via item colors)
-    write_json(models / "block/slide_tube_inventory.json",
-               {"parent": f"{MOD}:block/slide_tube"})
+    # inventory model: full body + bore water so the icon isn't a hollow shell
+    write_json(models / "block/slide_tube_inventory.json", tube_inventory_model())
 
     for name in ALL_TUBES:
         write_json(RES / f"assets/{MOD}/blockstates/{name}.json", blockstate())
