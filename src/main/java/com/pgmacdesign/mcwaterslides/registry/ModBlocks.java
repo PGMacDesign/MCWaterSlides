@@ -77,6 +77,23 @@ public final class ModBlocks {
                             .sound(SoundType.STONE)
                             .noOcclusion());
 
+    /** Translucent glass variants (see-through all around) — standalone material, not a dye color. */
+    public static final DeferredBlock<SlideChannelBlock> CLEAR_SLIDE_CHANNEL =
+            BLOCKS.registerBlock("clear_slide_channel",
+                    props -> new SlideChannelBlock(null, props),
+                    BlockBehaviour.Properties.of()
+                            .strength(1.0f, 4.0f)
+                            .sound(SoundType.GLASS)
+                            .noOcclusion());
+
+    public static final DeferredBlock<com.pgmacdesign.mcwaterslides.slide.SlideTubeBlock> CLEAR_SLIDE_TUBE =
+            BLOCKS.registerBlock("clear_slide_tube",
+                    props -> new com.pgmacdesign.mcwaterslides.slide.SlideTubeBlock(null, props),
+                    BlockBehaviour.Properties.of()
+                            .strength(1.0f, 4.0f)
+                            .sound(SoundType.GLASS)
+                            .noOcclusion());
+
     private static DeferredBlock<SlideChannelBlock> registerChannel(String name, DyeColor color) {
         return BLOCKS.registerBlock(name,
                 props -> new SlideChannelBlock(color, props),

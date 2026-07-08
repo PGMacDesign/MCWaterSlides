@@ -1,0 +1,183 @@
+{
+  "textures": {
+    "particle": "mcwaterslides:block/slide_clear",
+    "base": "mcwaterslides:block/slide_clear",
+    "lining": "mcwaterslides:block/slide_clear"
+  },
+  "elements": [
+    {
+      "from": [
+        14,
+        2,
+        0
+      ],
+      "to": [
+        16,
+        14,
+        16
+      ],
+      "faces": {
+        "east": {
+          "texture": "#lining",
+          "tintindex": 1,
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "up": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "north": {
+          "texture": "#lining",
+          "tintindex": 1,
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#lining",
+          "tintindex": 1,
+          "cullface": "south"
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        2,
+        0
+      ],
+      "to": [
+        14,
+        8,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "north": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "south": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "east": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "west": {
+          "texture": "#lining",
+          "tintindex": 1
+        }
+      }
+    },
+    {
+      "from": [
+        12,
+        2,
+        0
+      ],
+      "to": [
+        13,
+        6,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "north": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "south": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "east": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "west": {
+          "texture": "#lining",
+          "tintindex": 1
+        }
+      }
+    },
+    {
+      "from": [
+        11,
+        2,
+        0
+      ],
+      "to": [
+        12,
+        4,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "north": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "south": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "east": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "west": {
+          "texture": "#lining",
+          "tintindex": 1
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        2,
+        0
+      ],
+      "to": [
+        11,
+        3,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "north": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "south": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "east": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "west": {
+          "texture": "#lining",
+          "tintindex": 1
+        }
+      }
+    }
+  ],
+  "render_type": "minecraft:translucent"
+}

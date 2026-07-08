@@ -20,6 +20,8 @@ public final class ModItems {
     public static final Map<DyeColor, DeferredItem<BlockItem>> SLIDE_CHANNEL_ITEMS = new LinkedHashMap<>();
     public static final Map<DyeColor, DeferredItem<BlockItem>> SLIDE_TUBE_ITEMS = new LinkedHashMap<>();
 
+    public static final DeferredItem<BlockItem> CLEAR_SLIDE_CHANNEL;
+    public static final DeferredItem<BlockItem> CLEAR_SLIDE_TUBE;
     public static final DeferredItem<BlockItem> JET;
     public static final DeferredItem<BlockItem> PUMP_HOUSE;
     public static final DeferredItem<BlockItem> WATER_CONDUIT;
@@ -35,6 +37,9 @@ public final class ModItems {
                         () -> new SlideChannelBlockItem(block.get(), new Item.Properties()))));
         ModBlocks.SLIDE_TUBES.forEach((color, block) ->
                 SLIDE_TUBE_ITEMS.put(color, ITEMS.registerSimpleBlockItem(block)));
+        CLEAR_SLIDE_CHANNEL = ITEMS.register("clear_slide_channel",
+                () -> new SlideChannelBlockItem(ModBlocks.CLEAR_SLIDE_CHANNEL.get(), new Item.Properties()));
+        CLEAR_SLIDE_TUBE = ITEMS.registerSimpleBlockItem(ModBlocks.CLEAR_SLIDE_TUBE);
         JET = ITEMS.registerSimpleBlockItem(ModBlocks.JET);
         PUMP_HOUSE = ITEMS.registerSimpleBlockItem(ModBlocks.PUMP_HOUSE);
         WATER_CONDUIT = ITEMS.registerSimpleBlockItem(ModBlocks.WATER_CONDUIT);

@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "slide_tube",
+  "pattern": [
+    "GCG",
+    "C C",
+    "GCG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "C": {
+      "item": "mcwaterslides:clear_slide_channel"
+    }
+  },
+  "result": {
+    "id": "mcwaterslides:clear_slide_tube",
+    "count": 4
+  }
+}

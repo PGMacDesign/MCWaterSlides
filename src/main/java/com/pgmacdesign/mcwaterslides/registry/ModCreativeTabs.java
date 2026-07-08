@@ -23,6 +23,8 @@ public final class ModCreativeTabs {
                     .displayItems((parameters, output) -> {
                         ModItems.SLIDE_CHANNEL_ITEMS.values().forEach(output::accept);
                         ModItems.SLIDE_TUBE_ITEMS.values().forEach(output::accept);
+                        output.accept(ModItems.CLEAR_SLIDE_CHANNEL.get());
+                        output.accept(ModItems.CLEAR_SLIDE_TUBE.get());
                         output.accept(ModItems.JET.get());
                         output.accept(ModItems.PUMP_HOUSE.get());
                         output.accept(ModItems.WATER_CONDUIT.get());

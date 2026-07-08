@@ -24,6 +24,8 @@ public final class ClientColorHandlers {
     public static final int DEFAULT_WATER = 0xFF3F76E4;
     /** Undyed lining: pale ceramic. */
     public static final int NATURAL_LINING = 0xFFE8E4DC;
+    /** Clear glass: no dye tint, so the translucent texture shows its own colour. */
+    public static final int CLEAR_GLASS = 0xFFFFFFFF;
 
     private ClientColorHandlers() {}
 
@@ -55,6 +57,16 @@ public final class ClientColorHandlers {
             }
             return NATURAL_LINING;
         }, ModBlocks.SPLASH_POOL.get());
+        for (var clear : java.util.List.of(ModBlocks.CLEAR_SLIDE_CHANNEL.get(), ModBlocks.CLEAR_SLIDE_TUBE.get())) {
+            event.register((state, level, pos, tintIndex) -> {
+                if (tintIndex == 0) {
+                    return level != null && pos != null
+                            ? 0xFF000000 | BiomeColors.getAverageWaterColor(level, pos)
+                            : DEFAULT_WATER;
+                }
+                return CLEAR_GLASS;
+            }, clear);
+        }
     }
 
     @SubscribeEvent
@@ -77,6 +89,9 @@ public final class ClientColorHandlers {
                 }, holder.get()));
         event.register((stack, tintIndex) -> tintIndex == 0 ? DEFAULT_WATER : NATURAL_LINING,
                 ModItems.SPLASH_POOL.get());
+        for (var clear : java.util.List.of(ModItems.CLEAR_SLIDE_CHANNEL.get(), ModItems.CLEAR_SLIDE_TUBE.get())) {
+            event.register((stack, tintIndex) -> tintIndex == 0 ? DEFAULT_WATER : CLEAR_GLASS, clear);
+        }
     }
 
     private static int liningColor(DyeColor color) {

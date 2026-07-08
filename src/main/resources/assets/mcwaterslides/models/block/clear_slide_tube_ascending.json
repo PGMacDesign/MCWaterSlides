@@ -1,0 +1,123 @@
+{
+  "textures": {
+    "particle": "mcwaterslides:block/slide_clear",
+    "base": "mcwaterslides:block/slide_clear",
+    "lining": "mcwaterslides:block/slide_clear"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        2,
+        0
+      ],
+      "to": [
+        2,
+        16,
+        16
+      ],
+      "faces": {
+        "west": {
+          "texture": "#lining",
+          "tintindex": 1,
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "up": {
+          "texture": "#lining",
+          "tintindex": 1,
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#lining",
+          "tintindex": 1,
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#lining",
+          "tintindex": 1,
+          "cullface": "south"
+        }
+      }
+    },
+    {
+      "from": [
+        14,
+        2,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "east": {
+          "texture": "#lining",
+          "tintindex": 1,
+          "cullface": "east"
+        },
+        "west": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "up": {
+          "texture": "#lining",
+          "tintindex": 1,
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#lining",
+          "tintindex": 1,
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#lining",
+          "tintindex": 1,
+          "cullface": "south"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        6,
+        0
+      ],
+      "to": [
+        14,
+        8,
+        16
+      ],
+      "faces": {
+        "up": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "down": {
+          "texture": "#base"
+        },
+        "north": {
+          "texture": "#base"
+        },
+        "south": {
+          "texture": "#base"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "x",
+        "angle": -45,
+        "rescale": true
+      }
+    }
+  ],
+  "render_type": "minecraft:translucent"
+}
