@@ -73,6 +73,14 @@
           "texture": "#lining",
           "tintindex": 1,
           "cullface": "south"
+        },
+        "up": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "down": {
+          "texture": "#lining",
+          "tintindex": 1
         }
       }
     },
@@ -106,6 +114,14 @@
           "texture": "#lining",
           "tintindex": 1,
           "cullface": "south"
+        },
+        "up": {
+          "texture": "#lining",
+          "tintindex": 1
+        },
+        "down": {
+          "texture": "#lining",
+          "tintindex": 1
         }
       }
     },

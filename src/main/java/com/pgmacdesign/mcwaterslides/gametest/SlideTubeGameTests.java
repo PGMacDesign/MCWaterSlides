@@ -87,6 +87,32 @@ public class SlideTubeGameTests {
         });
     }
 
+    /**
+     * The merged bore is seamless: the lower tube's side walls extend up through the
+     * dropped-lid band (y14-16) so there's no gap ring between stacked tubes. Checks a
+     * wall column (x 0-2) is solid where the lid used to be.
+     */
+    @GameTest(template = "empty5", timeoutTicks = 60)
+    public static void stackedBoreWallsAreSeamless(GameTestHelper helper) {
+        helper.setBlock(new BlockPos(2, 1, 1), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        helper.setBlock(new BlockPos(2, 2, 1), ModBlocks.SLIDE_CHANNELS.get(null).get());
+        for (int z = 2; z <= 3; z++) {
+            helper.setBlock(new BlockPos(2, 1, z), ModBlocks.SLIDE_TUBES.get(null).get());
+            helper.setBlock(new BlockPos(2, 2, z), ModBlocks.SLIDE_TUBES.get(null).get());
+        }
+        helper.succeedWhen(() -> {
+            BlockPos abs = helper.absolutePos(new BlockPos(2, 1, 2));
+            var shape = helper.getLevel().getBlockState(abs).getCollisionShape(helper.getLevel(), abs);
+            // A west-wall cell (x 0-2) in the old lid band (y 14-16) must now be solid.
+            var wallBand = new net.minecraft.world.phys.AABB(0.05, 14.5 / 16.0, 0.3, 0.15, 15.5 / 16.0, 0.7);
+            if (!net.minecraft.world.phys.shapes.Shapes.joinIsNotEmpty(shape,
+                    net.minecraft.world.phys.shapes.Shapes.create(wallBand),
+                    net.minecraft.world.phys.shapes.BooleanOp.AND)) {
+                helper.fail("lower tube wall must extend through the lid band — the stacked bore has a gap");
+            }
+        });
+    }
+
     /** Breaking the upper half of a bore reseals the lower tube (existence-based recompute). */
     @GameTest(template = "empty5", timeoutTicks = 80)
     public static void boreUnpairsWhenUpperRemoved(GameTestHelper helper) {

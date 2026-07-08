@@ -88,16 +88,19 @@ def floor_elements():
     ]
 
 
-def straight_wall_elements():
-    # Fully tinted so the dye reads from outside too (and in the inventory GUI).
+def straight_wall_elements(yb=2, yt=WALL_H):
+    # Fully tinted so the dye reads from outside too (and in the inventory GUI). yb/yt let
+    # stacked bores extend the walls into the dropped lid (yt=16) / floor (yb=0) bands.
     return [
-        element([0, 2, 0], [2, WALL_H, 16], {
+        element([0, yb, 0], [2, yt, 16], {
             "west": face("#lining", tint=1, cull="west"), "east": face("#lining", tint=1),
             "north": face("#lining", tint=1, cull="north"), "south": face("#lining", tint=1, cull="south"),
+            "up": face("#lining", tint=1), "down": face("#lining", tint=1),
         }),
-        element([14, 2, 0], [16, WALL_H, 16], {
+        element([14, yb, 0], [16, yt, 16], {
             "east": face("#lining", tint=1, cull="east"), "west": face("#lining", tint=1),
             "north": face("#lining", tint=1, cull="north"), "south": face("#lining", tint=1, cull="south"),
+            "up": face("#lining", tint=1), "down": face("#lining", tint=1),
         }),
     ]
 
@@ -118,15 +121,17 @@ def straight_lid_elements():
     ]
 
 
-def corner_wall_elements():
+def corner_wall_elements(yb=2, yt=WALL_H):
     return [
-        element([0, 2, 0], [16, WALL_H, 2], {
+        element([0, yb, 0], [16, yt, 2], {
             "north": face("#lining", tint=1, cull="north"), "south": face("#lining", tint=1),
             "east": face("#lining", tint=1, cull="east"), "west": face("#lining", tint=1, cull="west"),
+            "up": face("#lining", tint=1), "down": face("#lining", tint=1),
         }),
-        element([0, 2, 2], [2, WALL_H, 16], {
+        element([0, yb, 2], [2, yt, 16], {
             "west": face("#lining", tint=1, cull="west"), "east": face("#lining", tint=1),
             "south": face("#lining", tint=1, cull="south"),
+            "up": face("#lining", tint=1), "down": face("#lining", tint=1),
         }),
     ]
 
@@ -236,9 +241,10 @@ SHAPE_VARIANTS = {
     "vertical": ("slide_tube_vertical", 0),
 }
 
-# Flat families split into parts so tall bores (open_up/open_down) can drop the lid
-# and floor per-state. Ascending/vertical never pair — single model, flags ignored.
-# family -> (walls model, [floor-side models], [lid-side models])
+# Flat families split into parts so tall bores merge seamlessly: the walls model is
+# chosen per (open_up, open_down) so it extends into the dropped lid/floor bands (no gap),
+# and floor/water and lid/window drop with their flag. family -> (wall-model base,
+# [floor-side models], [lid-side models]).
 FLAT_PARTS = {
     "slide_tube": ("slide_tube_walls",
                    ["slide_tube_floor", "slide_tube_water"],
@@ -247,6 +253,9 @@ FLAT_PARTS = {
                           ["slide_tube_floor", "slide_tube_corner_water"],
                           ["slide_tube_corner_lid", "slide_tube_corner_window"]),
 }
+
+# open_up/open_down -> wall-model suffix (which height band the walls span).
+WALL_SUFFIX = {(False, False): "", (True, False): "_up", (False, True): "_down", (True, True): "_full"}
 
 WHOLE_FAMILY_OVERLAYS = {
     "slide_tube_ascending": ["slide_channel_ascending_water"],  # reuse channel cascade
@@ -263,8 +272,12 @@ def blockstate():
                 apply["y"] = rot
             return apply
         if family in FLAT_PARTS:
-            walls, floor_side, lid_side = FLAT_PARTS[family]
-            parts.append({"when": {"shape": shape}, "apply": apply_of(walls)})
+            wall_base, floor_side, lid_side = FLAT_PARTS[family]
+            for (up, down), suffix in WALL_SUFFIX.items():
+                parts.append({
+                    "when": {"shape": shape, "open_up": str(up).lower(), "open_down": str(down).lower()},
+                    "apply": apply_of(wall_base + suffix),
+                })
             for model in floor_side:
                 parts.append({"when": {"shape": shape, "open_down": "false"}, "apply": apply_of(model)})
             for model in lid_side:
@@ -280,10 +293,12 @@ def gen_data():
     # composite (inventory parent) + the per-part models the blockstate composes
     write_json(models / "block/slide_tube.json", straight_tube_body())
     write_json(models / "block/slide_tube_floor.json", model_of(floor_elements()))
-    write_json(models / "block/slide_tube_walls.json", model_of(straight_wall_elements()))
     write_json(models / "block/slide_tube_lid.json", model_of(straight_lid_elements()))
-    write_json(models / "block/slide_tube_corner_walls.json", model_of(corner_wall_elements()))
     write_json(models / "block/slide_tube_corner_lid.json", model_of(corner_lid_elements()))
+    # 4 wall-height variants per family (yb/yt fill the dropped lid/floor bands on stacks).
+    for suffix, (yb, yt) in {"": (2, 14), "_up": (2, 16), "_down": (0, 14), "_full": (0, 16)}.items():
+        write_json(models / f"block/slide_tube_walls{suffix}.json", model_of(straight_wall_elements(yb, yt)))
+        write_json(models / f"block/slide_tube_corner_walls{suffix}.json", model_of(corner_wall_elements(yb, yt)))
     write_json(models / "block/slide_tube_corner.json",
                model_of(floor_elements() + corner_wall_elements() + corner_lid_elements()))
     write_json(models / "block/slide_tube_vertical.json", vertical_tube_body())

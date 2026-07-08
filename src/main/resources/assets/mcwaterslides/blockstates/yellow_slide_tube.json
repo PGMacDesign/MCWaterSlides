@@ -2,10 +2,42 @@
   "multipart": [
     {
       "when": {
-        "shape": "north_south"
+        "shape": "north_south",
+        "open_up": "false",
+        "open_down": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_walls"
+      }
+    },
+    {
+      "when": {
+        "shape": "north_south",
+        "open_up": "true",
+        "open_down": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_walls_up"
+      }
+    },
+    {
+      "when": {
+        "shape": "north_south",
+        "open_up": "false",
+        "open_down": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_walls_down"
+      }
+    },
+    {
+      "when": {
+        "shape": "north_south",
+        "open_up": "true",
+        "open_down": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_walls_full"
       }
     },
     {
@@ -46,10 +78,45 @@
     },
     {
       "when": {
-        "shape": "east_west"
+        "shape": "east_west",
+        "open_up": "false",
+        "open_down": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_walls",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "east_west",
+        "open_up": "true",
+        "open_down": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_walls_up",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "east_west",
+        "open_up": "false",
+        "open_down": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_walls_down",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "east_west",
+        "open_up": "true",
+        "open_down": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_walls_full",
         "y": 90
       }
     },
@@ -165,10 +232,42 @@
     },
     {
       "when": {
-        "shape": "south_east"
+        "shape": "south_east",
+        "open_up": "false",
+        "open_down": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_corner_walls"
+      }
+    },
+    {
+      "when": {
+        "shape": "south_east",
+        "open_up": "true",
+        "open_down": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_walls_up"
+      }
+    },
+    {
+      "when": {
+        "shape": "south_east",
+        "open_up": "false",
+        "open_down": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_walls_down"
+      }
+    },
+    {
+      "when": {
+        "shape": "south_east",
+        "open_up": "true",
+        "open_down": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_walls_full"
       }
     },
     {
@@ -209,10 +308,45 @@
     },
     {
       "when": {
-        "shape": "south_west"
+        "shape": "south_west",
+        "open_up": "false",
+        "open_down": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_corner_walls",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "south_west",
+        "open_up": "true",
+        "open_down": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_walls_up",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "south_west",
+        "open_up": "false",
+        "open_down": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_walls_down",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "shape": "south_west",
+        "open_up": "true",
+        "open_down": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_walls_full",
         "y": 90
       }
     },
@@ -258,10 +392,45 @@
     },
     {
       "when": {
-        "shape": "north_west"
+        "shape": "north_west",
+        "open_up": "false",
+        "open_down": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_corner_walls",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "shape": "north_west",
+        "open_up": "true",
+        "open_down": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_walls_up",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "shape": "north_west",
+        "open_up": "false",
+        "open_down": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_walls_down",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "shape": "north_west",
+        "open_up": "true",
+        "open_down": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_walls_full",
         "y": 180
       }
     },
@@ -307,10 +476,45 @@
     },
     {
       "when": {
-        "shape": "north_east"
+        "shape": "north_east",
+        "open_up": "false",
+        "open_down": "false"
       },
       "apply": {
         "model": "mcwaterslides:block/slide_tube_corner_walls",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "shape": "north_east",
+        "open_up": "true",
+        "open_down": "false"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_walls_up",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "shape": "north_east",
+        "open_up": "false",
+        "open_down": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_walls_down",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "shape": "north_east",
+        "open_up": "true",
+        "open_down": "true"
+      },
+      "apply": {
+        "model": "mcwaterslides:block/slide_tube_corner_walls_full",
         "y": 270
       }
     },

@@ -67,10 +67,12 @@ public class SlideTubeBlock extends Block implements SlideSurface {
                         variants[i] = base;
                     }
                 } else {
-                    VoxelShape walls = SlideChannelShapes.walls(rail);
                     for (int i = 0; i < 4; i++) {
                         boolean openUp = (i & 1) != 0;
                         boolean openDown = (i & 2) != 0;
+                        // Walls fill the dropped lid/floor bands so a stacked bore is seamless:
+                        // extend up to 16 when the lid is gone, down to 0 when the floor is gone.
+                        VoxelShape walls = SlideChannelShapes.wallsAt(rail, openDown ? 0 : 2, openUp ? 16 : 14);
                         VoxelShape v = openDown ? walls : Shapes.or(SlideChannelShapes.FLOOR, walls);
                         variants[i] = openUp ? v : Shapes.or(v, lid);
                     }

@@ -44,6 +44,32 @@ final class SlideChannelShapes {
         return WALLS.get(shape);
     }
 
+    /**
+     * Side walls of a flat shape spanning [yb, yt] instead of the default 2..14. Stacked
+     * tube bores extend their walls into the dropped lid (yt=16) / floor (yb=0) bands so
+     * the merged bore has no gap. Flat straights + corners only.
+     */
+    static VoxelShape wallsAt(RailShape rail, double yb, double yt) {
+        return switch (rail) {
+            case NORTH_SOUTH -> Shapes.or(Block.box(0, yb, 0, 2, yt, 16), Block.box(14, yb, 0, 16, yt, 16));
+            case EAST_WEST -> Shapes.or(Block.box(0, yb, 0, 16, yt, 2), Block.box(0, yb, 14, 16, yt, 16));
+            case SOUTH_EAST -> cornerWallsAt(yb, yt, true, true, false, false);
+            case SOUTH_WEST -> cornerWallsAt(yb, yt, true, false, false, true);
+            case NORTH_WEST -> cornerWallsAt(yb, yt, false, false, true, true);
+            case NORTH_EAST -> cornerWallsAt(yb, yt, false, true, true, false);
+            default -> Shapes.empty();
+        };
+    }
+
+    private static VoxelShape cornerWallsAt(double yb, double yt, boolean north, boolean west, boolean south, boolean east) {
+        VoxelShape shape = Shapes.empty();
+        if (north) shape = Shapes.or(shape, Block.box(0, yb, 0, 16, yt, 2));
+        if (south) shape = Shapes.or(shape, Block.box(0, yb, 14, 16, yt, 16));
+        if (west) shape = Shapes.or(shape, Block.box(0, yb, 0, 2, yt, 16));
+        if (east) shape = Shapes.or(shape, Block.box(14, yb, 0, 16, yt, 16));
+        return shape;
+    }
+
     static final VoxelShape FLOOR = Block.box(0, 0, 0, 16, 2, 16);
 
     private static final double WALL_H = 14;
