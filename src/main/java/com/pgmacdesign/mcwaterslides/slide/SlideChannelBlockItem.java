@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
@@ -13,21 +12,20 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
 
 /**
- * Run-extending placement for channels. Their open-top U-shape means the crosshair
- * usually lands on an interior surface (the floor plate), which vanilla resolves as
- * "place above" — the stacked-on-top surprise. Instead, clicking a straight channel
- * places the next one to continue the run, deterministically by which face you hit:
+ * Run-aware placement for channels. Their open-top U-shape means the crosshair lands on
+ * whatever sub-face happens to be under it (floor, wall top, wall side), and vanilla
+ * resolves the interior-floor hit as "place above" — the stacked-on-top surprise, and the
+ * source of the earlier "sometimes behind, sometimes to the side" jank.
  *
+ * The fix ignores which sub-face was hit and keys entirely off the clicked channel's run
+ * axis and the player's facing:
  * <ul>
- *   <li><b>Open end</b> (the N/S face of a N-S run): extend beyond that end.</li>
- *   <li><b>Interior floor / underside</b> (up/down face): extend along the run in the
- *       direction you're facing (never perpendicular — no more "placed behind me").</li>
- *   <li><b>Outer wall</b> (a side face): fall through to vanilla lateral placement — that's
- *       how side-by-side wide slides are laid.</li>
+ *   <li>Looking <b>down the run</b> → extend it. Grows from the channel's OPEN end (so it
+ *       never places behind you), or your facing if the block is isolated.</li>
+ *   <li>Looking <b>across the run</b> → place a parallel lane to that side (wide slides,
+ *       which auto-merge). Works even on floating channels with no ground.</li>
  * </ul>
- *
- * Corners and slopes fall through to vanilla (their run direction is ambiguous). Tubes keep
- * the vanilla BlockItem entirely — their lid-top click is how tall bores are stacked.
+ * Corners/slopes and non-channel slides fall through to vanilla.
  */
 public class SlideChannelBlockItem extends BlockItem {
 
@@ -42,31 +40,41 @@ public class SlideChannelBlockItem extends BlockItem {
         BlockPos clicked = context.getClickedPos().relative(context.getClickedFace().getOpposite());
         BlockState clickedState = level.getBlockState(clicked);
         if (!(clickedState.getBlock() instanceof SlideChannelBlock)) {
-            return context; // only channels extend; tubes/pools use vanilla
+            return context; // only channels; tubes/pools use vanilla
         }
         Direction.Axis runAxis = straightAxisOf(clickedState.getValue(SlideChannelBlock.SHAPE));
         if (runAxis == null) {
             return context; // corners / slopes: vanilla
         }
-        Direction face = context.getClickedFace();
-        if (face.getAxis().isHorizontal() && face.getAxis() != runAxis) {
-            return context; // outer wall side click: lateral placement (wide slides)
+        Direction facing = context.getHorizontalDirection();
+        Direction target = facing.getAxis() == runAxis
+                ? extendDirection(level, clicked, runAxis, facing) // down the run → extend
+                : facing;                                          // across the run → widen
+        BlockPos dest = clicked.relative(target);
+        BlockState destState = level.getBlockState(dest);
+        if (destState.canBeReplaced(context)) {
+            return BlockPlaceContext.at(context, dest, target);
         }
-        // Open-end click extends out that end; interior click extends along the facing.
-        Direction ext = face.getAxis() == runAxis ? face : projectOntoAxis(context, runAxis);
-        BlockPos fwd = clicked.relative(ext);
-        BlockState fwdState = level.getBlockState(fwd);
-        if (fwdState.canBeReplaced(context)) {
-            return BlockPlaceContext.at(context, fwd, ext);
+        if (destState.getBlock() instanceof SlideSurface) {
+            return context; // already a slide there — don't stack
         }
-        if (fwdState.getBlock() instanceof SlideSurface) {
-            return context; // already a slide ahead — don't stack, let vanilla decide
-        }
-        BlockPos up = fwd.above();
+        BlockPos up = dest.above();
         if (level.getBlockState(up).canBeReplaced(context)) {
-            return BlockPlaceContext.at(context, up, ext); // step up over an obstacle (uphill runs)
+            return BlockPlaceContext.at(context, up, target); // step up over an obstacle (uphill runs)
         }
         return context;
+    }
+
+    /** Extend toward the channel's open end; if both/neither ends are open, use the facing. */
+    private static Direction extendDirection(Level level, BlockPos clicked, Direction.Axis axis, Direction facing) {
+        Direction pos = Direction.fromAxisAndDirection(axis, Direction.AxisDirection.POSITIVE);
+        Direction neg = pos.getOpposite();
+        boolean posOpen = !(level.getBlockState(clicked.relative(pos)).getBlock() instanceof SlideSurface);
+        boolean negOpen = !(level.getBlockState(clicked.relative(neg)).getBlock() instanceof SlideSurface);
+        if (posOpen != negOpen) {
+            return posOpen ? pos : neg;
+        }
+        return facing;
     }
 
     /** The run axis of a straight shape, or null for corners/slopes (ambiguous direction). */
@@ -77,13 +85,5 @@ public class SlideChannelBlockItem extends BlockItem {
             case EAST_WEST -> Direction.Axis.X;
             default -> null;
         };
-    }
-
-    /** The run-axis direction closest to the player's facing — extension never goes sideways. */
-    private static Direction projectOntoAxis(BlockPlaceContext context, Direction.Axis axis) {
-        float yaw = context.getRotation() * Mth.DEG_TO_RAD;
-        double component = axis == Direction.Axis.X ? -Mth.sin(yaw) : Mth.cos(yaw);
-        return Direction.fromAxisAndDirection(axis,
-                component >= 0 ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE);
     }
 }
