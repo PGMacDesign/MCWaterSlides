@@ -159,7 +159,8 @@ def gen():
         text("Drop into a $(item)Funnel$() and gravity takes over — you swirl the bowl, ride up "
              "the walls, and spiral down to the drain.$(br2)Place a $(item)Funnel Core$() where "
              "you want the center-bottom; it $(bold)builds its own bowl$(). Three sizes — "
-             "$(thing)Small, Medium, Large$() — about 5, 7, and 9 blocks across."),
+             "$(thing)Small, Medium, Large$() — about 5, 7, and 9 blocks across.$(br2)$(thing)Crouch$() "
+             "any time to climb back out."),
         crafting(f"{MOD}:funnel_core_medium",
                  "No power, no RF — a funnel is pure gravity. Bigger cores build bigger bowls."),
         text("How you drop in decides the ride:$(br)$(li)Aim $(bold)across the middle$() and you "

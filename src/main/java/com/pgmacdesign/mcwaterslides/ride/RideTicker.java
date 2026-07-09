@@ -82,7 +82,7 @@ public final class RideTicker {
         // rubber-bands no more than a slide does).
         FunnelBlockEntity funnel = FunnelFields.at(level, entity);
         if (funnel != null) {
-            tickFunnel(entity, state, funnel, applyMotion);
+            tickFunnel(entity, state, funnel, braking, applyMotion);
             return;
         }
 
@@ -252,8 +252,14 @@ public final class RideTicker {
      * the bowl surface vertically, until it spirals into the drain — then drop it straight down
      * so the exit below (a tube, a shaft) picks the ride back up seamlessly.
      */
-    private static void tickFunnel(Entity entity, RideState state, FunnelBlockEntity funnel, boolean applyMotion) {
+    private static void tickFunnel(Entity entity, RideState state, FunnelBlockEntity funnel,
+                                   boolean braking, boolean applyMotion) {
         if (entity.isSpectator()) {
+            return;
+        }
+        // Crouch to bail: release control so you can walk/climb out — the vortex never traps you.
+        if (braking) {
+            state.endRide();
             return;
         }
         if (!state.riding) {
@@ -273,7 +279,16 @@ public final class RideTicker {
         Vec3 vel = entity.getDeltaMovement();
 
         if (FunnelPhysics.overDrain(r, p)) {
-            // At the drain: drop through the center hole (kill the swirl, keep falling).
+            // At the drain: drop through into the exit below. If there's nothing to drop into
+            // (solid ground under the core), end the ride here so the rider isn't pinned — it
+            // never sets motion on this path, so they can just walk off the drain.
+            BlockPos below = funnel.getBlockPos().below();
+            boolean canDrop = entity.level().getBlockState(below).getCollisionShape(entity.level(), below).isEmpty()
+                    || entity.level().getBlockState(below).getBlock() instanceof SlideSurface;
+            if (!canDrop) {
+                state.endRide();
+                return;
+            }
             if (applyMotion) {
                 entity.setDeltaMovement(vel.x * 0.5, Math.min(vel.y, -0.4), vel.z * 0.5);
             }

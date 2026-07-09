@@ -64,22 +64,45 @@ def gen_data():
     gen_textures()
     models = RES / f"assets/{MOD}/models"
 
-    write_json(models / "block/funnel_wall.json",
-               {"parent": "minecraft:block/cube_all", "textures": {"all": f"{MOD}:block/funnel_wall"}})
-
-    # The core: a low drain grate (no collision in Java — riders drop through the center).
-    write_json(models / "block/funnel_core.json", {
-        "parent": "minecraft:block/block",
-        "textures": {"particle": f"{MOD}:block/funnel_core",
-                     "grate": f"{MOD}:block/funnel_core", "side": f"{MOD}:block/funnel_wall"},
+    # The bowl wall: a ceramic cube whose TOP is intrinsic water (cauldron-style overlay, biome-
+    # tinted, no FluidState), so the stamped bowl reads as terraced water sheeting to the drain.
+    write_json(models / "block/funnel_wall.json", {
+        "render_type": "minecraft:translucent",
+        "textures": {"particle": f"{MOD}:block/funnel_wall",
+                     "all": f"{MOD}:block/funnel_wall", "water": "minecraft:block/water_still"},
         "elements": [{
-            "from": [0, 0, 0], "to": [16, 3, 16],
+            "from": [0, 0, 0], "to": [16, 16, 16],
             "faces": {
-                "up": face("#grate"), "down": face("#side", cull="down"),
-                "north": face("#side"), "south": face("#side"),
-                "east": face("#side"), "west": face("#side"),
+                "down": face("#all", cull="down"),
+                "up": {"texture": "#water", "tintindex": 0},
+                "north": face("#all", cull="north"), "south": face("#all", cull="south"),
+                "east": face("#all", cull="east"), "west": face("#all", cull="west"),
             },
         }],
+    })
+
+    # The core: a low drain grate (no collision in Java — riders drop through the center), with a
+    # thin water film pooling over it so the drain reads as wet.
+    write_json(models / "block/funnel_core.json", {
+        "parent": "minecraft:block/block",
+        "render_type": "minecraft:translucent",
+        "textures": {"particle": f"{MOD}:block/funnel_core",
+                     "grate": f"{MOD}:block/funnel_core", "side": f"{MOD}:block/funnel_wall",
+                     "water": "minecraft:block/water_still"},
+        "elements": [
+            {
+                "from": [0, 0, 0], "to": [16, 3, 16],
+                "faces": {
+                    "up": face("#grate"), "down": face("#side", cull="down"),
+                    "north": face("#side"), "south": face("#side"),
+                    "east": face("#side"), "west": face("#side"),
+                },
+            },
+            {
+                "from": [1, 3, 1], "to": [15, 3.2, 15], "shade": False,
+                "faces": {"up": {"texture": "#water", "tintindex": 0}},
+            },
+        ],
     })
 
     write_json(RES / f"assets/{MOD}/blockstates/funnel_wall.json",

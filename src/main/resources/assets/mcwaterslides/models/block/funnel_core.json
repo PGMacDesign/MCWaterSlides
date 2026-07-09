@@ -1,9 +1,11 @@
 {
   "parent": "minecraft:block/block",
+  "render_type": "minecraft:translucent",
   "textures": {
     "particle": "mcwaterslides:block/funnel_core",
     "grate": "mcwaterslides:block/funnel_core",
-    "side": "mcwaterslides:block/funnel_wall"
+    "side": "mcwaterslides:block/funnel_wall",
+    "water": "minecraft:block/water_still"
   },
   "elements": [
     {
@@ -36,6 +38,25 @@
         },
         "west": {
           "texture": "#side"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        3,
+        1
+      ],
+      "to": [
+        15,
+        3.2,
+        15
+      ],
+      "shade": false,
+      "faces": {
+        "up": {
+          "texture": "#water",
+          "tintindex": 0
         }
       }
     }

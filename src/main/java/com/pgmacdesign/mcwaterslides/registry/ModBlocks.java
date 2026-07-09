@@ -82,7 +82,8 @@ public final class ModBlocks {
                     net.minecraft.world.level.block.Block::new,
                     BlockBehaviour.Properties.of()
                             .strength(1.5f, 6.0f)
-                            .sound(SoundType.COPPER));
+                            .sound(SoundType.COPPER)
+                            .noOcclusion());
 
     public static final DeferredBlock<com.pgmacdesign.mcwaterslides.slide.SplashPoolBlock> SPLASH_POOL =
             BLOCKS.registerBlock("splash_pool",

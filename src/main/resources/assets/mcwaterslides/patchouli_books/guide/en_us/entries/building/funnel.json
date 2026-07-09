@@ -5,7 +5,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Drop into a $(item)Funnel$() and gravity takes over \u2014 you swirl the bowl, ride up the walls, and spiral down to the drain.$(br2)Place a $(item)Funnel Core$() where you want the center-bottom; it $(bold)builds its own bowl$(). Three sizes \u2014 $(thing)Small, Medium, Large$() \u2014 about 5, 7, and 9 blocks across."
+      "text": "Drop into a $(item)Funnel$() and gravity takes over \u2014 you swirl the bowl, ride up the walls, and spiral down to the drain.$(br2)Place a $(item)Funnel Core$() where you want the center-bottom; it $(bold)builds its own bowl$(). Three sizes \u2014 $(thing)Small, Medium, Large$() \u2014 about 5, 7, and 9 blocks across.$(br2)$(thing)Crouch$() any time to climb back out."
     },
     {
       "type": "patchouli:crafting",
