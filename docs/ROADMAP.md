@@ -19,6 +19,19 @@ leak reporting) · Splash Pool · mob/item riding + toggles · feel-pass FX v1 �
 advancements (hidden "Around the World" at 10,000 blocks) · Park Builder's Manual
 (Patchouli, soft dep).
 
+**Added 2026-07-08 (Tristan-request pass):** **Inner Tube** — a single-seat boat-like raft
+(new `entity/` package) that reuses the ride engine (RideTicker generalized `LivingEntity`
+→ `Entity`), so it flows through slides/tubes/funnels identically AND floats on real water;
+upright seat, free camera, dye-recolor, no-fall. **The Funnel** — a marquee Howlin'-Tornado
+bowl (`funnel/` package): a `Funnel Core` (S/M/L) auto-stamps a stepped parabolic bowl of
+`funnel_wall`, and one central-force swirl controller (`FunnelPhysics`, unit-tested) yields
+BOTH the wall-to-wall oscillation (radial entry) and the spiral-drain whirlpool (tangential
+entry) from entry angle alone; passive gravity, no RF, drains out the center. **Swing
+physics** — a rider that stalls climbing now reverses instead of freezing, so any U-valley
+swings; drag + a settle-tick guard always terminate. 58 GameTests + 14 JUnit green, client
+boots clean. Design forks resolved in a grill session (round funnel + center drain; tube
+rides everywhere).
+
 Physics lore that cost real debugging (don't rediscover): current fields must step
 diagonally with slopes (6-connectivity dies at the first ascending block); riders on
 ascending steps have feet in the air block above the slope (resolve one block down);
@@ -41,6 +54,8 @@ config toggles are global (toggle gametests need their own serialized batches).
 
 ## Later / v2 candidates
 
-Race timers + checkpoints · slide rafts (boats done properly) · ascending-tube lid art ·
+Race timers + checkpoints · multi-seat cloverleaf raft (inner tube done; this is the 2–4
+person version) · literal wedge-shaped funnel with an off-center exit (round funnel done) ·
+ascending-tube lid art ·
 custom particle/sound assets · richer website (custom domain, media, gallery — a simple
 GitHub Pages site ships from `site/`) · pool-entry splash burst.

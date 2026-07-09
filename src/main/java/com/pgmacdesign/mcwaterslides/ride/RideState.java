@@ -26,6 +26,8 @@ public class RideState {
     public double distanceRidden;
     /** Blocks ridden while enclosed (tubes) this session. */
     public double enclosedDistance;
+    /** Consecutive ticks below the end threshold — a decayed swing always terminates. */
+    public int settleTicks;
     /** True while WE hold the player's forcedPose (owned by {@link RidePose#reconcile}). */
     public boolean poseForced;
 
@@ -41,6 +43,7 @@ public class RideState {
         bailRequested = false;
         distanceRidden = 0;
         enclosedDistance = 0;
+        settleTicks = 0;
     }
 
     public void startRide(double initialMomentum, @Nullable Direction initialTravel) {
@@ -52,5 +55,6 @@ public class RideState {
         bailRequested = false;
         distanceRidden = 0;
         enclosedDistance = 0;
+        settleTicks = 0;
     }
 }

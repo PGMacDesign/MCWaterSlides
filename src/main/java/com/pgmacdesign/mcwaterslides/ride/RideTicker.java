@@ -4,6 +4,9 @@ import javax.annotation.Nullable;
 
 import com.pgmacdesign.mcwaterslides.config.MCWaterslidesConfig;
 import com.pgmacdesign.mcwaterslides.current.CurrentFields;
+import com.pgmacdesign.mcwaterslides.funnel.FunnelBlockEntity;
+import com.pgmacdesign.mcwaterslides.funnel.FunnelFields;
+import com.pgmacdesign.mcwaterslides.funnel.FunnelPhysics;
 import com.pgmacdesign.mcwaterslides.slide.SlideChannelBlock;
 import com.pgmacdesign.mcwaterslides.slide.SlideSurface;
 import com.pgmacdesign.mcwaterslides.slide.SlideTubeBlock;
@@ -12,6 +15,7 @@ import com.pgmacdesign.mcwaterslides.slide.TubeShape;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -26,10 +30,12 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class RideTicker {
     private static final double END_THRESHOLD = 0.3;
+    /** Ticks below threshold before a swing is declared dead (guards a flat-less V-valley). */
+    private static final int SETTLE_TICKS_MAX = 60;
 
     private RideTicker() {}
 
-    public static void tick(LivingEntity entity, RideState state, boolean braking, boolean applyMotion) {
+    public static void tick(Entity entity, RideState state, boolean braking, boolean applyMotion) {
         Level level = entity.level();
         BlockPos feet = BlockPos.containing(entity.position());
         BlockState feetState = level.getBlockState(feet);
@@ -71,6 +77,15 @@ public final class RideTicker {
             entity.setDeltaMovement(d.x, Mth.clamp(d.y + lift, -1.2, 1.2), d.z);
         }
 
+        // A funnel bowl overrides every other surface: while inside one, the rider swirls (both
+        // sides run this — client predicts the local player, server drives mobs/rafts — so it
+        // rubber-bands no more than a slide does).
+        FunnelBlockEntity funnel = FunnelFields.at(level, entity);
+        if (funnel != null) {
+            tickFunnel(entity, state, funnel, applyMotion);
+            return;
+        }
+
         if (!state.riding) {
             maybeStart(entity, state, shape, verticalTube, thrustVec);
             return;
@@ -78,7 +93,9 @@ public final class RideTicker {
 
         // Riding = never drowning. Slide water is intrinsic (no fluid, air untouched),
         // but freeform valve-flooded tubes are REAL water — top the rider up every tick.
-        entity.setAirSupply(entity.getMaxAirSupply());
+        if (entity instanceof LivingEntity le) {
+            le.setAirSupply(le.getMaxAirSupply());
+        }
 
         SlidePhysics.Params params = params(shape != null);
 
@@ -129,13 +146,27 @@ public final class RideTicker {
             state.travel = travel;
             state.momentum = SlidePhysics.tickMomentum(state.momentum, slopeSign, braking,
                     thrustAlong(thrustVec, travel), params);
+            if (state.momentum < END_THRESHOLD) {
+                state.settleTicks++;
+                // A rider that stalls while CLIMBING swings back down instead of freezing on
+                // the ramp — the half-pipe / funnel-valley oscillation. Drag lowers each pass,
+                // so it settles; a flat stall, a brake, or a fully-decayed swing ends the ride.
+                if (slopeSign < 0 && !braking && state.settleTicks <= SETTLE_TICKS_MAX) {
+                    travel = travel.getOpposite();
+                    state.travel = travel;
+                    slopeSign = SlidePhysics.slopeSign(shape, travel);
+                } else if (slopeSign <= 0 || braking || state.settleTicks > SETTLE_TICKS_MAX) {
+                    state.endRide();
+                    return;
+                }
+                // slopeSign > 0 (descending out of an apex at near-zero speed): coast; gravity
+                // refills momentum as the rider drops, so don't end mid-swing.
+            } else {
+                state.settleTicks = 0;
+            }
             state.distanceRidden += state.momentum / 20.0;
             if (feetState.getBlock() instanceof SlideTubeBlock) {
                 state.enclosedDistance += state.momentum / 20.0;
-            }
-            if (state.momentum < END_THRESHOLD) {
-                state.endRide();
-                return;
             }
             if (applyMotion) {
                 if (SlidePhysics.isCorner(shape)) {
@@ -183,7 +214,7 @@ public final class RideTicker {
         }
     }
 
-    private static void maybeStart(LivingEntity entity, RideState state, @Nullable RailShape shape,
+    private static void maybeStart(Entity entity, RideState state, @Nullable RailShape shape,
                                    boolean verticalTube, Vec3 thrustVec) {
         if (entity.isSpectator()) {
             return;
@@ -216,6 +247,51 @@ public final class RideTicker {
         }
     }
 
+    /**
+     * The funnel swirl: drive the rider by {@link FunnelPhysics} around the bowl axis, tracking
+     * the bowl surface vertically, until it spirals into the drain — then drop it straight down
+     * so the exit below (a tube, a shaft) picks the ride back up seamlessly.
+     */
+    private static void tickFunnel(Entity entity, RideState state, FunnelBlockEntity funnel, boolean applyMotion) {
+        if (entity.isSpectator()) {
+            return;
+        }
+        if (!state.riding) {
+            state.startRide(Math.max(entity.getDeltaMovement().horizontalDistance() * 20.0, 1.0), null);
+        }
+        if (entity instanceof LivingEntity le) {
+            le.setAirSupply(le.getMaxAirSupply());
+        }
+        state.gapTicks = 0;
+        state.settleTicks = 0;
+
+        Vec3 axis = funnel.axis();
+        FunnelPhysics.Params p = funnel.params();
+        double dx = entity.getX() - axis.x;
+        double dz = entity.getZ() - axis.z;
+        double r = Math.sqrt(dx * dx + dz * dz);
+        Vec3 vel = entity.getDeltaMovement();
+
+        if (FunnelPhysics.overDrain(r, p)) {
+            // At the drain: drop through the center hole (kill the swirl, keep falling).
+            if (applyMotion) {
+                entity.setDeltaMovement(vel.x * 0.5, Math.min(vel.y, -0.4), vel.z * 0.5);
+            }
+            state.distanceRidden += 0.4;
+            return;
+        }
+
+        double[] nv = FunnelPhysics.stepHorizontal(dx, dz, vel.x, vel.z, p);
+        double surfaceY = axis.y + FunnelPhysics.surfaceHeight(r, p);
+        double vy = Mth.clamp((surfaceY - entity.getY()) * 0.35, -0.5, 0.5);
+        if (applyMotion) {
+            entity.setDeltaMovement(nv[0], vy, nv[1]);
+        }
+        double speed = Math.hypot(nv[0], nv[1]);
+        state.momentum = speed * 20.0;
+        state.distanceRidden += speed;
+    }
+
     /** Signed thrust (b/s per tick) along the travel axis; opposing jets decelerate. */
     private static double thrustAlong(Vec3 thrustVec, Direction travel) {
         return (thrustVec.x * travel.getStepX() + thrustVec.z * travel.getStepZ()) / 20.0;
@@ -233,19 +309,20 @@ public final class RideTicker {
     }
 
     /** Cheap pre-check used to avoid allocating ride state for entities nowhere near a slide. */
-    public static boolean onSlideBlock(LivingEntity entity) {
+    public static boolean onSlideBlock(Entity entity) {
         BlockPos feet = BlockPos.containing(entity.position());
         return entity.level().getBlockState(feet).getBlock() instanceof SlideSurface;
     }
 
     /** Fall-damage immunity: derived, never latched — riding AND currently over slide/water. */
-    public static boolean immuneToFall(LivingEntity entity, RideState state) {
+    public static boolean immuneToFall(Entity entity, RideState state) {
         if (!state.riding) {
             return false;
         }
         BlockPos feet = BlockPos.containing(entity.position());
         return entity.level().getBlockState(feet).getBlock() instanceof SlideSurface
-                || entity.isInWater();
+                || entity.isInWater()
+                || FunnelFields.at(entity.level(), entity) != null;
     }
 
     /** Committed when something with collision sits over the rider's head (tubes, roofs). */
@@ -261,7 +338,7 @@ public final class RideTicker {
                 MCWaterslidesConfig.SLOPE_EXCHANGE.get());
     }
 
-    private static Direction travelFromVelocity(LivingEntity entity) {
+    private static Direction travelFromVelocity(Entity entity) {
         Vec3 v = entity.getDeltaMovement();
         if (Math.abs(v.x) >= Math.abs(v.z)) {
             return v.x >= 0 ? Direction.EAST : Direction.WEST;
@@ -276,7 +353,7 @@ public final class RideTicker {
     }
 
     /** Gentle pull toward the channel centerline so corners sweep instead of scrape. */
-    private static void centerInChannel(LivingEntity entity, BlockPos feet, Direction travel, double strength) {
+    private static void centerInChannel(Entity entity, BlockPos feet, Direction travel, double strength) {
         if (travel.getAxis() == Direction.Axis.Z) {
             double center = feet.getX() + 0.5;
             double off = center - entity.getX();

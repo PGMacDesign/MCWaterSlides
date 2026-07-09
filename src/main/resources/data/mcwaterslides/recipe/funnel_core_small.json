@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    " C ",
+    "CKC",
+    " C "
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:copper_ingot"
+    },
+    "K": {
+      "item": "minecraft:clay_ball"
+    }
+  },
+  "result": {
+    "id": "mcwaterslides:funnel_core_small",
+    "count": 1
+  }
+}

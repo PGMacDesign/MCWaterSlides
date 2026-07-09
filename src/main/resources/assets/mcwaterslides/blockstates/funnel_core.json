@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "size=small": {
+      "model": "mcwaterslides:block/funnel_core"
+    },
+    "size=medium": {
+      "model": "mcwaterslides:block/funnel_core"
+    },
+    "size=large": {
+      "model": "mcwaterslides:block/funnel_core"
+    }
+  }
+}

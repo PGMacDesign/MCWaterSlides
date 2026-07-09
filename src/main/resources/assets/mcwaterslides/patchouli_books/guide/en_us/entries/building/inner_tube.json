@@ -1,0 +1,21 @@
+{
+  "name": "Inner Tubes",
+  "icon": "mcwaterslides:inner_tube",
+  "category": "mcwaterslides:building",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(item)Inner Tube$()s are rideable rafts. Right-click one onto water $(bold)or$() straight onto a slide, then right-click again to climb in. You sit up and $(bold)look around freely$() while the current carries you \u2014 lazy rivers, splash pools, slides, and funnels all work.$(br2)$(thing)Sneak$() to hop out."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "mcwaterslides:inner_tube",
+      "text": "Leather and a copper valve \u2014 cheap, floaty, renewable."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(bold)Recolor$() a placed tube by $(thing)sneak-right-clicking$() it with any dye.$(br2)It rides everything a walker does \u2014 same speeds, same $(bold)no fall damage$() \u2014 you just get a seat and a view.",
+      "title": "Colors & feel"
+    }
+  ]
+}

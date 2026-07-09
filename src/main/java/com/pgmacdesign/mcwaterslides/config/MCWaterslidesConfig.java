@@ -28,6 +28,9 @@ public final class MCWaterslidesConfig {
     public static final ModConfigSpec.IntValue FLOOD_VALVE_MAX_VOLUME;
     public static final ModConfigSpec.BooleanValue MOBS_RIDE;
     public static final ModConfigSpec.BooleanValue ITEMS_RIDE;
+    public static final ModConfigSpec.DoubleValue FUNNEL_PULL;
+    public static final ModConfigSpec.DoubleValue FUNNEL_DRAG;
+    public static final ModConfigSpec.DoubleValue FUNNEL_MAX_SPEED;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -65,6 +68,20 @@ public final class MCWaterslidesConfig {
         ITEMS_RIDE = builder
                 .comment("Dropped items get pushed by currents (slides quietly double as item transport).")
                 .define("itemsRide", true);
+        builder.pop();
+
+        builder.comment("Funnel (Howlin'-Tornado bowl)").push("funnel");
+        FUNNEL_PULL = builder
+                .comment("Inward pull per tick per block of radius (the bowl's steepness → swirl rate).",
+                        "Higher = tighter, faster swirl. Parabolic bowl → simple-harmonic oscillation.")
+                .defineInRange("pull", 0.035, 0.001, 0.5);
+        FUNNEL_DRAG = builder
+                .comment("Horizontal speed bled per tick in the funnel — how fast a swirl decays to",
+                        "the drain. Passive/gravity ride: no RF, drag alone carries riders to the exit.")
+                .defineInRange("drag", 0.01, 0.0, 0.5);
+        FUNNEL_MAX_SPEED = builder
+                .comment("Horizontal swirl speed clamp (blocks/tick) — keeps the funnel in the ride's feel.")
+                .defineInRange("maxSpeed", 1.1, 0.1, 3.0);
         builder.pop();
 
         builder.comment("Jets").push("jet");

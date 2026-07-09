@@ -17,6 +17,7 @@ public class MCWaterSlides {
     public MCWaterSlides(IEventBus modEventBus, ModContainer modContainer) {
         ModBlocks.BLOCKS.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
+        com.pgmacdesign.mcwaterslides.registry.ModEntities.ENTITY_TYPES.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
         com.pgmacdesign.mcwaterslides.registry.ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         com.pgmacdesign.mcwaterslides.registry.ModAttachments.ATTACHMENTS.register(modEventBus);

@@ -38,15 +38,19 @@ public final class RideEvents {
         if (!(event.getEntity() instanceof LivingEntity living)) {
             return;
         }
-        // Don't allocate ride state for the 99% of mobs that never touch a slide.
-        if (!living.hasData(ModAttachments.RIDE_STATE.get()) && !RideTicker.onSlideBlock(living) && !living.isInWater()) {
+        // Don't allocate ride state for the 99% of mobs that never touch a slide, water, or funnel.
+        if (!living.hasData(ModAttachments.RIDE_STATE.get()) && !RideTicker.onSlideBlock(living)
+                && !living.isInWater()
+                && com.pgmacdesign.mcwaterslides.funnel.FunnelFields.at(living.level(), living) == null) {
             return;
         }
         RideState state = living.getData(ModAttachments.RIDE_STATE.get());
         boolean wasRiding = state.riding;
 
         if (living instanceof ServerPlayer player) {
-            if (player.getAbilities().flying) {
+            if (player.getAbilities().flying
+                    || player.getVehicle() instanceof com.pgmacdesign.mcwaterslides.entity.TubeRaftEntity) {
+                // Aboard a raft the tube is the rider — keep the player's own state idle/upright.
                 state.endRide();
                 RidePose.reconcile(player, state);
                 return;

@@ -142,6 +142,36 @@ def gen():
              "any time to read its mode, power, sealed volume, or leak spot.", title="Finding leaks"),
     ]))
 
+    write_json(entries / "building/inner_tube.json", entry("building", "Inner Tubes",
+            f"{MOD}:inner_tube", [
+        text("$(item)Inner Tube$()s are rideable rafts. Right-click one onto water $(bold)or$() "
+             "straight onto a slide, then right-click again to climb in. You sit up and "
+             "$(bold)look around freely$() while the current carries you — lazy rivers, splash "
+             "pools, slides, and funnels all work.$(br2)$(thing)Sneak$() to hop out."),
+        crafting(f"{MOD}:inner_tube", "Leather and a copper valve — cheap, floaty, renewable."),
+        text("$(bold)Recolor$() a placed tube by $(thing)sneak-right-clicking$() it with any dye."
+             "$(br2)It rides everything a walker does — same speeds, same $(bold)no fall "
+             "damage$() — you just get a seat and a view.", title="Colors & feel"),
+    ]))
+
+    write_json(entries / "building/funnel.json", entry("building", "The Funnel",
+            f"{MOD}:funnel_core_medium", [
+        text("Drop into a $(item)Funnel$() and gravity takes over — you swirl the bowl, ride up "
+             "the walls, and spiral down to the drain.$(br2)Place a $(item)Funnel Core$() where "
+             "you want the center-bottom; it $(bold)builds its own bowl$(). Three sizes — "
+             "$(thing)Small, Medium, Large$() — about 5, 7, and 9 blocks across."),
+        crafting(f"{MOD}:funnel_core_medium",
+                 "No power, no RF — a funnel is pure gravity. Bigger cores build bigger bowls."),
+        text("How you drop in decides the ride:$(br)$(li)Aim $(bold)across the middle$() and you "
+             "swish wall-to-wall, each pass lower — the classic tornado.$(li)Enter $(bold)along "
+             "the rim$() and you orbit, spiralling the drain — a whirlpool.$(br2)Both end at the "
+             "center drain. Build a tube or shaft under the core and the ride flows straight on.",
+             title="Swirl or swish"),
+        text("The same trick works flat: any $(bold)U-shaped valley$() of sloped slides swings "
+             "riders back and forth until they settle. A funnel just does it in the round.",
+             title="Swing valleys"),
+    ]))
+
     write_json(entries / "building/mega_parks.json", entry("building", "Mega-Parks",
             "minecraft:filled_map", [
         text("Build as big as you dare — a park can span a hundred chunks and more. "
