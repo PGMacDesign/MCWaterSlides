@@ -4,6 +4,7 @@ import com.pgmacdesign.mcwaterslides.funnel.FunnelPhysics;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** The funnel swirl laws: both behaviours must fall out of the one integrator. */
@@ -67,5 +68,41 @@ class FunnelPhysicsTest {
         assertEquals(0.0, v[0], 1e-9);
         assertEquals(0.0, v[1], 1e-9);
         assertTrue(FunnelPhysics.overDrain(0.0, P));
+    }
+
+    @Test
+    void fastCenterCrossingSkipsTheDrain() {
+        assertFalse(FunnelPhysics.shouldDrain(0.5, 1.0, P), "a fast pass over center must not drain");
+        assertTrue(FunnelPhysics.shouldDrain(0.5, 0.05, P), "slow over center drains");
+        assertFalse(FunnelPhysics.shouldDrain(3.0, 0.05, P), "far from center never drains");
+    }
+
+    /** The bug fix: a rider aimed across the middle swings past center several times before it
+     * finally slows enough to drop the drain — it does NOT vanish on the first crossing. */
+    @Test
+    void riderOscillatesSeveralTimesBeforeDraining() {
+        FunnelPhysics.Params p = new FunnelPhysics.Params(0.035, 0.01, 2.6, 4.0, 1.0, 0.34);
+        double dx = 2.6, dz = 0, vx = -0.25, vz = 0; // enter at the rim, aimed across
+        int crossings = 0;
+        boolean drained = false;
+        boolean prevPositive = dx > 0;
+        for (int t = 0; t < 800; t++) {
+            double r = Math.hypot(dx, dz);
+            if (FunnelPhysics.shouldDrain(r, Math.hypot(vx, vz), p)) {
+                drained = true;
+                break;
+            }
+            double[] v = FunnelPhysics.stepHorizontal(dx, dz, vx, vz, p);
+            vx = v[0];
+            vz = v[1];
+            dx += vx;
+            dz += vz;
+            if ((dx > 0) != prevPositive) {
+                crossings++;
+                prevPositive = dx > 0;
+            }
+        }
+        assertTrue(crossings >= 2, "should swing across center multiple times, got " + crossings);
+        assertTrue(drained, "should eventually drain once the swing decays");
     }
 }

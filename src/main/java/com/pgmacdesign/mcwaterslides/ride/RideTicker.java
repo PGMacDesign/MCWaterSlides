@@ -277,9 +277,12 @@ public final class RideTicker {
         double dz = entity.getZ() - axis.z;
         double r = Math.sqrt(dx * dx + dz * dz);
         Vec3 vel = entity.getDeltaMovement();
+        double hSpeed = Math.hypot(vel.x, vel.z);
 
-        if (FunnelPhysics.overDrain(r, p)) {
-            // At the drain: drop through into the exit below. If there's nothing to drop into
+        if (FunnelPhysics.shouldDrain(r, hSpeed, p)) {
+            // Slow AND over the hole → drop through into the exit below. A FAST center-crossing
+            // skips this and rides up the far wall (the oscillation). If there's nothing to drop
+            // into (solid ground under the core), end the ride here so the rider isn't pinned — it
             // (solid ground under the core), end the ride here so the rider isn't pinned — it
             // never sets motion on this path, so they can just walk off the drain.
             BlockPos below = funnel.getBlockPos().below();

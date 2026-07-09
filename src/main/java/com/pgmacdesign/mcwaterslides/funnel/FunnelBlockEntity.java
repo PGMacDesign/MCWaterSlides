@@ -32,13 +32,19 @@ public class FunnelBlockEntity extends BlockEntity {
 
     public FunnelPhysics.Params params() {
         FunnelSize s = size();
+        double pull = MCWaterslidesConfig.FUNNEL_PULL.get();
+        // Cap the swirl so a rim-entry's oscillation amplitude stays inside the bowl (SHM
+        // amplitude ≈ speed/ω, ω=√pull): 0.7·√pull·rim keeps the far turning point under the
+        // wall even for a fast slide-in. Bigger bowls naturally swirl faster. Config is a ceiling.
+        double maxSpeed = Math.min(MCWaterslidesConfig.FUNNEL_MAX_SPEED.get(),
+                0.7 * Math.sqrt(pull) * s.rimRadius());
         return new FunnelPhysics.Params(
-                MCWaterslidesConfig.FUNNEL_PULL.get(),
+                pull,
                 MCWaterslidesConfig.FUNNEL_DRAG.get(),
                 s.rimRadius(),
                 s.bowlHeight(),
                 s.drainRadius(),
-                MCWaterslidesConfig.FUNNEL_MAX_SPEED.get());
+                maxSpeed);
     }
 
     /** True when the entity is inside this funnel's bowl cylinder (rim radius × bowl height). */
