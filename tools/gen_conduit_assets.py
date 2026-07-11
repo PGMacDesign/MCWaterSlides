@@ -3,16 +3,16 @@
 (core + arm per connected side), models, loot, recipe (6 copper + 2 clay -> 12),
 tag + lang merges."""
 import json
-import random
 from pathlib import Path
 
 from PIL import Image
+
+import texlib as T
 
 ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "src/main/resources"
 MOD = "mcwaterslides"
 
-COPPER = (184, 115, 81)
 
 
 def write_json(path: Path, data):
@@ -26,19 +26,25 @@ def merge_tag(path: Path, values):
     write_json(path, {"replace": False, "values": merged})
 
 
+# vertical pipe cylinder: specular band left-of-center, rolling darker to the edges
+_PIPE_COLS = (1, 2, 3, 5, 6, 7, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1)
+
+
 def gen_textures():
-    rng = random.Random(20260710)
     tex = RES / f"assets/{MOD}/textures/block"
     tex.mkdir(parents=True, exist_ok=True)
 
     pipe = Image.new("RGBA", (16, 16))
     for y in range(16):
         for x in range(16):
-            v = rng.randint(-8, 8)
-            shade = -24 if y in (5, 10) else 0  # pipe banding
-            pipe.putpixel((x, y), (max(0, min(255, COPPER[0] + v + shade)),
-                                   max(0, min(255, COPPER[1] + v + shade)),
-                                   max(0, min(255, COPPER[2] + v + shade)), 255))
+            pipe.putpixel((x, y), T.R(T.COPPER, _PIPE_COLS[x]))
+    for band_y in (4, 11):  # iron coupling collars
+        for x in range(16):
+            pipe.putpixel((x, band_y), T.R(T.IRON, max(1, _PIPE_COLS[x] - 1)))
+            pipe.putpixel((x, band_y + 1), T.R(T.IRON, max(0, _PIPE_COLS[x] - 3)))
+        for x in (3, 8, 13):
+            pipe.putpixel((x, band_y), T.R(T.IRON, 6))
+            pipe.putpixel((x, band_y + 1), T.R(T.IRON, 1))
     pipe.save(tex / "water_conduit.png")
 
 

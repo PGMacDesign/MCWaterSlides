@@ -2,17 +2,16 @@
 """Generate Flood Valve assets: iron valve body with a copper wheel face,
 directional blockstate (facing x powered), loot, recipe, tags + lang merge."""
 import json
-import random
 from pathlib import Path
 
 from PIL import Image
+
+import texlib as T
 
 ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "src/main/resources"
 MOD = "mcwaterslides"
 
-IRON = (200, 200, 205)
-COPPER = (184, 115, 81)
 
 
 def write_json(path: Path, data):
@@ -26,46 +25,49 @@ def merge_tag(path: Path, values):
     write_json(path, {"replace": False, "values": merged})
 
 
-def px(rng, base, shade=0):
-    v = rng.randint(-9, 9) + shade
-    return (max(0, min(255, base[0] + v)),
-            max(0, min(255, base[1] + v)),
-            max(0, min(255, base[2] + v)), 255)
+# horizontal pipe cylinder: light band along the top, rolling darker to the bottom
+_PIPE_ROWS = (5, 6, 7, 6, 6, 5, 5, 4, 4, 3, 3, 3, 2, 2, 1, 1)
 
 
 def gen_textures():
-    rng = random.Random(20260712)
     tex = RES / f"assets/{MOD}/textures/block"
     tex.mkdir(parents=True, exist_ok=True)
 
     side = Image.new("RGBA", (16, 16))
     for y in range(16):
         for x in range(16):
-            shade = -18 if x in (0, 15) or y in (0, 15) else 0
-            if y in (4, 11):
-                shade -= 26  # pipe banding
-            side.putpixel((x, y), px(rng, IRON, shade))
+            side.putpixel((x, y), T.R(T.IRON, _PIPE_ROWS[y]))
+    for band_y in (3, 10):  # bolted collar bands
+        for x in range(16):
+            side.putpixel((x, band_y), T.R(T.IRON, _PIPE_ROWS[band_y] + 1))
+            side.putpixel((x, band_y + 1), T.R(T.IRON, 2))
+            side.putpixel((x, band_y + 2), T.R(T.IRON, 0))
+        for x in (2, 7, 12):
+            side.putpixel((x, band_y + 1), T.R(T.COPPER, 5))
+            side.putpixel((x, band_y + 2), T.R(T.COPPER, 2))
     side.save(tex / "flood_valve_side.png")
 
     for name, open_valve in (("flood_valve_front", False), ("flood_valve_front_open", True)):
         img = Image.new("RGBA", (16, 16))
-        for y in range(16):
-            for x in range(16):
-                shade = -18 if x in (0, 15) or y in (0, 15) else 0
-                img.putpixel((x, y), px(rng, IRON, shade))
-        # copper valve wheel: rim + spokes; center glows cyan when open
+        T.plate(img, 0, 0, 15, 15, T.IRON, streak=False)
+        T.rivet(img, 1, 1, T.IRON)
+        T.rivet(img, 13, 1, T.IRON)
+        T.rivet(img, 1, 13, T.IRON)
+        T.rivet(img, 13, 13, T.IRON)
+        # copper handwheel: rim highlighted toward the light, four spokes, glowing hub when open
         for y in range(16):
             for x in range(16):
                 dx, dy = x - 7.5, y - 7.5
                 r = (dx * dx + dy * dy) ** 0.5
-                if 4.5 <= r <= 6:
-                    img.putpixel((x, y), px(rng, COPPER, -10))
-                elif r < 4.5 and (abs(dx) < 1.2 or abs(dy) < 1.2):
-                    img.putpixel((x, y), px(rng, COPPER, -30))
-        core = (92, 200, 255) if open_valve else (44, 62, 74)
-        for y in range(7, 9):
-            for x in range(7, 9):
-                img.putpixel((x, y), px(rng, core, 0))
+                if 4.6 <= r <= 6.2:
+                    img.putpixel((x, y), T.R(T.COPPER, 6 if dx + dy < -3 else (2 if dx + dy > 3 else 4)))
+                elif r < 4.6 and (abs(dx) < 1.0 or abs(dy) < 1.0):
+                    img.putpixel((x, y), T.R(T.COPPER, 2))
+        hub = T.GLOW if open_valve else T.DARK
+        for y in range(6, 10):
+            for x in range(6, 10):
+                d = max(abs(x - 7.5), abs(y - 7.5))
+                img.putpixel((x, y), T.R(hub, 4 if d < 1 else 2))
         img.save(tex / f"{name}.png")
 
 

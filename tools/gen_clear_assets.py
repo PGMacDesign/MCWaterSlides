@@ -10,11 +10,12 @@ and clear_slide_tube (a standalone material, NOT a dye colour).
 Deterministic. Run after gen_channel_assets.py / gen_tube_assets.py (it imports their builders).
 """
 import json
-import random
 from copy import deepcopy
 from pathlib import Path
 
 from PIL import Image
+
+import texlib as T
 
 import gen_channel_assets as ch
 import gen_tube_assets as tb
@@ -36,17 +37,21 @@ def merge_tag(path, values):
 
 
 def gen_texture():
-    rng = random.Random(20260708)
     tex = RES / f"assets/{MOD}/textures/block"
     tex.mkdir(parents=True, exist_ok=True)
+    # Pale blue-white glass. Denser at the edges so a block's outline still reads
+    # through the transparency; nearly clear in the middle, with one vanilla-style
+    # diagonal glint at the top-left and an echo at the bottom-right.
     img = Image.new("RGBA", (16, 16))
     for y in range(16):
         for x in range(16):
-            # Pale blue-white glass, translucent. Denser at the edges so a block's outline
-            # still reads through the transparency; nearly clear in the middle.
-            v = rng.randint(-6, 6)
             edge = x in (0, 15) or y in (0, 15)
-            img.putpixel((x, y), (200 + v, 224 + v, 240 + v, 150 if edge else 85))
+            img.putpixel((x, y), (205, 228, 242, 150 if edge else 70))
+    for i in range(6):
+        img.putpixel((2 + i, 7 - i), (245, 250, 253, 170))
+        img.putpixel((3 + i, 7 - i), (245, 250, 253, 170))
+    for i in range(3):
+        img.putpixel((11 + i, 14 - i), (232, 242, 250, 140))
     img.save(tex / "slide_clear.png")
 
 

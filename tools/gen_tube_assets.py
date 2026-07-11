@@ -7,10 +7,11 @@ window texture. Blockstates are multipart: body (solid) + water overlay + window
 (translucent), keyed on the 11 TubeShape values.
 """
 import json
-import random
 from pathlib import Path
 
 from PIL import Image
+
+import texlib as T
 
 ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "src/main/resources"
@@ -62,15 +63,22 @@ def body_textures():
 
 
 def gen_textures():
-    rng = random.Random(20260711)
     tex = RES / f"assets/{MOD}/textures/block"
     tex.mkdir(parents=True, exist_ok=True)
+    # acrylic dome window: pale blue with two diagonal glint streaks (vanilla-glass style)
     window = Image.new("RGBA", (16, 16))
     for y in range(16):
         for x in range(16):
-            v = rng.randint(-6, 6)
-            a = 120 if (x + y) % 7 else 150  # faint streaks
-            window.putpixel((x, y), (200 + v, 226 + v, 240 + v, a))
+            edge = x in (0, 15) or y in (0, 15)
+            window.putpixel((x, y), (198, 224, 238, 148 if edge else 112))
+    for i in range(11):  # main glint, top-left third
+        for w in range(2):
+            x, y = 2 + i + w, 12 - i
+            if 0 <= x < 16 and 0 <= y < 16:
+                window.putpixel((x, y), (240, 248, 252, 190))
+    for i in range(5):  # echo glint, bottom-right
+        x, y = 10 + i, 14 - i
+        window.putpixel((x, y), (228, 240, 248, 160))
     window.save(tex / "slide_tube_window.png")
 
 

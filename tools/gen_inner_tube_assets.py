@@ -4,10 +4,11 @@ segments share), the item icon (a leather donut), item model, recipe, and lang. 
 model is Java (TubeRaftModel); this only supplies textures/data. Deterministic."""
 import json
 import math
-import random
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image
+
+import texlib as T
 
 ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "src/main/resources"
@@ -22,30 +23,44 @@ def write_json(path: Path, data):
 def gen_entity_texture():
     """Grayscale tube surface. Every ring segment shares texOffs(0,0) on a 5x4x4 box, so the
     net lives in the top-left; fill a generous patch with a rounded vertical shade so the tube
-    reads as a smooth inflated ring once the renderer tints it (natural leather / a dye)."""
-    rng = random.Random(20260709)
+    reads as a smooth inflated ring once the renderer tints it (natural leather / a dye).
+    Structured banding (no noise): bright crown near the top, rolling darker below, with a
+    faint weld seam every 5 columns to match the model's 5px ring segments."""
     img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
-    for y in range(0, 12):
-        # top of the segment lighter, bottom darker → a rounded highlight.
-        shade = 1.0 - abs(y - 3.5) / 9.0
-        base = int(150 + 95 * shade)
-        for x in range(0, 20):
-            n = rng.randint(-8, 8)
-            v = max(0, min(255, base + n))
+    rows = (196, 232, 250, 252, 242, 226, 208, 188, 168, 150, 136, 126)
+    for y in range(12):
+        for x in range(20):
+            v = rows[y] - (12 if x % 5 == 0 else 0)
             img.putpixel((x, y), (v, v, v, 255))
     (RES / f"assets/{MOD}/textures/entity").mkdir(parents=True, exist_ok=True)
     img.save(RES / f"assets/{MOD}/textures/entity/inner_tube.png")
 
 
 def gen_item_texture():
-    """A leather-brown donut icon."""
+    """The rubber ring icon: shaded donut with a top-left highlight arc and the
+    style guide's dark item outline."""
     img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(img)
-    outer = (0x8B, 0x5A, 0x2B, 255)
-    lite = (0xB0, 0x78, 0x40, 255)
-    draw.ellipse([1, 1, 14, 14], fill=outer)
-    draw.ellipse([1, 1, 13, 13], outline=lite)  # top-left highlight ring
-    draw.ellipse([5, 5, 10, 10], fill=(0, 0, 0, 0))  # the hole
+    cx = cy = 7.5
+    for y in range(16):
+        for x in range(16):
+            r = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
+            if not 2.6 <= r <= 6.4:
+                continue
+            # light from the top-left: highlight arc there, core shadow bottom-right
+            toward_light = (x - cx) + (y - cy)
+            if toward_light < -5:
+                i = 5
+            elif toward_light < -1:
+                i = 4
+            elif toward_light < 3:
+                i = 3
+            else:
+                i = 2
+            if r > 5.6 or r < 3.4:  # rolled edges turn away from the light
+                i -= 1
+            img.putpixel((x, y), T.R(T.RUBBER, i))
+    img.putpixel((11, 12), T.R(T.RUBBER, 0))  # valve stub
+    T.outline_sprite(img, T.R(T.RUBBER, 0))
     (RES / f"assets/{MOD}/textures/item").mkdir(parents=True, exist_ok=True)
     img.save(RES / f"assets/{MOD}/textures/item/inner_tube.png")
 

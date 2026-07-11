@@ -6,17 +6,16 @@ glows when lit. Emits textures, blockstate (facing x lit), models, loot, recipe
 (iron + copper + furnace + bucket -> 1), and merges tags + lang.
 """
 import json
-import random
 from pathlib import Path
 
 from PIL import Image
+
+import texlib as T
 
 ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "src/main/resources"
 MOD = "mcwaterslides"
 
-COPPER = (184, 115, 81)
-IRON = (200, 200, 205)
 
 
 def write_json(path: Path, data):
@@ -30,55 +29,55 @@ def merge_tag(path: Path, values):
     write_json(path, {"replace": False, "values": merged})
 
 
-def px(rng, base, shade=0):
-    v = rng.randint(-9, 9) + shade
-    return (max(0, min(255, base[0] + v)),
-            max(0, min(255, base[1] + v)),
-            max(0, min(255, base[2] + v)), 255)
+def _body(with_streak=True):
+    """Iron roofline plate over two tall copper body plates."""
+    img = Image.new("RGBA", (16, 16))
+    T.plate(img, 0, 0, 15, 3, T.IRON, streak=False)
+    T.plate(img, 0, 4, 7, 15, T.COPPER, streak=with_streak)
+    T.plate(img, 8, 4, 15, 15, T.COPPER, streak=with_streak)
+    T.rivet(img, 2, 1, T.IRON)
+    T.rivet(img, 12, 1, T.IRON)
+    return img
 
 
 def gen_textures():
-    rng = random.Random(20260709)
     tex = RES / f"assets/{MOD}/textures/block"
     tex.mkdir(parents=True, exist_ok=True)
 
-    side = Image.new("RGBA", (16, 16))
-    for y in range(16):
-        for x in range(16):
-            base = IRON if y < 4 else COPPER  # iron roofline over copper body
-            shade = -18 if x in (0, 15) or y in (0, 15) else 0
-            if y >= 4 and x in (5, 10):
-                shade -= 22  # panel seams
-            side.putpixel((x, y), px(rng, base, shade))
-    side.save(tex / "pump_house_side.png")
+    _body().save(tex / "pump_house_side.png")
 
+    # top: iron deck plate with a recessed intake hatch
     top = Image.new("RGBA", (16, 16))
-    for y in range(16):
-        for x in range(16):
-            shade = -18 if x in (0, 15) or y in (0, 15) else 0
-            if 6 <= x <= 9 and 6 <= y <= 9:
-                shade -= 30  # intake hatch
-            top.putpixel((x, y), px(rng, IRON, shade))
+    T.plate(top, 0, 0, 15, 15, T.IRON, streak=False)
+    T.frame(top, 5, 5, 10, 10, T.IRON, base=3)
+    for y in range(6, 10):
+        for x in range(6, 10):
+            top.putpixel((x, y), T.R(T.DARK, 2 if (x + y) % 2 else 1))
+    T.rivet(top, 1, 1, T.IRON)
+    T.rivet(top, 13, 1, T.IRON)
+    T.rivet(top, 1, 13, T.IRON)
+    T.rivet(top, 13, 13, T.IRON)
     top.save(tex / "pump_house_top.png")
 
-    for name, glow in (("pump_house_front", None), ("pump_house_front_lit", (255, 176, 74))):
-        img = Image.new("RGBA", (16, 16))
-        for y in range(16):
-            for x in range(16):
-                base = IRON if y < 4 else COPPER
-                shade = -18 if x in (0, 15) or y in (0, 15) else 0
-                img.putpixel((x, y), px(rng, base, shade))
-        # porthole (round-ish window into the boiler)
-        for y in range(6, 13):
-            for x in range(5, 11):
-                d = max(abs(x - 7.5), abs(y - 9))
-                if d <= 2.5:
-                    if glow:
-                        img.putpixel((x, y), px(rng, glow, 0))
-                    else:
-                        img.putpixel((x, y), px(rng, (40, 48, 60), 0))
-                elif d <= 3.4:
-                    img.putpixel((x, y), px(rng, COPPER, -46))
+    # front: the body with a round boiler porthole — dark water inside, fire when lit
+    for name, lit in (("pump_house_front", False), ("pump_house_front_lit", True)):
+        img = _body(with_streak=False)
+        cx, cy = 7.5, 9.5
+        for y in range(5, 15):
+            for x in range(3, 13):
+                d = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
+                if d >= 4.4:
+                    continue
+                if d >= 3.2:
+                    upper = (x - cx) + (y - cy) < 0
+                    img.putpixel((x, y), T.R(T.DARK, 1 if upper else 3))
+                elif lit:
+                    img.putpixel((x, y), T.R(T.FLAME, 4 if d < 1.4 else (3 if d < 2.3 else 1)))
+                else:
+                    img.putpixel((x, y), T.R(T.DARK, 2 if d < 2.3 else 1))
+        if not lit:  # glass glint on the idle porthole
+            img.putpixel((6, 8), T.R(T.DARK, 4))
+            img.putpixel((7, 9), T.R(T.DARK, 3))
         img.save(tex / f"{name}.png")
 
 

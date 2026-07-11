@@ -20,3 +20,13 @@ All notable changes to MC Waterslides. Format loosely follows
 ### Changed
 - The ride engine now drives any `Entity`, not just `LivingEntity`, so non-player rideables
   (the inner tube) share the exact same momentum/slope/corner/jet/funnel physics.
+- **Full art pass.** Every texture redrawn to vanilla's material language — palettes sampled
+  from 1.21.1 copper/iron/quartz, structured shading instead of pixel noise, hue-shifted
+  ramps, top-left lighting, dark item outlines. Machines are now cut-copper plate bodies
+  with iron accents (grate intakes, glowing nozzles, riveted valve faces, boiler portholes);
+  slides are pale moulded fibreglass; glass got vanilla-style glint streaks; the funnel bowl
+  is glazed ceramic tile over a shower-drain core.
+- **Pump House screen rebuilt** in the vanilla container style: furnace-style burn flame,
+  a cyan RF gauge with a hover tooltip (exact RF + rate), and a live rate readout.
+- The mod now ships a proper logo + pack icon (a flume diving into a splash pool), shown in
+  the mods list and resource-pack screen.

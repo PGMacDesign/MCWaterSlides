@@ -1,7 +1,7 @@
 {
   "pack": {
     "description": {
-      "text": "${mod_id} resources"
+      "text": "MC Waterslides resources"
     },
     "pack_format": ${pack_format}${pack_format_extra}
   }

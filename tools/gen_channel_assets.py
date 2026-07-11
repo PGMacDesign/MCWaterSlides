@@ -14,10 +14,11 @@ Emits, under src/main/resources:
 Deterministic: fixed RNG seed, sorted iteration. Rerun any time; output is stable.
 """
 import json
-import random
 from pathlib import Path
 
 from PIL import Image
+
+import texlib as T
 
 ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "src/main/resources"
@@ -33,26 +34,31 @@ WATER_Y = 12  # waterline (px), brimming just under the walls
 
 # ── textures ────────────────────────────────────────────────────────────────
 
+# fibreglass shell: smooth horizontal moulding bands (iron_block-style, in warm ceramic)
+_SHELL_ROWS = (4, 5, 4, 4, 3, 4, 4, 3, 3, 4, 3, 3, 2, 3, 2, 1)
+
+
 def gen_textures():
-    rng = random.Random(20260707)
     tex_dir = RES / f"assets/{MOD}/textures/block"
     tex_dir.mkdir(parents=True, exist_ok=True)
 
     base = Image.new("RGBA", (16, 16))
     for y in range(16):
         for x in range(16):
-            v = 178 + rng.randint(-7, 7)
-            if x in (0, 15) or y in (0, 15):
-                v -= 14  # subtle edge shading so blocks read as tiles
-            base.putpixel((x, y), (v, v + 2, v + 4, 255))
+            base.putpixel((x, y), T.R(T.CERAMIC, _SHELL_ROWS[y]))
+    for x in range(16):  # panel seam so stacked shells read as moulded sections
+        base.putpixel((x, 15), T.R(T.CERAMIC, 0))
+    for y in range(16):
+        base.putpixel((15, y), T.R(T.CERAMIC, max(0, _SHELL_ROWS[y] - 2)))
     base.save(tex_dir / "slide_channel_base.png")
 
+    # lining: near-white grayscale (dye-tinted at runtime) with a soft diagonal sheen —
+    # seamless on purpose, so the trough interior never shows a grid.
     lining = Image.new("RGBA", (16, 16))
+    sheen = (232, 236, 240, 244, 240, 236, 232, 228)
     for y in range(16):
-        streak = rng.randint(-4, 4)
         for x in range(16):
-            v = 236 + streak + rng.randint(-3, 3)
-            v = max(215, min(248, v))
+            v = sheen[(x + y) % 8]
             lining.putpixel((x, y), (v, v, v, 255))
     lining.save(tex_dir / "slide_channel_lining.png")
 

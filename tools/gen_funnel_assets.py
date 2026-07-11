@@ -4,10 +4,11 @@ differ in the bowl they stamp) and the funnel_wall the core auto-builds the bowl
 textures, models, blockstates, item models, escalating S/M/L recipes, size-keyed loot, tags,
 lang. Deterministic."""
 import json
-import random
 from pathlib import Path
 
 from PIL import Image
+
+import texlib as T
 
 ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "src/main/resources"
@@ -36,27 +37,48 @@ def gen_textures():
     tex = RES / f"assets/{MOD}/textures/block"
     tex.mkdir(parents=True, exist_ok=True)
 
-    # funnel_wall: coppery ceramic with a faint tile grout — the bowl surface.
-    rng = random.Random(20260709)
+    # funnel_wall: glazed ceramic tiles (2×2, grouted) — the bowl surface.
     wall = Image.new("RGBA", (16, 16))
-    for y in range(16):
-        for x in range(16):
-            n = rng.randint(-10, 10)
-            grout = (x % 8 == 0 or y % 8 == 0)
-            r = (0x9C if grout else 0xC2) + n
-            g = (0x60 if grout else 0x7C) + n
-            b = (0x42 if grout else 0x54) + n
-            wall.putpixel((x, y), (max(0, min(255, r)), max(0, min(255, g)), max(0, min(255, b)), 255))
+    for oy in (0, 8):
+        for ox in (0, 8):
+            for y in range(oy, oy + 8):
+                for x in range(ox, ox + 8):
+                    wall.putpixel((x, y), T.R(T.CERAMIC, 4))
+            for x in range(ox, ox + 8):  # tile bevel: light top, grout-dark bottom
+                wall.putpixel((x, oy), T.R(T.CERAMIC, 5))
+                wall.putpixel((x, oy + 7), T.R(T.CERAMIC, 1))
+            for y in range(oy, oy + 8):
+                wall.putpixel((ox, y), T.R(T.CERAMIC, 5))
+                wall.putpixel((ox + 7, y), T.R(T.CERAMIC, 2))
+            for i in range(3):  # glaze glint
+                wall.putpixel((ox + 2 + i, oy + 4 - i), T.R(T.CERAMIC, 5))
     wall.save(tex / "funnel_wall.png")
 
-    # funnel_core: a dark drain grate — three slots the water pours through.
+    # funnel_core: a shower-drain grate — concentric slots in blued steel.
     core = Image.new("RGBA", (16, 16))
     for y in range(16):
         for x in range(16):
-            n = rng.randint(-6, 6)
-            slot = x in (4, 5, 8, 9, 12, 13) and 2 <= y <= 13
-            base = 0x14 if slot else 0x50 + n
-            core.putpixel((x, y), (max(0, base), max(0, base + 6), max(0, base + 10), 255))
+            d = max(abs(x - 7.5), abs(y - 7.5))  # square rings match the block
+            if d > 6.5:
+                ring = 3       # outer frame
+            elif d > 5.5:
+                ring = 0       # slot
+            elif d > 3.5:
+                ring = 3       # web
+            elif d > 2.5:
+                ring = 0       # slot
+            else:
+                ring = 3       # hub
+            core.putpixel((x, y), T.R(T.DARK, ring))
+    for x in range(16):  # light catches the top edge of each metal ring
+        for y in range(15):
+            here = core.getpixel((x, y))
+            below = core.getpixel((x, y + 1))
+            if here == T.R(T.DARK, 3) and below == T.R(T.DARK, 0):
+                core.putpixel((x, y), T.R(T.DARK, 2))
+            if here == T.R(T.DARK, 0) and below == T.R(T.DARK, 3):
+                core.putpixel((x, y + 1), T.R(T.DARK, 4))
+    T.rivet(core, 7, 7, T.DARK, base=3)  # center screw
     core.save(tex / "funnel_core.png")
 
 

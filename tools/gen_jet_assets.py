@@ -6,10 +6,11 @@ blockstate (facing x energized variants), block/item models, loot table, recipe
 (4 copper + 2 iron + 1 redstone -> 2), and merges tags + lang.
 """
 import json
-import random
 from pathlib import Path
 
 from PIL import Image
+
+import texlib as T
 
 ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "src/main/resources"
@@ -29,54 +30,61 @@ def merge_tag(path: Path, values):
 
 # ── textures ────────────────────────────────────────────────────────────────
 
-COPPER = (184, 115, 81)
-
-
-def copper_px(rng, shade=0):
-    v = rng.randint(-10, 10) + shade
-    return (max(0, min(255, COPPER[0] + v)),
-            max(0, min(255, COPPER[1] + v)),
-            max(0, min(255, COPPER[2] + v)), 255)
-
-
 def gen_textures():
-    rng = random.Random(20260708)
     tex = RES / f"assets/{MOD}/textures/block"
     tex.mkdir(parents=True, exist_ok=True)
 
-    side = Image.new("RGBA", (16, 16))
-    for y in range(16):
-        for x in range(16):
-            shade = -18 if x in (0, 15) or y in (0, 15) else 0
-            # flow chevrons pointing "up" the texture (toward the nozzle)
-            if (x + y) % 8 in (0, 1) and 2 < x < 13 and 2 < y < 13:
-                shade -= 26
-            side.putpixel((x, y), copper_px(rng, shade))
+    # side: cut-copper plates with embossed flow chevrons pointing toward the nozzle
+    side = T.plates2x2(T.COPPER, streak=False)
+    for cy in (2, 9):
+        for i in range(5):
+            for x in (3 + i, 12 - i):
+                y = cy + 4 - i
+                side.putpixel((x, y), T.R(T.COPPER, 1))
+                side.putpixel((x, y + 1), T.R(T.COPPER, 6))
     side.save(tex / "jet_side.png")
 
+    # back: one copper plate with a 3×3 grid of recessed intake ports
     back = Image.new("RGBA", (16, 16))
-    for y in range(16):
-        for x in range(16):
-            shade = -18 if x in (0, 15) or y in (0, 15) else 0
-            if x % 3 == 0 or y % 3 == 0:
-                shade -= 34  # intake grate
-            back.putpixel((x, y), copper_px(rng, shade))
+    T.plate(back, 0, 0, 15, 15, T.COPPER, streak=False)
+    for hy in (3, 7, 11):
+        for hx in (3, 7, 11):
+            back.putpixel((hx, hy), T.R(T.DARK, 0))
+            back.putpixel((hx + 1, hy), T.R(T.DARK, 0))
+            back.putpixel((hx, hy + 1), T.R(T.DARK, 2))
+            back.putpixel((hx + 1, hy + 1), T.R(T.DARK, 2))
+            back.putpixel((hx, hy + 2), T.R(T.COPPER, 6))
+            back.putpixel((hx + 1, hy + 2), T.R(T.COPPER, 6))
+    T.rivet(back, 1, 1, T.COPPER)
+    T.rivet(back, 13, 1, T.COPPER)
+    T.rivet(back, 1, 13, T.COPPER)
+    T.rivet(back, 13, 13, T.COPPER)
     back.save(tex / "jet_back.png")
 
-    for name, core in (("jet_front", (44, 62, 74)), ("jet_front_on", (92, 200, 255))):
+    # front: copper plate, recessed dark-steel nozzle ring, round core (cyan when on)
+    for name, on in (("jet_front", False), ("jet_front_on", True)):
         img = Image.new("RGBA", (16, 16))
+        T.plate(img, 0, 0, 15, 15, T.COPPER, streak=False)
         for y in range(16):
             for x in range(16):
-                d = max(abs(x - 7.5), abs(y - 7.5))
-                if d >= 6:
-                    img.putpixel((x, y), copper_px(rng, -8))
-                elif d >= 4.4:
-                    img.putpixel((x, y), copper_px(rng, -40))  # nozzle ring
+                d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+                if d >= 6.4:
+                    continue
+                if d >= 4.6:
+                    # recessed ring: shadow toward top-left, light catch bottom-right
+                    upper = (x - 7.5) + (y - 7.5) < 0
+                    img.putpixel((x, y), T.R(T.DARK, 1 if upper else 3))
+                elif on:
+                    img.putpixel((x, y), T.R(T.GLOW, 5 if d < 1.8 else (4 if d < 3.2 else 2)))
                 else:
-                    j = rng.randint(-14, 14)
-                    img.putpixel((x, y), (max(0, min(255, core[0] + j)),
-                                          max(0, min(255, core[1] + j)),
-                                          max(0, min(255, core[2] + j)), 255))
+                    img.putpixel((x, y), T.R(T.DARK, 2 if d < 3.2 else 1))
+        if not on:  # idle glass glint
+            img.putpixel((6, 6), T.R(T.DARK, 4))
+            img.putpixel((7, 7), T.R(T.DARK, 3))
+        T.rivet(img, 1, 1, T.COPPER)
+        T.rivet(img, 13, 1, T.COPPER)
+        T.rivet(img, 1, 13, T.COPPER)
+        T.rivet(img, 13, 13, T.COPPER)
         img.save(tex / f"{name}.png")
 
 
