@@ -78,9 +78,9 @@ def gen_channel_models(models):
     write_json(models / "block/clear_slide_channel_floor.json",
                as_clear(ch.model_of(ch.straight_floor_element())))
     write_json(models / "block/clear_slide_channel_wall_neg.json",
-               as_clear(ch.model_of(ch.straight_wall_neg_element(), *ch.wall_neg_fillet())))
+               as_clear(ch.model_of(ch.straight_wall_neg_element(), *ch.wall_neg_fillet(), *ch.wall_neg_lip())))
     write_json(models / "block/clear_slide_channel_wall_pos.json",
-               as_clear(ch.model_of(ch.straight_wall_pos_element(), *ch.wall_pos_fillet())))
+               as_clear(ch.model_of(ch.straight_wall_pos_element(), *ch.wall_pos_fillet(), *ch.wall_pos_lip())))
     write_json(models / "block/clear_slide_channel_corner.json", as_clear(ch.corner_body()))
     write_json(models / "block/clear_slide_channel_ascending.json", as_clear(ch.ascending_body()))
     for suffix, (x0, x1) in {"": (2, 14), "_neg": (0, 14), "_pos": (2, 16), "_full": (0, 16)}.items():

@@ -129,32 +129,49 @@ def straight_wall_pos_element():
     })
 
 
-def _fillet_faces():
-    # No down face — the steps sit on the floor top (y=2); a down quad there z-fights the floor.
-    return {d: face("#lining", tint=1) for d in ("up", "north", "south", "east", "west")}
+# Rounded trough: a stepped quarter-ellipse bowl in each floor↔wall corner (0.5px columns,
+# vertical tangent at the wall) so the cross-section reads as a deep half-pipe. Model-only —
+# collision stays the flat-floor U in SlideChannelShapes, so ride physics, containment and
+# no-clip are all unchanged; the curve lives outside where the rider can go.
+_BOWL = T.quarter_profile(2, 6, 8, 2)
 
 
-# Rounded trough: a stepped quarter-bowl in each floor↔wall corner, rising steeply toward the
-# wall so the cross-section reads as a deep half-pipe (a real waterslide flume, not a sharp U).
-# (x0, x1, fill_top_y) per 1px column; heights accelerate toward the wall = concave curve.
-# Model-only — collision stays the flat-floor U in SlideChannelShapes, so ride physics,
-# containment and no-clip are all unchanged; the curve lives outside where the rider can go.
-_WEST_BOWL = [(2, 3, 8), (3, 4, 6), (4, 5, 4), (5, 6, 3)]
-_EAST_BOWL = [(13, 14, 8), (12, 13, 6), (11, 12, 4), (10, 11, 3)]
-
-
-def _bowl_steps(profile):
-    return [element([x0, 2, 0], [x1, yt, 16], _fillet_faces()) for (x0, x1, yt) in profile]
+def _col_faces(inner):
+    """Fillet column faces: top, the exposed inner side, and end caps culled at the block
+    seam. The outer side and the base are buried (wall/floor/taller neighbour column) —
+    skipping them kills coplanar z-fight risk AND trims the mesh on long runs."""
+    return {"up": face("#lining", tint=1),
+            inner: face("#lining", tint=1),
+            "north": face("#lining", tint=1, cull="north"),
+            "south": face("#lining", tint=1, cull="south")}
 
 
 def wall_neg_fillet():
     """West-side trough rounding — rides the west wall model, so it drops on a merged side."""
-    return _bowl_steps(_WEST_BOWL)
+    return [element([x0, 2, 0], [x1, yt, 16], _col_faces("east")) for (x0, x1, yt) in _BOWL]
 
 
 def wall_pos_fillet():
     """East-side trough rounding (mirror of {@link wall_neg_fillet})."""
-    return _bowl_steps(_EAST_BOWL)
+    return [element([16 - x1, 2, 0], [16 - x0, yt, 16], _col_faces("west")) for (x0, x1, yt) in _BOWL]
+
+
+def _lip_faces(inner):
+    """Rim bead faces: everything culled at the block boundary except the top + inner side."""
+    f = {"up": face("#lining", tint=1), inner: face("#lining", tint=1)}
+    for d in ("north", "south", "east", "west"):
+        if d not in f:
+            f[d] = face("#lining", tint=1, cull=d)
+    return f
+
+
+def wall_neg_lip():
+    """Rolled rim bead along the wall top — the fibreglass flume lip."""
+    return [element([0, WALL_H, 0], [0.75, WALL_H + 0.75, 16], _lip_faces("east"))]
+
+
+def wall_pos_lip():
+    return [element([15.25, WALL_H, 0], [16, WALL_H + 0.75, 16], _lip_faces("west"))]
 
 
 def straight_body():
@@ -162,7 +179,7 @@ def straight_body():
     return {
         "textures": body_textures(),
         "elements": [straight_floor_element(), straight_wall_neg_element(), straight_wall_pos_element(),
-                     *wall_neg_fillet(), *wall_pos_fillet()],
+                     *wall_neg_fillet(), *wall_pos_fillet(), *wall_neg_lip(), *wall_pos_lip()],
     }
 
 
@@ -171,7 +188,33 @@ def model_of(*elements):
 
 
 def corner_body():
-    """South-east corner: exits S/E, walls N/W."""
+    """South-east corner: exits S/E, walls N/W. Trough rounding + rim lips run along both
+    walls out to the exit mouths, mirroring the straight run. The x-advancing (west-wall)
+    family sits 0.02 lower so its top faces never share a plane with the z-advancing
+    family where the two overlap in the corner."""
+    north_fillet = [element([2, 2, z0], [16, yt, z1], {
+        "up": face("#lining", tint=1),
+        "south": face("#lining", tint=1),
+        "east": face("#lining", tint=1, cull="east"),
+    }) for (z0, z1, yt) in _BOWL]
+    west_fillet = [element([x0, 2, 2], [x1, yt - 0.02, 16], {
+        "up": face("#lining", tint=1),
+        "east": face("#lining", tint=1),
+        "south": face("#lining", tint=1, cull="south"),
+    }) for (x0, x1, yt) in _BOWL]
+    north_lip = element([0, WALL_H, 0], [16, WALL_H + 0.75, 0.75], {
+        "up": face("#lining", tint=1),
+        "south": face("#lining", tint=1),
+        "north": face("#lining", tint=1, cull="north"),
+        "east": face("#lining", tint=1, cull="east"),
+        "west": face("#lining", tint=1, cull="west"),
+    })
+    west_lip = element([0, WALL_H, 0.75], [0.75, WALL_H + 0.75, 16], {
+        "up": face("#lining", tint=1),
+        "east": face("#lining", tint=1),
+        "west": face("#lining", tint=1, cull="west"),
+        "south": face("#lining", tint=1, cull="south"),
+    })
     return {
         "textures": body_textures(),
         "elements": [
@@ -196,6 +239,7 @@ def corner_body():
                 "up": face("#lining", tint=1),
                 "south": face("#lining", tint=1, cull="south"),
             }),
+            *north_fillet, *west_fillet, north_lip, west_lip,
         ],
     }
 
@@ -358,9 +402,9 @@ def gen_data():
     write_json(models / "block/slide_channel.json", straight_body())
     write_json(models / "block/slide_channel_floor.json", model_of(straight_floor_element()))
     write_json(models / "block/slide_channel_wall_neg.json",
-               model_of(straight_wall_neg_element(), *wall_neg_fillet()))
+               model_of(straight_wall_neg_element(), *wall_neg_fillet(), *wall_neg_lip()))
     write_json(models / "block/slide_channel_wall_pos.json",
-               model_of(straight_wall_pos_element(), *wall_pos_fillet()))
+               model_of(straight_wall_pos_element(), *wall_pos_fillet(), *wall_pos_lip()))
     write_json(models / "block/slide_channel_corner.json", corner_body())
     write_json(models / "block/slide_channel_ascending.json", ascending_body())
     # 4 water spans keyed on which walls merged (default 2-14; extend to 0/16 per side).

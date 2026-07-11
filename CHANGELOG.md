@@ -30,3 +30,9 @@ All notable changes to MC Waterslides. Format loosely follows
   a cyan RF gauge with a hover tooltip (exact RF + rate), and a live rate readout.
 - The mod now ships a proper logo + pack icon (a flume diving into a splash pool), shown in
   the mods list and resource-pack screen.
+- **Smoother flumes.** Channel troughs and tube bores now round with half-pixel quarter-ellipse
+  stepping (double the resolution, vertical tangent at the wall) so the cross-section reads as
+  a real half-pipe instead of stairs. Corner channels got the trough rounding they were missing,
+  vertical tube shafts got bore rounding, and channel walls grew a rolled rim lip like a real
+  fibreglass flume. Despite the finer curve, long runs render *leaner* — buried faces are
+  skipped and end caps cull at block seams.

@@ -93,6 +93,25 @@ def frame(img, x0, y0, x1, y1, ramp, base=2):
     img.putpixel((x0, y1), R(ramp, base))
 
 
+def quarter_profile(x0, x1, y_top, y_base, step=0.5, min_rise=0.25):
+    """Stepped quarter-ellipse columns for trough/bore rounding: a wall at x0 (column top
+    y_top, vertical tangent) falling to a floor at x1 (y_base). Returns (cx0, cx1, top)
+    tuples; columns whose rise above the floor is sub-texel (< min_rise) are trimmed.
+    Axis-aligned boxes only — rotated geometry z-fights/gaps from non-riding angles."""
+    import math
+    rx = float(x1 - x0)
+    ry = float(y_top - y_base)
+    cols = []
+    x = float(x0)
+    while x < x1 - 1e-9:
+        t = (x1 - x) / rx  # 1 at the wall → 0 at the floor
+        y = round((y_base + ry * (1 - math.sqrt(max(0.0, 1 - t * t)))) * 100) / 100
+        if y - y_base >= min_rise:
+            cols.append((x, min(x + step, float(x1)), y))
+        x += step
+    return cols
+
+
 def outline_sprite(img, color=(0, 0, 0, 255), threshold=8):
     """Dark outline around every opaque region (the style guide's item rule)."""
     w, h = img.size

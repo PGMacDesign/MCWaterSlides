@@ -103,39 +103,62 @@ def floor_elements():
 # The fillets ride the WALL model, which already varies by height band (yb/yt): a bottom
 # fillet is emitted only when the floor is present (yb==2), a top fillet only when the lid is
 # present (yt==WALL_H) — so on a stacked bore they drop exactly with the surface they round.
-_BORE_CURVE = [(2, 3, 6), (3, 4, 5), (4, 5, 4), (5, 6, 3)]
+_BORE = T.quarter_profile(2, 6, 6, 2)
 
 
-def _fillet_faces(bottom):
-    # Bottom steps sit on the floor (skip the coincident down face); top steps hang under the
-    # lid (skip up). Remaining faces tinted so the dye reads on the rounded bore surface.
-    skip = "down" if bottom else "up"
-    return {d: face("#lining", tint=1) for d in ("up", "down", "north", "south", "east", "west")
-            if d != skip}
+def _fillet_col(fr, to, anchor, inner, culls=()):
+    """One rounding column: only the cap face (anchor), the exposed inner side, and any
+    block-boundary end caps (culled). Buried faces are skipped — no coplanar z-fighting,
+    and long runs mesh far leaner."""
+    faces = {anchor: face("#lining", tint=1), inner: face("#lining", tint=1)}
+    for d in culls:
+        faces[d] = face("#lining", tint=1, cull=d)
+    return element(fr, to, faces)
 
 
 def _ns_fillets(yb, yt):
     """West/east bore-corner rounding for a straight (N-S) tube, extruded along z."""
     els = []
     if yb == 2:  # floor present → round the two bottom corners
-        els += [element([x0, 2, 0], [x1, h, 16], _fillet_faces(True)) for (x0, x1, h) in _BORE_CURVE]
-        els += [element([16 - x1, 2, 0], [16 - x0, h, 16], _fillet_faces(True)) for (x0, x1, h) in _BORE_CURVE]
+        els += [_fillet_col([x0, 2, 0], [x1, h, 16], "up", "east", ("north", "south"))
+                for (x0, x1, h) in _BORE]
+        els += [_fillet_col([16 - x1, 2, 0], [16 - x0, h, 16], "up", "west", ("north", "south"))
+                for (x0, x1, h) in _BORE]
     if yt == WALL_H:  # lid present → round the two top corners (vertical mirror)
-        els += [element([x0, 16 - h, 0], [x1, 14, 16], _fillet_faces(False)) for (x0, x1, h) in _BORE_CURVE]
-        els += [element([16 - x1, 16 - h, 0], [16 - x0, 14, 16], _fillet_faces(False)) for (x0, x1, h) in _BORE_CURVE]
+        els += [_fillet_col([x0, 16 - h, 0], [x1, 14, 16], "down", "east", ("north", "south"))
+                for (x0, x1, h) in _BORE]
+        els += [_fillet_col([16 - x1, 16 - h, 0], [16 - x0, 14, 16], "down", "west", ("north", "south"))
+                for (x0, x1, h) in _BORE]
     return els
 
 
 def _corner_fillets(yb, yt):
     """North/west bore-corner rounding for a corner tube (walls on N + W), extruded along the
-    open axis so the curve runs out to each exit mouth."""
+    open axis so the curve runs out to each exit mouth. The x-advancing family rides 0.02
+    inside the z-advancing one so their cap faces never share a plane where they overlap."""
     els = []
     if yb == 2:
-        els += [element([2, 2, z0], [16, h, z1], _fillet_faces(True)) for (z0, z1, h) in _BORE_CURVE]
-        els += [element([x0, 2, 2], [x1, h, 16], _fillet_faces(True)) for (x0, x1, h) in _BORE_CURVE]
+        els += [_fillet_col([2, 2, z0], [16, h, z1], "up", "south", ("east",))
+                for (z0, z1, h) in _BORE]
+        els += [_fillet_col([x0, 2, 2], [x1, h - 0.02, 16], "up", "east", ("south",))
+                for (x0, x1, h) in _BORE]
     if yt == WALL_H:
-        els += [element([2, 16 - h, z0], [16, 14, z1], _fillet_faces(False)) for (z0, z1, h) in _BORE_CURVE]
-        els += [element([x0, 16 - h, 2], [x1, 14, 16], _fillet_faces(False)) for (x0, x1, h) in _BORE_CURVE]
+        els += [_fillet_col([2, 16 - h, z0], [16, 14, z1], "down", "south", ("east",))
+                for (z0, z1, h) in _BORE]
+        els += [_fillet_col([x0, 16 - h + 0.02, 2], [x1, 14, 16], "down", "east", ("south",))
+                for (x0, x1, h) in _BORE]
+    return els
+
+
+def _vertical_fillets():
+    """Bore rounding for the vertical shaft: a stepped quarter-round post in each of the four
+    wall corners, running the full block height so stacked shafts stay seamless."""
+    els = []
+    for (x0, x1, zt) in _BORE:
+        els.append(_fillet_col([x0, 0, 2], [x1, 16, zt], "south", "east", ("up", "down")))
+        els.append(_fillet_col([16 - x1, 0, 2], [16 - x0, 16, zt], "south", "west", ("up", "down")))
+        els.append(_fillet_col([x0, 0, 16 - zt], [x1, 16, 14], "north", "east", ("up", "down")))
+        els.append(_fillet_col([16 - x1, 0, 16 - zt], [16 - x0, 16, 14], "north", "west", ("up", "down")))
     return els
 
 
@@ -254,6 +277,7 @@ def vertical_tube_body():
                 "south": face("#lining", tint=1, cull="south"), "north": face("#lining", tint=1),
                 "up": face("#lining", tint=1, cull="up"), "down": face("#lining", tint=1, cull="down"),
             }),
+            *_vertical_fillets(),
         ],
     }
 
