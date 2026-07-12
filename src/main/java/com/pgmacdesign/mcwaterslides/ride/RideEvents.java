@@ -48,7 +48,7 @@ public final class RideEvents {
 
         if (living instanceof ServerPlayer player) {
             if (player.getAbilities().flying) {
-                // Aboard a raft the tube is the rider — keep the player's own state idle/upright.
+                // Creative flight overrides the ride — end it and stand the player up.
                 state.endRide();
                 RidePose.reconcile(player, state);
                 return;
