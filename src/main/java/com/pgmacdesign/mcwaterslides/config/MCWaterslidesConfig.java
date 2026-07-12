@@ -21,6 +21,9 @@ public final class MCWaterslidesConfig {
     public static final ModConfigSpec.IntValue JET_PUSH_RF;
     public static final ModConfigSpec.IntValue JET_BUFFER_RF;
     public static final ModConfigSpec.IntValue JET_SHARE_RF;
+    public static final ModConfigSpec.BooleanValue FX_RIDE_AUDIO;
+    public static final ModConfigSpec.BooleanValue FX_SPRAY;
+    public static final ModConfigSpec.BooleanValue FX_SPEED_FOV;
     public static final ModConfigSpec.IntValue MAX_PUSHED_ENTITIES_PER_JET;
     public static final ModConfigSpec.IntValue PUMP_HOUSE_RF_PER_TICK;
     public static final ModConfigSpec.IntValue PUMP_HOUSE_BURN_MULTIPLIER;
@@ -68,6 +71,18 @@ public final class MCWaterslidesConfig {
                 .define("itemsRide", true);
         builder.pop();
 
+
+        builder.comment("Ride feel FX (client-side polish; all safe to disable)").push("fx");
+        FX_RIDE_AUDIO = builder
+                .comment("Water-rush loop while riding + entry swish + splash-down at the pool.")
+                .define("rideAudio", true);
+        FX_SPRAY = builder
+                .comment("Spray/wake particles behind fast riders.")
+                .define("spray", true);
+        FX_SPEED_FOV = builder
+                .comment("Subtle FOV widening near the speed cap (motion feel).")
+                .define("speedFov", true);
+        builder.pop();
 
         builder.comment("Jets").push("jet");
         JET_THRUST = builder

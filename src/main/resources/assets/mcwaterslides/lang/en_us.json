@@ -65,6 +65,9 @@
   "message.mcwaterslides.flood_valve.status": "Flood Valve",
   "message.mcwaterslides.flood_valve.volume": "Sealed volume: %s blocks",
   "message.mcwaterslides.flood_valve_leak": "Flood Valve: volume not sealed \u2014 leak near %s, %s, %s",
+  "subtitles.mcwaterslides.ride_loop": "Water rushes",
+  "subtitles.mcwaterslides.splash": "Rider splashes down",
+  "subtitles.mcwaterslides.swish": "Slide whooshes",
   "tooltip.mcwaterslides.flood_valve.how": "Redstone ON fills \u00b7 OFF drains. Needs RF.",
   "tooltip.mcwaterslides.flood_valve.leaks": "Not watertight? It points at the leak.",
   "tooltip.mcwaterslides.flood_valve.what": "Floods a sealed space it faces with water."

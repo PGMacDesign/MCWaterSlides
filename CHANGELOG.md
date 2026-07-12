@@ -14,6 +14,11 @@ All notable changes to MC Waterslides. Format loosely follows
   and the chain feeds itself, hop by hop. Redstone-disabling a jet cuts the chain there.
   Config: `jet.shareRf` (0 disables).
 
+- **The ride has a voice.** A synthesized water-rush loop follows every rider — you, other
+  players, mobs — swelling and pitching up with speed; rides open with a soft whoosh and end
+  in a proper splash-down (sound + burst) at the pool. Plus a subtle FOV kick near the speed
+  cap. All generated audio (no sampled assets), all config-toggleable (`fx.*`).
+
 ### Changed
 - The ride engine now drives any `Entity`, not just `LivingEntity` — groundwork for
   future non-player rideables.

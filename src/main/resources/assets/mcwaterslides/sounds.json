@@ -1,0 +1,20 @@
+{
+  "ride_loop": {
+    "sounds": [
+      "mcwaterslides:ride_loop"
+    ],
+    "subtitle": "subtitles.mcwaterslides.ride_loop"
+  },
+  "splash": {
+    "sounds": [
+      "mcwaterslides:splash"
+    ],
+    "subtitle": "subtitles.mcwaterslides.splash"
+  },
+  "swish": {
+    "sounds": [
+      "mcwaterslides:swish"
+    ],
+    "subtitle": "subtitles.mcwaterslides.swish"
+  }
+}
