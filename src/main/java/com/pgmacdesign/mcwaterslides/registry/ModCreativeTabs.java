@@ -30,10 +30,6 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.WATER_CONDUIT.get());
                         output.accept(ModItems.FLOOD_VALVE.get());
                         output.accept(ModItems.SPLASH_POOL.get());
-                        output.accept(ModItems.INNER_TUBE.get());
-                        output.accept(ModItems.FUNNEL_CORE_SMALL.get());
-                        output.accept(ModItems.FUNNEL_CORE_MEDIUM.get());
-                        output.accept(ModItems.FUNNEL_CORE_LARGE.get());
                         addGuideBook(output);
                     })
                     .build());

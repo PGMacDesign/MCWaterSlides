@@ -28,10 +28,6 @@ public final class MCWaterslidesConfig {
     public static final ModConfigSpec.IntValue FLOOD_VALVE_MAX_VOLUME;
     public static final ModConfigSpec.BooleanValue MOBS_RIDE;
     public static final ModConfigSpec.BooleanValue ITEMS_RIDE;
-    public static final ModConfigSpec.DoubleValue FUNNEL_SWING;
-    public static final ModConfigSpec.DoubleValue FUNNEL_AXIAL_PUSH;
-    public static final ModConfigSpec.DoubleValue FUNNEL_DRAG;
-    public static final ModConfigSpec.DoubleValue FUNNEL_MAX_SPEED;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -71,22 +67,6 @@ public final class MCWaterslidesConfig {
                 .define("itemsRide", true);
         builder.pop();
 
-        builder.comment("Funnel (the side-lying tornado cone)").push("funnel");
-        FUNNEL_SWING = builder
-                .comment("Effective gravity along the cone wall (blocks/tick²): omega² = swing / radius.",
-                        "Higher = faster wall-to-wall swish; the narrowing cone quickens it naturally.")
-                .defineInRange("swing", 0.08, 0.005, 0.5);
-        FUNNEL_AXIAL_PUSH = builder
-                .comment("Water-current accel toward the exit (blocks/tick²). Guarantees everyone",
-                        "eventually washes out the throat — there is no way to get stuck.")
-                .defineInRange("axialPush", 0.004, 0.0, 0.2);
-        FUNNEL_DRAG = builder
-                .comment("Speed bled per tick — how fast the swish decays as you cross the cone.")
-                .defineInRange("drag", 0.008, 0.0, 0.5);
-        FUNNEL_MAX_SPEED = builder
-                .comment("Horizontal speed clamp inside the funnel (blocks/tick).")
-                .defineInRange("maxSpeed", 1.1, 0.1, 3.0);
-        builder.pop();
 
         builder.comment("Jets").push("jet");
         JET_THRUST = builder

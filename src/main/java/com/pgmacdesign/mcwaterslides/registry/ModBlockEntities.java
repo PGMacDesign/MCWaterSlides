@@ -31,10 +31,6 @@ public final class ModBlockEntities {
                     BlockEntityType.Builder.of(com.pgmacdesign.mcwaterslides.machine.FloodValveBlockEntity::new,
                             ModBlocks.FLOOD_VALVE.get()).build(null));
 
-    public static final Supplier<BlockEntityType<com.pgmacdesign.mcwaterslides.funnel.FunnelBlockEntity>> FUNNEL_CORE =
-            BLOCK_ENTITIES.register("funnel_core", () ->
-                    BlockEntityType.Builder.of(com.pgmacdesign.mcwaterslides.funnel.FunnelBlockEntity::new,
-                            ModBlocks.FUNNEL_CORE.get()).build(null));
 
     private ModBlockEntities() {}
 }

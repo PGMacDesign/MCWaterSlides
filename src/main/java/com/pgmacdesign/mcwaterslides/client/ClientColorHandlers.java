@@ -67,14 +67,6 @@ public final class ClientColorHandlers {
                 return CLEAR_GLASS;
             }, clear);
         }
-        // Funnel bowl + drain: the water overlay (tint 0) picks up the biome water color.
-        for (var funnel : java.util.List.of(ModBlocks.FUNNEL_WALL.get(), ModBlocks.FUNNEL_WALL_ACCENT.get(), ModBlocks.FUNNEL_CORE.get())) {
-            event.register((state, level, pos, tintIndex) -> tintIndex == 0
-                    ? (level != null && pos != null
-                        ? 0xFF000000 | BiomeColors.getAverageWaterColor(level, pos)
-                        : DEFAULT_WATER)
-                    : -1, funnel);
-        }
     }
 
     @SubscribeEvent
@@ -99,10 +91,6 @@ public final class ClientColorHandlers {
                 ModItems.SPLASH_POOL.get());
         for (var clear : java.util.List.of(ModItems.CLEAR_SLIDE_CHANNEL.get(), ModItems.CLEAR_SLIDE_TUBE.get())) {
             event.register((stack, tintIndex) -> tintIndex == 0 ? DEFAULT_WATER : CLEAR_GLASS, clear);
-        }
-        for (var funnel : java.util.List.of(ModItems.FUNNEL_CORE_SMALL.get(),
-                ModItems.FUNNEL_CORE_MEDIUM.get(), ModItems.FUNNEL_CORE_LARGE.get())) {
-            event.register((stack, tintIndex) -> tintIndex == 0 ? DEFAULT_WATER : -1, funnel);
         }
     }
 

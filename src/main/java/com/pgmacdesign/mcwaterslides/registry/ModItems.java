@@ -27,10 +27,6 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> WATER_CONDUIT;
     public static final DeferredItem<BlockItem> FLOOD_VALVE;
     public static final DeferredItem<BlockItem> SPLASH_POOL;
-    public static final DeferredItem<com.pgmacdesign.mcwaterslides.entity.TubeRaftItem> INNER_TUBE;
-    public static final DeferredItem<com.pgmacdesign.mcwaterslides.funnel.FunnelCoreItem> FUNNEL_CORE_SMALL;
-    public static final DeferredItem<com.pgmacdesign.mcwaterslides.funnel.FunnelCoreItem> FUNNEL_CORE_MEDIUM;
-    public static final DeferredItem<com.pgmacdesign.mcwaterslides.funnel.FunnelCoreItem> FUNNEL_CORE_LARGE;
 
     static {
         // Channels get run-extending placement (open-top raycast lands on interior
@@ -49,17 +45,6 @@ public final class ModItems {
         WATER_CONDUIT = ITEMS.registerSimpleBlockItem(ModBlocks.WATER_CONDUIT);
         FLOOD_VALVE = ITEMS.registerSimpleBlockItem(ModBlocks.FLOOD_VALVE);
         SPLASH_POOL = ITEMS.registerSimpleBlockItem(ModBlocks.SPLASH_POOL);
-        INNER_TUBE = ITEMS.register("inner_tube",
-                () -> new com.pgmacdesign.mcwaterslides.entity.TubeRaftItem(new Item.Properties().stacksTo(1)));
-        FUNNEL_CORE_SMALL = ITEMS.register("funnel_core_small",
-                () -> new com.pgmacdesign.mcwaterslides.funnel.FunnelCoreItem(ModBlocks.FUNNEL_CORE.get(),
-                        com.pgmacdesign.mcwaterslides.funnel.FunnelSize.SMALL, new Item.Properties()));
-        FUNNEL_CORE_MEDIUM = ITEMS.register("funnel_core_medium",
-                () -> new com.pgmacdesign.mcwaterslides.funnel.FunnelCoreItem(ModBlocks.FUNNEL_CORE.get(),
-                        com.pgmacdesign.mcwaterslides.funnel.FunnelSize.MEDIUM, new Item.Properties()));
-        FUNNEL_CORE_LARGE = ITEMS.register("funnel_core_large",
-                () -> new com.pgmacdesign.mcwaterslides.funnel.FunnelCoreItem(ModBlocks.FUNNEL_CORE.get(),
-                        com.pgmacdesign.mcwaterslides.funnel.FunnelSize.LARGE, new Item.Properties()));
     }
 
     private ModItems() {}

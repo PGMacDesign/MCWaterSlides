@@ -19,23 +19,17 @@ leak reporting) · Splash Pool · mob/item riding + toggles · feel-pass FX v1 �
 advancements (hidden "Around the World" at 10,000 blocks) · Park Builder's Manual
 (Patchouli, soft dep).
 
-**Added 2026-07-08 (Tristan-request pass):** **Inner Tube** — a single-seat boat-like raft
-(new `entity/` package) that reuses the ride engine (RideTicker generalized `LivingEntity`
-→ `Entity`), so it flows through slides/tubes/funnels identically AND floats on real water;
-upright seat, free camera, dye-recolor, no-fall. **The Tornado Funnel** — a marquee
-Howlin'-Tornado cone (`funnel/` package), REDESIGNED 2026-07-11 after playtest: the cone now
-lies on its SIDE (the real ride's layout). A `Tornado Funnel` core (S/M/L) sits at the narrow
-EXIT, faces the exit direction, and auto-stamps the half-open cone behind it in two-tone
-pinwheel stripes; `FunnelPhysics` (unit-tested) runs a transverse circle-pendulum (swish
-quickens as the cone narrows, wall force diverges = contained at any speed) plus a capped
-axial water drift — the exit is purely geometric (cross the throat plane, keep your momentum).
-No drain, no speed gates, no capture states: everyone washes out (the old vertical drain-bowl
-kept yanking riders to the center and trapping walkers — position-gated exits were the bug
-factory; both killer bugs are now structurally impossible and pinned by tests). **Swing
-physics** — a rider that stalls climbing now reverses instead of freezing, so any U-valley
-swings; drag + a settle-tick guard always terminate. 58 GameTests + 14 JUnit green, client
-boots clean. Design forks resolved in a grill session (round funnel + center drain; tube
-rides everywhere).
+**Tristan-request pass (2026-07-08 → scrapped 2026-07-11):** Inner Tube (boat-like raft)
+and the Tornado Funnel (drain-bowl v1, then a side-lying cone v2 with true-pendulum physics)
+were built, playtested across several rounds, and **removed by owner decision** — the funnel
+never felt right in-game and the tube's look never landed. Everything lives in git history
+(`5c24807`..`f97c475`) if either idea returns. Two keepers survived the pass: **swing
+physics** (a rider that stalls climbing swings back down — any U-valley oscillates and
+settles; `RideState.settleTicks` guards termination) and the **ride engine generalized to
+`Entity`** (groundwork for future rideables). Lesson for a funnel v3, if ever: exits must be
+purely geometric (position-gated exits ate the oscillation; velocity-reflecting containment
+ate the swing energy — pin position at a rim line instead), and stateless per-tick physics
+loses energy anywhere velocity is shaved.
 
 Physics lore that cost real debugging (don't rediscover): current fields must step
 diagonally with slopes (6-connectivity dies at the first ascending block); riders on
@@ -59,7 +53,6 @@ config toggles are global (toggle gametests need their own serialized batches).
 
 ## Later / v2 candidates
 
-Race timers + checkpoints · multi-seat cloverleaf raft (inner tube done; this is the 2–4
-person version) · ascending-tube lid art ·
+Race timers + checkpoints · ascending-tube lid art ·
 custom particle/sound assets · richer website (custom domain, media, gallery — a simple
 GitHub Pages site ships from `site/`) · pool-entry splash burst.

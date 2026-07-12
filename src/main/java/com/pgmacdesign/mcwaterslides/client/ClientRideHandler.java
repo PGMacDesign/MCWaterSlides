@@ -38,8 +38,7 @@ public final class ClientRideHandler {
             return;
         }
         RideState state = player.getData(ModAttachments.RIDE_STATE.get());
-        if (player.isSpectator() || player.getAbilities().flying
-                || player.getVehicle() instanceof com.pgmacdesign.mcwaterslides.entity.TubeRaftEntity) {
+        if (player.isSpectator() || player.getAbilities().flying) {
             // Flight, spectator, or aboard a raft: the local player isn't the rider — keep its
             // own ride state idle (the raft's client-side sim drives motion instead).
             state.endRide();

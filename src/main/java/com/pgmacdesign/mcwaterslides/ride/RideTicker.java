@@ -4,9 +4,6 @@ import javax.annotation.Nullable;
 
 import com.pgmacdesign.mcwaterslides.config.MCWaterslidesConfig;
 import com.pgmacdesign.mcwaterslides.current.CurrentFields;
-import com.pgmacdesign.mcwaterslides.funnel.FunnelBlockEntity;
-import com.pgmacdesign.mcwaterslides.funnel.FunnelFields;
-import com.pgmacdesign.mcwaterslides.funnel.FunnelPhysics;
 import com.pgmacdesign.mcwaterslides.slide.SlideChannelBlock;
 import com.pgmacdesign.mcwaterslides.slide.SlideSurface;
 import com.pgmacdesign.mcwaterslides.slide.SlideTubeBlock;
@@ -77,15 +74,6 @@ public final class RideTicker {
             entity.setDeltaMovement(d.x, Mth.clamp(d.y + lift, -1.2, 1.2), d.z);
         }
 
-        // A funnel bowl overrides every other surface: while inside one, the rider swirls (both
-        // sides run this — client predicts the local player, server drives mobs/rafts — so it
-        // rubber-bands no more than a slide does).
-        FunnelBlockEntity funnel = FunnelFields.at(level, entity);
-        if (funnel != null) {
-            tickFunnel(entity, state, funnel, braking, applyMotion);
-            return;
-        }
-
         if (!state.riding) {
             maybeStart(entity, state, shape, verticalTube, thrustVec);
             return;
@@ -149,7 +137,7 @@ public final class RideTicker {
             if (state.momentum < END_THRESHOLD) {
                 state.settleTicks++;
                 // A rider that stalls while CLIMBING swings back down instead of freezing on
-                // the ramp — the half-pipe / funnel-valley oscillation. Drag lowers each pass,
+                // the ramp — the half-pipe valley oscillation. Drag lowers each pass,
                 // so it settles; a flat stall, a brake, or a fully-decayed swing ends the ride.
                 if (slopeSign < 0 && !braking && state.settleTicks <= SETTLE_TICKS_MAX) {
                     travel = travel.getOpposite();
@@ -247,63 +235,6 @@ public final class RideTicker {
         }
     }
 
-    /**
-     * The tornado ride: work in the funnel's own frame (a = axial distance from the exit plane,
-     * u = offset across the trough), let {@link FunnelPhysics} swing the rider wall-to-wall while
-     * the water walks them toward the throat, and track the cone surface vertically. Crossing the
-     * exit plane simply releases them — momentum intact — onto whatever the builder put there.
-     */
-    private static void tickFunnel(Entity entity, RideState state, FunnelBlockEntity funnel,
-                                   boolean braking, boolean applyMotion) {
-        if (entity.isSpectator()) {
-            return;
-        }
-        // Crouch to bail: release control so you can walk/climb out — the tornado never traps you.
-        if (braking) {
-            state.endRide();
-            return;
-        }
-
-        Vec3 anchor = funnel.anchor();
-        Vec3 back = funnel.back();
-        Vec3 perp = funnel.perp();
-        FunnelPhysics.Params p = funnel.params();
-        double relX = entity.getX() - anchor.x;
-        double relZ = entity.getZ() - anchor.z;
-        double a = relX * back.x + relZ * back.z;
-        if (FunnelPhysics.exited(a)) {
-            // past the throat: hands off, the exit slide's normal pickup takes over
-            state.endRide();
-            return;
-        }
-
-        if (!state.riding) {
-            state.startRide(Math.max(entity.getDeltaMovement().horizontalDistance() * 20.0, 1.0), null);
-        }
-        if (entity instanceof LivingEntity le) {
-            le.setAirSupply(le.getMaxAirSupply());
-        }
-        state.gapTicks = 0;
-        state.settleTicks = 0;
-
-        double u = relX * perp.x + relZ * perp.z;
-        Vec3 vel = entity.getDeltaMovement();
-        double va = vel.x * back.x + vel.z * back.z;
-        double vu = vel.x * perp.x + vel.z * perp.z;
-        double[] nv = FunnelPhysics.step(a, u, va, vu, p);
-        double surfaceY = anchor.y + FunnelPhysics.surfaceHeight(a, u, p);
-        double vy = Mth.clamp((surfaceY - entity.getY()) * 0.35, -0.5, 0.5);
-        if (applyMotion) {
-            entity.setDeltaMovement(
-                    back.x * nv[0] + perp.x * nv[1],
-                    vy,
-                    back.z * nv[0] + perp.z * nv[1]);
-        }
-        double speed = Math.hypot(nv[0], nv[1]);
-        state.momentum = speed * 20.0;
-        state.distanceRidden += speed;
-    }
-
     /** Signed thrust (b/s per tick) along the travel axis; opposing jets decelerate. */
     private static double thrustAlong(Vec3 thrustVec, Direction travel) {
         return (thrustVec.x * travel.getStepX() + thrustVec.z * travel.getStepZ()) / 20.0;
@@ -333,8 +264,7 @@ public final class RideTicker {
         }
         BlockPos feet = BlockPos.containing(entity.position());
         return entity.level().getBlockState(feet).getBlock() instanceof SlideSurface
-                || entity.isInWater()
-                || FunnelFields.at(entity.level(), entity) != null;
+                || entity.isInWater();
     }
 
     /** Committed when something with collision sits over the rider's head (tubes, roofs). */

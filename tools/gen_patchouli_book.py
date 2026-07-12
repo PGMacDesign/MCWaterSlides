@@ -142,39 +142,6 @@ def gen():
              "any time to read its mode, power, sealed volume, or leak spot.", title="Finding leaks"),
     ]))
 
-    write_json(entries / "building/inner_tube.json", entry("building", "Inner Tubes",
-            f"{MOD}:inner_tube", [
-        text("$(item)Inner Tube$()s are rideable rafts. Right-click one onto water $(bold)or$() "
-             "straight onto a slide, then right-click again to climb in. You sit up and "
-             "$(bold)look around freely$() while the current carries you — lazy rivers, splash "
-             "pools, slides, and funnels all work.$(br2)$(thing)Sneak$() to hop out."),
-        crafting(f"{MOD}:inner_tube", "Leather and a copper valve — cheap, floaty, renewable."),
-        text("$(bold)Recolor$() a placed tube by $(thing)sneak-right-clicking$() it with any dye."
-             "$(br2)It rides everything a walker does — same speeds, same $(bold)no fall "
-             "damage$() — you just get a seat and a view.", title="Colors & feel"),
-    ]))
-
-    write_json(entries / "building/funnel.json", entry("building", "The Tornado Funnel",
-            f"{MOD}:funnel_core_medium", [
-        text("A giant cone lying $(bold)on its side$() — fly in at the wide mouth, swish "
-             "$(bold)wall to wall$() as the cone narrows, and shoot out the far throat with your "
-             "momentum. You barely lose height; the water does the work.$(br2)Place a "
-             "$(item)Tornado Funnel$() core where the $(bold)exit$() should be — it faces the "
-             "way you're looking and $(bold)builds the whole cone behind it$(), pinwheel "
-             "stripes and all."),
-        crafting(f"{MOD}:funnel_core_medium",
-                 "No power, no RF — pure water and momentum. Bigger cores build bigger cones."),
-        text("$(bold)Feed it$(): aim a slide into the wide mouth — enter off-center or at an "
-             "angle and you'll swing high up the walls before the current walks you out."
-             "$(br2)$(bold)Catch it$(): run a channel from the exit collar; riders fire out "
-             "level, carrying their speed.$(br2)Small / Medium / Large mouths stand about "
-             "6, 8, and 11 blocks tall. $(thing)Crouch$() any time to bail out.",
-             title="Feed & catch"),
-        text("Nobody gets stuck, ever: the current always washes riders (and dropped items, "
-             "and unlucky mobs) out the throat. Break the core to clear the whole shell.",
-             title="The current always wins"),
-    ]))
-
     write_json(entries / "building/mega_parks.json", entry("building", "Mega-Parks",
             "minecraft:filled_map", [
         text("Build as big as you dare — a park can span a hundred chunks and more. "

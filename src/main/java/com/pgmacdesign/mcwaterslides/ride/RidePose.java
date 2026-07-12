@@ -24,8 +24,7 @@ public final class RidePose {
 
     public static void reconcile(Player player, RideState state) {
         // A raft passenger sits upright (vehicle pose) — never force the prone swim pose there.
-        boolean want = (state.riding || onRideSurface(player))
-                && !(player.getVehicle() instanceof com.pgmacdesign.mcwaterslides.entity.TubeRaftEntity);
+        boolean want = (state.riding || onRideSurface(player));
         if (want && !state.poseForced) {
             player.setForcedPose(Pose.SWIMMING);
             state.poseForced = true;

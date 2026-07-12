@@ -35,7 +35,7 @@ public class RidePhysicsGameTests {
 
     /**
      * Apex reversal: a rider that descends into a valley and climbs the far wall swings
-     * BACK down instead of freezing on the ramp (the half-pipe / funnel-valley oscillation).
+     * BACK down instead of freezing on the ramp (the half-pipe valley oscillation).
      */
     @GameTest(template = "empty5", timeoutTicks = 200)
     public static void riderSwingsBackUpAValley(GameTestHelper helper) {

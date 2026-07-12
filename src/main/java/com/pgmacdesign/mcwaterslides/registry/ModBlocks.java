@@ -69,32 +69,7 @@ public final class ModBlocks {
                             .strength(2.5f, 6.0f)
                             .sound(SoundType.COPPER));
 
-    public static final DeferredBlock<com.pgmacdesign.mcwaterslides.funnel.FunnelCoreBlock> FUNNEL_CORE =
-            BLOCKS.registerBlock("funnel_core",
-                    com.pgmacdesign.mcwaterslides.funnel.FunnelCoreBlock::new,
-                    BlockBehaviour.Properties.of()
-                            .strength(2.5f, 6.0f)
-                            .sound(SoundType.COPPER)
-                            .noOcclusion());
 
-    // The tornado shell blocks are machine-stamped by the core only — no items, no drops.
-    public static final DeferredBlock<net.minecraft.world.level.block.Block> FUNNEL_WALL =
-            BLOCKS.registerBlock("funnel_wall",
-                    net.minecraft.world.level.block.Block::new,
-                    BlockBehaviour.Properties.of()
-                            .strength(1.5f, 6.0f)
-                            .sound(SoundType.COPPER)
-                            .noOcclusion()
-                            .noLootTable());
-
-    public static final DeferredBlock<net.minecraft.world.level.block.Block> FUNNEL_WALL_ACCENT =
-            BLOCKS.registerBlock("funnel_wall_accent",
-                    net.minecraft.world.level.block.Block::new,
-                    BlockBehaviour.Properties.of()
-                            .strength(1.5f, 6.0f)
-                            .sound(SoundType.COPPER)
-                            .noOcclusion()
-                            .noLootTable());
 
     public static final DeferredBlock<com.pgmacdesign.mcwaterslides.slide.SplashPoolBlock> SPLASH_POOL =
             BLOCKS.registerBlock("splash_pool",
