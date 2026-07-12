@@ -15,6 +15,11 @@
       "type": "patchouli:crafting",
       "recipe": "mcwaterslides:water_conduit",
       "text": "Water Conduits carry the power along your slide's spine. Any other RF mod's cables work too."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(bold)Jets share power.$() Jets touching each other pass RF toward whichever neighbor holds less, hop by hop \u2014 wire $(bold)one$() jet in a row and the whole chain feeds itself. Flip a jet off with redstone to cut the chain there.",
+      "title": "Daisy-chaining"
     }
   ]
 }

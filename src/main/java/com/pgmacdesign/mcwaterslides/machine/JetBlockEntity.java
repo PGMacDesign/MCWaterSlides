@@ -69,6 +69,8 @@ public class JetBlockEntity extends BlockEntity {
             return;
         }
 
+        jet.shareWithNeighborJets(level, pos);
+
         CurrentField current = jet.validatedField(level, pos, state);
 
         // Count riders now so THIS tick's whole cost is billed at a single draw point.
@@ -103,6 +105,39 @@ public class JetBlockEntity extends BlockEntity {
                         new net.minecraft.world.phys.AABB(pos).inflate(10))) {
                     trigger.trigger(player, "jet_energized", 1);
                 }
+            }
+        }
+    }
+
+    /**
+     * Daisy-chain power: push RF into adjacent jets that hold LESS, at most half the
+     * difference per neighbor per tick (rate-capped). Flow strictly follows the energy
+     * gradient, so chains relay hop-by-hop from the fed jet outward and settle at
+     * equal levels — no loops, no oscillation. Runs only while ENABLED, so a lever can
+     * cut a chain segment. Wire ONE jet to the Pump House and the row feeds itself.
+     */
+    private void shareWithNeighborJets(Level level, BlockPos pos) {
+        int rate = MCWaterslidesConfig.JET_SHARE_RF.get();
+        if (rate <= 0) {
+            return;
+        }
+        int mine = energy.getEnergyStored();
+        for (Direction d : Direction.values()) {
+            if (mine <= 1) {
+                return;
+            }
+            if (!(level.getBlockEntity(pos.relative(d)) instanceof JetBlockEntity other)) {
+                continue;
+            }
+            int theirs = other.energy.getEnergyStored();
+            int moved = Math.min((mine - theirs) / 2, rate);
+            moved = Math.min(moved, other.energy.getMaxEnergyStored() - theirs);
+            if (moved > 0) {
+                mine -= moved;
+                energy.setStored(mine);
+                other.energy.setStored(theirs + moved);
+                setChanged();
+                other.setChanged();
             }
         }
     }

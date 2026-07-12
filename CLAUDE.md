@@ -61,6 +61,9 @@ Rules that bite if skipped (learned on MC3DPrint):
 
 1. **Deploy = replace, never duplicate.** Copy the fresh jar into the test instance's
    `mods/` folder, replacing any existing `mcwaterslides-*.jar` — never leave two.
+   **Never launch a Minecraft client** (no `runClient` smoke boots — the dev client
+   confused the owner's workflow); verify via compile + JUnit + `runGameTestServer` +
+   generated-JSON checks, and let the owner playtest visuals in their Prism instance.
 2. **GameTest namespace:** `neoforge.enabledGameTestNamespaces` must be set on the
    client, server AND gameTestServer runs in `build.gradle` — if unset, ZERO gametests
    register and `runGameTestServer` exits 0 having run nothing (a false green).

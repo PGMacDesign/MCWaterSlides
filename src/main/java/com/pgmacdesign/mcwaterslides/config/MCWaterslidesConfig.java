@@ -20,6 +20,7 @@ public final class MCWaterslidesConfig {
     public static final ModConfigSpec.IntValue JET_IDLE_RF;
     public static final ModConfigSpec.IntValue JET_PUSH_RF;
     public static final ModConfigSpec.IntValue JET_BUFFER_RF;
+    public static final ModConfigSpec.IntValue JET_SHARE_RF;
     public static final ModConfigSpec.IntValue MAX_PUSHED_ENTITIES_PER_JET;
     public static final ModConfigSpec.IntValue PUMP_HOUSE_RF_PER_TICK;
     public static final ModConfigSpec.IntValue PUMP_HOUSE_BURN_MULTIPLIER;
@@ -84,6 +85,11 @@ public final class MCWaterslidesConfig {
         JET_BUFFER_RF = builder
                 .comment("Internal RF buffer per jet — rides don't stutter on a flickering supply.")
                 .defineInRange("bufferRf", 20_000, 0, Integer.MAX_VALUE);
+        JET_SHARE_RF = builder
+                .comment("RF a jet pushes per adjacent jet per tick, toward neighbors holding less",
+                        "(half the difference, capped here) — wire one jet and the row daisy-chains.",
+                        "0 disables sharing.")
+                .defineInRange("shareRf", 64, 0, 4096);
         MAX_PUSHED_ENTITIES_PER_JET = builder
                 .comment("Per-tick entity cap per jet (mega-park performance guard).")
                 .defineInRange("maxPushedEntitiesPerJet", 16, 1, 1024);

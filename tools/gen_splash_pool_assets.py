@@ -72,8 +72,11 @@ def gen_data():
         "elements": [element([0, WATER_Y - 0.2, 0], [16, WATER_Y, 16],
                              {"up": face("#water", tint=0)}, shade=False)],
     })
-    # inventory: floor + all four walls + water
+    # inventory: floor + all four walls + water. The block/block parent supplies the
+    # standard isometric GUI transform — without it the icon renders face-on (a blank
+    # wall) and the water on top is invisible in the inventory.
     inv = {
+        "parent": "minecraft:block/block",
         "render_type": "minecraft:translucent",
         "textures": {**textures(), "water": "minecraft:block/water_still"},
         "elements": [

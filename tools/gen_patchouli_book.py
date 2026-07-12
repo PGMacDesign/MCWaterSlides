@@ -183,6 +183,10 @@ def gen():
         crafting(f"{MOD}:water_conduit",
                  "Water Conduits carry the power along your slide's spine. Any other "
                  "RF mod's cables work too."),
+        text("$(bold)Jets share power.$() Jets touching each other pass RF toward whichever "
+             "neighbor holds less, hop by hop — wire $(bold)one$() jet in a row and the whole "
+             "chain feeds itself. Flip a jet off with redstone to cut the chain there.",
+             title="Daisy-chaining"),
     ]))
 
     write_json(entries / "safety/splash_pools.json", entry("safety", "Splash Pools",

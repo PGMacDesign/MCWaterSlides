@@ -9,6 +9,11 @@ All notable changes to MC Waterslides. Format loosely follows
 - **Swing valleys** — riders that stall while climbing now swing back down instead of
   freezing on the ramp, so any U-shaped slide valley oscillates and settles.
 
+- **Jets daisy-chain RF.** Jets placed against each other pass power toward whichever
+  neighbor holds less (half the difference per tick, rate-capped) — wire one jet in a row
+  and the chain feeds itself, hop by hop. Redstone-disabling a jet cuts the chain there.
+  Config: `jet.shareRf` (0 disables).
+
 ### Changed
 - The ride engine now drives any `Entity`, not just `LivingEntity` — groundwork for
   future non-player rideables.
@@ -21,6 +26,9 @@ All notable changes to MC Waterslides. Format loosely follows
   a cyan RF gauge with a hover tooltip (exact RF + rate), and a live rate readout.
 - The mod now ships a proper logo + pack icon (a flume diving into a splash pool), shown in
   the mods list and resource-pack screen.
+- Jet side chevrons now point the way the jet pushes (they pointed straight up before,
+  whatever the facing); the splash pool's inventory icon renders isometric with visible
+  water instead of a blank face-on wall.
 - **Smoother flumes.** Channel troughs and tube bores now round with half-pixel quarter-ellipse
   stepping (double the resolution, vertical tangent at the wall) so the cross-section reads as
   a real half-pipe instead of stairs. Corner channels got the trough rounding they were missing,

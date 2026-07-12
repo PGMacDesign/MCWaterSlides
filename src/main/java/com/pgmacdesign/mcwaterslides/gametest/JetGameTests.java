@@ -223,4 +223,26 @@ public class JetGameTests {
             }
         });
     }
+
+    /**
+     * Daisy-chain power: fill ONE jet and its unfed neighbors charge hop-by-hop down the
+     * energy gradient — the far end of a 3-jet row ends up holding RF it was never wired for.
+     */
+    @GameTest(template = "empty5", timeoutTicks = 200)
+    public static void jetsDaisyChainEnergy(GameTestHelper helper) {
+        JetBlockEntity fed = placeJet(helper, new BlockPos(1, 1, 2), Direction.NORTH, true);
+        placeJet(helper, new BlockPos(2, 1, 2), Direction.NORTH, false);
+        placeJet(helper, new BlockPos(3, 1, 2), Direction.NORTH, false);
+        helper.succeedWhen(() -> {
+            if (!(helper.getBlockEntity(new BlockPos(3, 1, 2)) instanceof JetBlockEntity far)) {
+                throw new GameTestAssertException("far jet missing");
+            }
+            if (far.energyHandler().getEnergyStored() > 0
+                    && fed.energyHandler().getEnergyStored() > 0) {
+                return;
+            }
+            helper.fail("chain has not relayed energy yet, far="
+                    + far.energyHandler().getEnergyStored());
+        });
+    }
 }

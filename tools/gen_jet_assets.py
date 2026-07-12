@@ -92,18 +92,30 @@ def gen_textures():
 
 def gen_data():
     models = RES / f"assets/{MOD}/models"
+    # Explicit element so each side face can rotate the chevron texture toward the
+    # nozzle (model front = north). Rotation set copied from vanilla template_piston,
+    # which aims its side texture at the head the same way: up 0 / down 180 / east 90 /
+    # west 270. Blockstate rotations then carry the arrows with the facing.
     for suffix, front in (("", "jet_front"), ("_on", "jet_front_on")):
         write_json(models / f"block/jet{suffix}.json", {
-            "parent": "minecraft:block/cube",
+            "parent": "minecraft:block/block",
             "textures": {
                 "particle": f"{MOD}:block/jet_side",
-                "north": f"{MOD}:block/{front}",
-                "south": f"{MOD}:block/jet_back",
-                "east": f"{MOD}:block/jet_side",
-                "west": f"{MOD}:block/jet_side",
-                "up": f"{MOD}:block/jet_side",
-                "down": f"{MOD}:block/jet_side",
+                "front": f"{MOD}:block/{front}",
+                "back": f"{MOD}:block/jet_back",
+                "side": f"{MOD}:block/jet_side",
             },
+            "elements": [{
+                "from": [0, 0, 0], "to": [16, 16, 16],
+                "faces": {
+                    "north": {"texture": "#front", "cullface": "north"},
+                    "south": {"texture": "#back", "cullface": "south"},
+                    "up": {"texture": "#side", "cullface": "up"},
+                    "down": {"texture": "#side", "rotation": 180, "cullface": "down"},
+                    "east": {"texture": "#side", "rotation": 90, "cullface": "east"},
+                    "west": {"texture": "#side", "rotation": 270, "cullface": "west"},
+                },
+            }],
         })
     write_json(models / "item/jet.json", {"parent": f"{MOD}:block/jet"})
 
