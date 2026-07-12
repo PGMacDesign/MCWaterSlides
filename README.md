@@ -12,23 +12,30 @@ of any size. Slides can loop, climb, and go on effectively forever.
 materials — no diamonds, no netherite, nothing rare. An iron pickaxe and a
 riverbank fund a full water park.
 
-> 🚧 **In development** — v0.1.0 is being built. This README grows with the mod.
+## How it works
 
-## How it will work
-
-1. Lay **Slide Channels** — rail-style auto-connecting U-channels, dyeable in
-   16 colors, always full of water.
+1. Lay **Slide Channels** — rail-style auto-connecting flumes, dyeable in 16
+   colors, always full of water. Lanes placed side-by-side merge into wide slides.
 2. Place **Jets** — each one projects a current through the water ahead of it
-   (any water, including a glass tube you built yourself). Aim one straight up
-   to push riders uphill.
-3. Power them with RF — the coal/water-fed **Pump House** ships in the mod, or
-   use any RF mod's generators.
-4. Hop in. Crouch to brake, jump to bail — or ride an enclosed tube and commit.
+   (any water, including a glass tunnel you built yourself). Aim one straight up
+   to push riders uphill. Jets touching each other share RF down the row.
+3. Power them — the coal/water-fed **Pump House** ships in the mod, or use any
+   RF mod's generators.
+4. Hop in. Crouch to brake, jump to bail — or ride an enclosed **Slide Tube**
+   (loops, long drops, vertical shafts) and commit to the exit.
 
-Also planned for v1: **Slide Tubes** (enclosed, vertical drops), the **Flood
-Valve** (fills your sealed glass tube with water — and finds the leak when it
-isn't sealed), **Splash Pools** (safe landings), mob & item riding, and a hidden
-advancement for a single 10,000-block ride.
+And the rest: the **Flood Valve** floods your sealed glass build into a rideable
+water tunnel (and points at the leak when it isn't sealed), **Splash Pools** catch
+riders safely, **mobs and dropped items ride too**, every rider gets a water-rush
+soundtrack with a proper splash-down, a guided advancement chain teaches the loop —
+and a hidden advancement waits for a single 10,000-block ride.
+
+📖 In-game manual via [Patchouli](https://modrinth.com/mod/patchouli) (optional,
+recommended) — or read the same guide [on the web](https://pgmacdesign.github.io/MCWaterSlides/guide.html).
+
+## Screenshots
+
+> 🖼️ Coming with the showcase park world — watch this space.
 
 ## Big parks & chunk loading — a deliberate design decision
 
@@ -44,8 +51,9 @@ something else keeps loaded).
 
 ## Versions
 
-One codebase (Stonecutter) builds a jar per NeoForge target:
-**1.21.1 · 1.21.8 · 1.21.9 · 1.21.10 · 1.21.11 · 26.1 · 26.2**
+**Shipping now: NeoForge 1.21.1.** The codebase is multi-version (Stonecutter,
+one tree) and the rest of the ladder — 1.21.8 · 1.21.9 · 1.21.10 · 1.21.11 ·
+26.1 · 26.2 — lands as point releases as each port is finished.
 
 ## Build from source
 

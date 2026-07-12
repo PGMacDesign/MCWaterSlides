@@ -5,6 +5,10 @@ All notable changes to MC Waterslides. Format loosely follows
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.2.0] - 2026-07-12
+
 ### Added
 - **Swing valleys** — riders that stall while climbing now swing back down instead of
   freezing on the ramp, so any U-shaped slide valley oscillates and settles.

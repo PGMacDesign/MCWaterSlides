@@ -10,6 +10,7 @@
 # Usage:
 #   ./scripts/build-all.sh                       # version from gradle.properties
 #   ./scripts/build-all.sh --version 0.2.0       # override version (e.g. a release tag)
+#   ./scripts/build-all.sh --nodes 1.21.1,1.21.8 # override the node list (default: shippable)
 #
 # JDK: needs a Java 21 launcher (Stonecutter requires it). Auto-detected, or set
 # MCWS_JDK21 to override. In CI, GitHub's setup-java exports JAVA_HOME_21_X64, which
@@ -20,8 +21,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-# --- the NeoForge nodes built from this tree. Add future versions here. ---
-NEOFORGE_NODES=("1.21.1" "1.21.8" "1.21.9" "1.21.10" "1.21.11" "26.1" "26.2")
+# --- the SHIPPABLE NeoForge nodes. Only nodes that actually compile belong here —
+# release.yml runs this script, so a broken node here breaks the release. The full
+# ladder (1.21.8 1.21.9 1.21.10 1.21.11 26.1 26.2) rejoins as the forward-port
+# ticket lands each one. Override ad hoc with --nodes.
+NEOFORGE_NODES=("1.21.1")
 CANONICAL_NODE="1.21.1"   # the vcsVersion; the tree is left on this on exit
 
 # --- args ---
@@ -30,6 +34,8 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --version) VERSION="$2"; shift 2 ;;
         --version=*) VERSION="${1#*=}"; shift ;;
+        --nodes) IFS=',' read -r -a NEOFORGE_NODES <<< "$2"; shift 2 ;;
+        --nodes=*) IFS=',' read -r -a NEOFORGE_NODES <<< "${1#*=}"; shift ;;
         -h|--help) sed -n '2,16p' "$0"; exit 0 ;;
         *) echo "unknown arg: $1" >&2; exit 2 ;;
     esac
