@@ -19,6 +19,11 @@ All notable changes to MC Waterslides. Format loosely follows
   in a proper splash-down (sound + burst) at the pool. Plus a subtle FOV kick near the speed
   cap. All generated audio (no sampled assets), all config-toggleable (`fx.*`).
 
+- **Self-explanatory items.** Every item now carries a one-line tooltip (what it does, in
+  plain words; Shift for the detail line) — the mod teaches itself even without Patchouli
+  installed. New "Stick the Landing" advancement closes the guided chain: place → power →
+  ride → splash-land.
+
 ### Changed
 - The ride engine now drives any `Entity`, not just `LivingEntity` — groundwork for
   future non-player rideables.

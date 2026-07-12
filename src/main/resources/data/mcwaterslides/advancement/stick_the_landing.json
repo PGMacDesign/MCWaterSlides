@@ -1,0 +1,27 @@
+{
+  "parent": "mcwaterslides:lazy_river",
+  "display": {
+    "icon": {
+      "id": "mcwaterslides:splash_pool"
+    },
+    "title": {
+      "translate": "advancement.mcwaterslides.stick_the_landing.title"
+    },
+    "description": {
+      "translate": "advancement.mcwaterslides.stick_the_landing.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "splash_landed": {
+      "trigger": "mcwaterslides:ride_stat",
+      "conditions": {
+        "stat": "splash_land",
+        "min": 1
+      }
+    }
+  }
+}

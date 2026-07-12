@@ -103,6 +103,10 @@ public final class RideTicker {
             state.momentum *= 0.3;
             if (state.momentum < 1.0) {
                 state.endRide();
+                if (entity instanceof net.minecraft.server.level.ServerPlayer sp) {
+                    com.pgmacdesign.mcwaterslides.advancement.ModCriteria.RIDE_STAT.get()
+                            .trigger(sp, "splash_land", 1);
+                }
                 return;
             }
             if (applyMotion && state.travel != null) {
