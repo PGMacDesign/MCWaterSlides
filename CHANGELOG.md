@@ -17,7 +17,8 @@ All notable changes to MC Waterslides. Format loosely follows
   wall as the cone narrows, and fire out the throat level, keeping your momentum — you barely
   lose height. Passive gravity + water current, no RF; the current always washes everyone out
   the exit (nothing can get stuck); crouch bails. The exit is purely geometric — no drain, no
-  speed gates. (Replaces the vertical drain-bowl funnel design entirely; funnel shell blocks
+  speed gates. The swing is a true pendulum on the cone wall — a hot side-entry carries its
+  momentum all the way up the far wall and back, decaying only through drag. (Replaces the vertical drain-bowl funnel design entirely; funnel shell blocks
   are machine-stamped only and no longer craftable items.)
 - **Swing valleys** — riders that stall while climbing now swing back down instead of
   freezing on the ramp, so any U-shaped slide valley oscillates and settles.

@@ -73,13 +73,13 @@ public final class MCWaterslidesConfig {
 
         builder.comment("Funnel (the side-lying tornado cone)").push("funnel");
         FUNNEL_SWING = builder
-                .comment("Transverse pendulum strength (blocks/tick²): omega² = swing / radius.",
+                .comment("Effective gravity along the cone wall (blocks/tick²): omega² = swing / radius.",
                         "Higher = faster wall-to-wall swish; the narrowing cone quickens it naturally.")
-                .defineInRange("swing", 0.06, 0.005, 0.5);
+                .defineInRange("swing", 0.08, 0.005, 0.5);
         FUNNEL_AXIAL_PUSH = builder
                 .comment("Water-current accel toward the exit (blocks/tick²). Guarantees everyone",
                         "eventually washes out the throat — there is no way to get stuck.")
-                .defineInRange("axialPush", 0.005, 0.0, 0.2);
+                .defineInRange("axialPush", 0.004, 0.0, 0.2);
         FUNNEL_DRAG = builder
                 .comment("Speed bled per tick — how fast the swish decays as you cross the cone.")
                 .defineInRange("drag", 0.008, 0.0, 0.5);

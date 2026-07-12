@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FunnelPhysicsTest {
     /** LARGE-ish cone: 5-block mouth radius, 2.5 exit, 13 long, 2 drop. */
     private static final FunnelPhysics.Params P =
-            new FunnelPhysics.Params(5.0, 2.5, 13.0, 2.0, 0.06, 0.008, 0.005, 1.1);
+            new FunnelPhysics.Params(5.0, 2.5, 13.0, 2.0, 0.08, 0.008, 0.005, 1.1);
 
     /** Integrate one rider; returns {a, u, va, vu} after n steps or at exit. */
     private static double[] run(double a, double u, double va, double vu, int n) {
@@ -108,5 +108,42 @@ class FunnelPhysicsTest {
     void speedIsClamped() {
         double[] v = FunnelPhysics.step(6.0, 4.0, -3.0, 3.0, P);
         assertTrue(Math.hypot(v[0], v[1]) <= P.maxSpeed() + 1e-9);
+    }
+
+    /** THE playtest regression: a hot side-entry (fast off a slide, high on the near wall)
+     * must carry its momentum UP THE FAR WALL — not get eaten and dribble down the middle.
+     * The pendulum conserves the swing's energy; only drag decays it. */
+    @Test
+    void hotSideEntrySwingsUpTheFarWall() {
+        double a = 12.5, u = 4.2, va = 0, vu = -1.1; // entering at ~22 b/s across, near the rim
+        double farPeak = 0;
+        int crossings = 0;
+        boolean positive = true;
+        for (int t = 0; t < 500 && !FunnelPhysics.exited(a); t++) {
+            double[] v = FunnelPhysics.step(a, u, va, vu, P);
+            va = v[0];
+            vu = v[1];
+            a += va;
+            u += vu;
+            if (u < 0) {
+                farPeak = Math.max(farPeak, -u);
+            }
+            if ((u > 0) != positive) {
+                crossings++;
+                positive = u > 0;
+            }
+        }
+        double mouthR = P.mouthRadius();
+        assertTrue(farPeak > 0.5 * mouthR,
+                "the first swing must climb the far wall, farPeak=" + farPeak);
+        assertTrue(crossings >= 3, "the swing must survive several crossings, got " + crossings);
+    }
+
+    /** Axial momentum brought in from the feeder slide decays toward the drift cap — it is
+     * never chopped to the cap in a single tick. */
+    @Test
+    void entryMomentumIsNotChopped() {
+        double[] v = FunnelPhysics.step(12.0, 0, -1.0, 0.2, P); // entering fast toward the exit
+        assertTrue(v[0] < -0.9, "axial entry speed should persist, got va=" + v[0]);
     }
 }

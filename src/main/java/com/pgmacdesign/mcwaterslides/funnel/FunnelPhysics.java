@@ -9,10 +9,10 @@ package com.pgmacdesign.mcwaterslides.funnel;
  * back toward the mouth (a = length at the mouth, 0 at the exit), {@code u} = horizontal
  * offset from the funnel's centerline. Two independent motions compose the ride:
  *
- *  • TRANSVERSE — a pendulum on the circular cross-section. The restoring force is the
- *    true circle tangent (∝ s/√(1−s²), s = u/r), so it diverges at the wall: riders are
- *    physically contained no matter how hot they come in, and the swish quickens as the
- *    cone narrows (ω² = swing/r).
+ *  • TRANSVERSE — a true pendulum on the circular cross-section, integrated in tangent
+ *    space: climbing the wall converts speed to height and descending gives it back, so a
+ *    hot entry swings HIGH up the far wall instead of losing its energy (drag is the only
+ *    loss). Small-angle ω² = swing/r — the swish quickens as the cone narrows.
  *  • AXIAL — a gentle water push plus the bottom line's slope carry riders toward the
  *    exit unconditionally. There is no capture state anywhere: everyone leaves.
  *
@@ -28,7 +28,7 @@ public final class FunnelPhysics {
      * @param exitRadius  cross-section radius at the narrow exit throat (blocks)
      * @param length      axial length, mouth plane → exit plane (blocks)
      * @param drop        bottom-line height loss from mouth to exit (blocks)
-     * @param swing       transverse pendulum strength (blocks/tick²) — ω² = swing / r
+     * @param swing       effective gravity along the wall (blocks/tick²) — ω² = swing / r
      * @param drag        fraction of speed bled per tick (decays the swish)
      * @param axialPush   water-current accel toward the exit (blocks/tick²)
      * @param maxSpeed    horizontal speed clamp (blocks/tick)
@@ -38,15 +38,22 @@ public final class FunnelPhysics {
 
     /** Riders past this axial coordinate (in front of the exit plane) have left the funnel. */
     public static final double EXIT_MARGIN = -0.5;
-    /** Exit-ward drift tops out at this fraction of maxSpeed — the swish outlives the drift,
-     *  so riders cross the trough several times before the water walks them out. */
-    private static final double AXIAL_FRACTION = 0.22;
+    /** Exit-ward DRIFT tops out at this fraction of maxSpeed — the swish outlives the drift,
+     *  so riders cross the trough several times before the water walks them out. A rider who
+     *  ENTERS faster than the cap keeps that momentum; it decays toward the cap instead of
+     *  being chopped. */
+    private static final double AXIAL_FRACTION = 0.18;
     /** How much of the bottom line's slope reaches the axial drift (most of a swishing rider's
      *  slope pull is spent climbing walls, not running the axis). */
     private static final double SLOPE_GAIN = 0.03;
-    /** Outward motion past this fraction of the radius bounces (damped) — the wall backstop
-     *  for entries too hot for the restoring force alone. */
-    private static final double WALL_BOUNCE_AT = 0.9;
+    /** cos(φ) floor (~80°) — keeps the tangential decomposition finite at the wall top. */
+    private static final double COS_FLOOR = 0.17;
+    /** Pinned above ~68° and still climbing → gentle extra bleed, the soft ceiling that stands
+     *  in for the open-top rim. Gentle on purpose: the swing's energy must survive the wall. */
+    private static final double CEILING_S = 0.93;
+    /** The rim line as a fraction of the radius — the swing never lands beyond it (just inside
+     *  the shell blocks), no matter how hot the entry. */
+    private static final double RIM_LIMIT = 0.95;
 
     /** Cross-section radius at axial position a (clamped linear taper, exit → mouth). */
     public static double radiusAt(double a, Params p) {
@@ -77,19 +84,33 @@ public final class FunnelPhysics {
      */
     public static double[] step(double a, double u, double va, double vu, Params p) {
         double r = radiusAt(a, p);
-        // true circular restoring force, divergent at the wall → natural containment
-        double s = clamp(u / r, -0.95, 0.95);
-        double restoring = p.swing() * s / Math.sqrt(1.0 - s * s);
-        double nvu = (vu - restoring) * (1.0 - p.drag());
-        // wall backstop: outward motion high on the wall bounces back in, damped
-        if (Math.abs(u) > WALL_BOUNCE_AT * r && Math.signum(nvu) == Math.signum(u)) {
-            nvu = -0.25 * nvu;
+        // TRUE pendulum on the circular wall, in tangent space: climbing converts speed to
+        // height and descending gives it back — the swing's energy is conserved (drag is the
+        // only loss), so a hot side-entry runs high up the FAR wall instead of being eaten.
+        double s = clamp(u / r, -0.985, 0.985);
+        double phi = Math.asin(s);                          // angle up the wall from the trough
+        double cos = Math.max(Math.cos(phi), COS_FLOOR);
+        double vt = vu / cos;                               // tangential speed along the surface
+        vt = (vt - p.swing() * Math.sin(phi)) * (1.0 - p.drag());
+        if (Math.abs(s) > CEILING_S && Math.signum(vt) == Math.signum(u)) {
+            vt *= 0.85;                                     // soft ceiling near the open rim
         }
-        // downhill bottom line + water current, always toward the exit (negative a);
-        // the drift is capped well below the swish so the crossings happen
+        double nvu = vt * cos;
+        // the rim is a hard line: a swing hot enough to crest it lands ON it and sheds only
+        // the overshoot — the climb itself is preserved, and the return swing keeps its energy
+        double rim = RIM_LIMIT * r;
+        double projected = u + nvu;
+        if (Math.abs(projected) > rim) {
+            nvu = Math.signum(projected) * rim - u;
+        }
+        // downhill bottom line + water current, always toward the exit (negative a); the
+        // DRIFT converges to its cap — it never chops momentum a rider brought in
         double slope = p.drop() / p.length();
         double nva = (va - p.axialPush() - slope * SLOPE_GAIN) * (1.0 - p.drag());
-        nva = Math.max(nva, -AXIAL_FRACTION * p.maxSpeed());
+        double cap = -AXIAL_FRACTION * p.maxSpeed();
+        if (nva < cap) {
+            nva = Math.max(nva, Math.min(va * 0.98, cap));
+        }
         double speed = Math.hypot(nva, nvu);
         if (speed > p.maxSpeed() && speed > 1e-9) {
             double k = p.maxSpeed() / speed;
