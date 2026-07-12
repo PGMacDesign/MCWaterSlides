@@ -1,82 +1,110 @@
 package com.pgmacdesign.mcwaterslides.funnel;
 
 /**
- * The swirl math for a funnel bowl — pure, entity-free, unit-testable (the SlidePhysics of the
- * funnel). The bowl is a surface of revolution with a PARABOLIC profile, so a rider's radial
- * motion is simple-harmonic: the exact same integrator yields both behaviours the design calls
- * for, decided only by entry velocity —
+ * The tornado math — pure, entity-free, unit-testable. The funnel lies on its SIDE: a
+ * half-open cone whose wide mouth swallows riders from a feeder slide and whose narrow
+ * throat fires them out the other end, mostly sideways (the real Howlin'-Tornado layout).
  *
- *  • enter aimed across the middle (little tangential velocity) → oscillate wall-to-wall through
- *    the center, each pass lower (the Howlin' Tornado swish);
- *  • enter along the rim (tangential velocity) → orbit and spiral inward as drag bleeds energy,
- *    speeding up as the radius shrinks (the whirlpool).
+ * Coordinates are the funnel's own frame: {@code a} = axial distance from the EXIT plane
+ * back toward the mouth (a = length at the mouth, 0 at the exit), {@code u} = horizontal
+ * offset from the funnel's centerline. Two independent motions compose the ride:
  *
- * Both decay to the drain and drop out the bottom. All lengths are blocks, all velocities
- * blocks/tick; the caller supplies the rider's offset from the funnel axis.
+ *  • TRANSVERSE — a pendulum on the circular cross-section. The restoring force is the
+ *    true circle tangent (∝ s/√(1−s²), s = u/r), so it diverges at the wall: riders are
+ *    physically contained no matter how hot they come in, and the swish quickens as the
+ *    cone narrows (ω² = swing/r).
+ *  • AXIAL — a gentle water push plus the bottom line's slope carry riders toward the
+ *    exit unconditionally. There is no capture state anywhere: everyone leaves.
+ *
+ * The exit is purely geometric — cross the exit plane and you're released with whatever
+ * momentum you have. No drain, no speed gating (the old bowl's drain gate was the bug
+ * factory this design replaces).
  */
 public final class FunnelPhysics {
     private FunnelPhysics() {}
 
     /**
-     * @param pull        central restoring accel per tick per block of radius (bowl steepness → ω²)
-     * @param drag        fraction of horizontal speed bled per tick (energy decay → spiral-in)
-     * @param rimRadius   bowl radius at the rim (blocks)
-     * @param bowlHeight  rim height above the drain lip (blocks)
-     * @param drainRadius radius at/under which the rider drops through the center hole (blocks)
-     * @param maxSpeed    horizontal speed clamp (blocks/tick) — keeps the swirl in the ride's feel
+     * @param mouthRadius cross-section radius at the wide entry mouth (blocks)
+     * @param exitRadius  cross-section radius at the narrow exit throat (blocks)
+     * @param length      axial length, mouth plane → exit plane (blocks)
+     * @param drop        bottom-line height loss from mouth to exit (blocks)
+     * @param swing       transverse pendulum strength (blocks/tick²) — ω² = swing / r
+     * @param drag        fraction of speed bled per tick (decays the swish)
+     * @param axialPush   water-current accel toward the exit (blocks/tick²)
+     * @param maxSpeed    horizontal speed clamp (blocks/tick)
      */
-    public record Params(double pull, double drag, double rimRadius, double bowlHeight,
-                         double drainRadius, double maxSpeed) {}
+    public record Params(double mouthRadius, double exitRadius, double length, double drop,
+                         double swing, double drag, double axialPush, double maxSpeed) {}
 
-    /** A center-crossing faster than this fraction of maxSpeed skips the drain (keeps swinging). */
-    public static final double DRAIN_SPEED_FRACTION = 0.42;
-    /** Extra speed bleed per tick once a rider swings past the rim — contains overshoot. */
-    private static final double OVERSHOOT_DAMP = 0.80;
+    /** Riders past this axial coordinate (in front of the exit plane) have left the funnel. */
+    public static final double EXIT_MARGIN = -0.5;
+    /** Exit-ward drift tops out at this fraction of maxSpeed — the swish outlives the drift,
+     *  so riders cross the trough several times before the water walks them out. */
+    private static final double AXIAL_FRACTION = 0.22;
+    /** How much of the bottom line's slope reaches the axial drift (most of a swishing rider's
+     *  slope pull is spent climbing walls, not running the axis). */
+    private static final double SLOPE_GAIN = 0.03;
+    /** Outward motion past this fraction of the radius bounces (damped) — the wall backstop
+     *  for entries too hot for the restoring force alone. */
+    private static final double WALL_BOUNCE_AT = 0.9;
+
+    /** Cross-section radius at axial position a (clamped linear taper, exit → mouth). */
+    public static double radiusAt(double a, Params p) {
+        double t = clamp(a / p.length(), 0.0, 1.0);
+        return p.exitRadius() + (p.mouthRadius() - p.exitRadius()) * t;
+    }
+
+    /** Trough bottom height above the exit-plane bottom at axial position a. */
+    public static double bottomAt(double a, Params p) {
+        return p.drop() * clamp(a / p.length(), 0.0, 1.0);
+    }
+
+    /** Riding surface height above the exit-plane bottom at (a, u) — the circular trough. */
+    public static double surfaceHeight(double a, double u, Params p) {
+        double r = radiusAt(a, p);
+        double uu = Math.min(Math.abs(u), r * 0.98);
+        return bottomAt(a, p) + r - Math.sqrt(r * r - uu * uu);
+    }
 
     /**
-     * One horizontal step: a central inward pull proportional to radius (parabolic bowl ⇒ SHM)
-     * plus drag, clamped to maxSpeed. Semi-implicit (caller advances position with the new
-     * velocity), which keeps the oscillator stable. A rider that swings past the rim bleeds
-     * extra speed so it rides up the wall and falls back instead of slamming the containment.
+     * One horizontal step in the funnel frame. Returns {newVa, newVu}; the caller advances
+     * position with the new velocity (semi-implicit — keeps the oscillator stable).
      *
-     * @param dx,dz  rider offset from the funnel axis
-     * @param vx,vz  current horizontal velocity
-     * @return the new {vx, vz}
+     * @param a  axial position (exit plane = 0, mouth = length)
+     * @param u  transverse offset from the centerline
+     * @param va axial velocity (positive = toward the mouth, i.e. backward)
+     * @param vu transverse velocity
      */
-    public static double[] stepHorizontal(double dx, double dz, double vx, double vz, Params p) {
-        double nvx = (vx - p.pull() * dx) * (1.0 - p.drag());
-        double nvz = (vz - p.pull() * dz) * (1.0 - p.drag());
-        if (dx * dx + dz * dz > p.rimRadius() * p.rimRadius()) {
-            nvx *= OVERSHOOT_DAMP;
-            nvz *= OVERSHOOT_DAMP;
+    public static double[] step(double a, double u, double va, double vu, Params p) {
+        double r = radiusAt(a, p);
+        // true circular restoring force, divergent at the wall → natural containment
+        double s = clamp(u / r, -0.95, 0.95);
+        double restoring = p.swing() * s / Math.sqrt(1.0 - s * s);
+        double nvu = (vu - restoring) * (1.0 - p.drag());
+        // wall backstop: outward motion high on the wall bounces back in, damped
+        if (Math.abs(u) > WALL_BOUNCE_AT * r && Math.signum(nvu) == Math.signum(u)) {
+            nvu = -0.25 * nvu;
         }
-        double speed = Math.sqrt(nvx * nvx + nvz * nvz);
+        // downhill bottom line + water current, always toward the exit (negative a);
+        // the drift is capped well below the swish so the crossings happen
+        double slope = p.drop() / p.length();
+        double nva = (va - p.axialPush() - slope * SLOPE_GAIN) * (1.0 - p.drag());
+        nva = Math.max(nva, -AXIAL_FRACTION * p.maxSpeed());
+        double speed = Math.hypot(nva, nvu);
         if (speed > p.maxSpeed() && speed > 1e-9) {
-            double s = p.maxSpeed() / speed;
-            nvx *= s;
-            nvz *= s;
+            double k = p.maxSpeed() / speed;
+            nva *= k;
+            nvu *= k;
         }
-        return new double[]{nvx, nvz};
+        return new double[]{nva, nvu};
     }
 
-    /** Bowl surface height above the drain lip at radius r (parabolic; flat at center, steep at rim). */
-    public static double surfaceHeight(double r, Params p) {
-        double rr = Math.min(r, p.rimRadius()) / p.rimRadius();
-        return p.bowlHeight() * rr * rr;
+    /** True once a rider has crossed the exit plane — release them with their momentum. */
+    public static boolean exited(double a) {
+        return a < EXIT_MARGIN;
     }
 
-    /**
-     * A rider drops through the drain only when it's over the hole AND slow — a fast pass across
-     * the center skips it and rides up the far wall. That's what makes riders oscillate (and
-     * spiral) for several decaying passes before finally dropping out, instead of vanishing down
-     * the hole the instant they first cross the middle.
-     */
-    public static boolean shouldDrain(double r, double horizontalSpeed, Params p) {
-        return r <= p.drainRadius() && horizontalSpeed < DRAIN_SPEED_FRACTION * p.maxSpeed();
-    }
-
-    /** Geometric drain-zone test (position only), independent of speed. */
-    public static boolean overDrain(double r, Params p) {
-        return r <= p.drainRadius();
+    private static double clamp(double v, double lo, double hi) {
+        return Math.max(lo, Math.min(hi, v));
     }
 }

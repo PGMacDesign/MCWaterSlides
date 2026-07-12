@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Generate Funnel assets: the drain-grate core (one model, three size-variants that only
-differ in the bowl they stamp) and the funnel_wall the core auto-builds the bowl from —
+"""Generate Tornado Funnel assets: the exit-collar core (one model, three size-variants that
+only differ in the cone they stamp) and the two pinwheel shell blocks the core auto-builds
+the side-lying cone from (ceramic + warm accent — no items, machine-stamped only) —
 textures, models, blockstates, item models, escalating S/M/L recipes, size-keyed loot, tags,
 lang. Deterministic."""
 import json
@@ -14,6 +15,9 @@ ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "src/main/resources"
 MOD = "mcwaterslides"
 SIZES = ["small", "medium", "large"]
+
+# warm glazed accent — the pinwheel's second colour (coral, hue-shifted dark→light)
+ACCENT = [T._hex(c) for c in ("8a3524", "a84430", "c25640", "d4684e", "e07d5f", "ea9273")]
 
 
 def write_json(path: Path, data):
@@ -33,65 +37,62 @@ def face(texture, cull=None):
     return f
 
 
-def gen_textures():
-    tex = RES / f"assets/{MOD}/textures/block"
-    tex.mkdir(parents=True, exist_ok=True)
-
-    # funnel_wall: glazed ceramic tiles (2×2, grouted) — the bowl surface.
-    wall = Image.new("RGBA", (16, 16))
+def _tile_texture(ramp):
+    """Glazed 2×2 tile face in the given ramp — the shell surface."""
+    img = Image.new("RGBA", (16, 16))
     for oy in (0, 8):
         for ox in (0, 8):
             for y in range(oy, oy + 8):
                 for x in range(ox, ox + 8):
-                    wall.putpixel((x, y), T.R(T.CERAMIC, 4))
+                    img.putpixel((x, y), T.R(ramp, 4))
             for x in range(ox, ox + 8):  # tile bevel: light top, grout-dark bottom
-                wall.putpixel((x, oy), T.R(T.CERAMIC, 5))
-                wall.putpixel((x, oy + 7), T.R(T.CERAMIC, 1))
+                img.putpixel((x, oy), T.R(ramp, 5))
+                img.putpixel((x, oy + 7), T.R(ramp, 1))
             for y in range(oy, oy + 8):
-                wall.putpixel((ox, y), T.R(T.CERAMIC, 5))
-                wall.putpixel((ox + 7, y), T.R(T.CERAMIC, 2))
+                img.putpixel((ox, y), T.R(ramp, 5))
+                img.putpixel((ox + 7, y), T.R(ramp, 2))
             for i in range(3):  # glaze glint
-                wall.putpixel((ox + 2 + i, oy + 4 - i), T.R(T.CERAMIC, 5))
-    wall.save(tex / "funnel_wall.png")
+                img.putpixel((ox + 2 + i, oy + 4 - i), T.R(ramp, 5))
+    return img
 
-    # funnel_core: a shower-drain grate — concentric slots in blued steel.
-    core = Image.new("RGBA", (16, 16))
+
+def gen_textures():
+    tex = RES / f"assets/{MOD}/textures/block"
+    tex.mkdir(parents=True, exist_ok=True)
+
+    _tile_texture(T.CERAMIC).save(tex / "funnel_wall.png")
+    _tile_texture(ACCENT).save(tex / "funnel_wall_accent.png")
+
+    # funnel_core sides: ceramic tile ringed like the shell it anchors
+    _tile_texture(T.CERAMIC).save(tex / "funnel_core_side.png")
+
+    # funnel_core front (the exit face riders fire over): a copper port collar
+    front = Image.new("RGBA", (16, 16))
+    T.plate(front, 0, 0, 15, 15, T.CERAMIC, streak=False)
     for y in range(16):
         for x in range(16):
-            d = max(abs(x - 7.5), abs(y - 7.5))  # square rings match the block
-            if d > 6.5:
-                ring = 3       # outer frame
-            elif d > 5.5:
-                ring = 0       # slot
-            elif d > 3.5:
-                ring = 3       # web
-            elif d > 2.5:
-                ring = 0       # slot
+            d = ((x - 7.5) ** 2 + (y - 7.5) ** 2) ** 0.5
+            if d > 7.2:
+                continue
+            if d > 5.2:
+                # copper collar ring, lit toward the top-left
+                front.putpixel((x, y), T.R(T.COPPER, 6 if (x - 7.5) + (y - 7.5) < -3 else 4))
             else:
-                ring = 3       # hub
-            core.putpixel((x, y), T.R(T.DARK, ring))
-    for x in range(16):  # light catches the top edge of each metal ring
-        for y in range(15):
-            here = core.getpixel((x, y))
-            below = core.getpixel((x, y + 1))
-            if here == T.R(T.DARK, 3) and below == T.R(T.DARK, 0):
-                core.putpixel((x, y), T.R(T.DARK, 2))
-            if here == T.R(T.DARK, 0) and below == T.R(T.DARK, 3):
-                core.putpixel((x, y + 1), T.R(T.DARK, 4))
-    T.rivet(core, 7, 7, T.DARK, base=3)  # center screw
-    core.save(tex / "funnel_core.png")
+                front.putpixel((x, y), T.R(T.GLOW, 2 if d < 3 else 1))
+    T.rivet(front, 1, 1, T.COPPER)
+    T.rivet(front, 13, 1, T.COPPER)
+    T.rivet(front, 1, 13, T.COPPER)
+    T.rivet(front, 13, 13, T.COPPER)
+    front.save(tex / "funnel_core_front.png")
 
 
-def gen_data():
-    gen_textures()
-    models = RES / f"assets/{MOD}/models"
-
-    # The bowl wall: a ceramic cube whose TOP is intrinsic water (cauldron-style overlay, biome-
-    # tinted, no FluidState), so the stamped bowl reads as terraced water sheeting to the drain.
-    write_json(models / "block/funnel_wall.json", {
+def _shell_model(texture_name):
+    """A shell cube whose TOP is intrinsic water (cauldron-style overlay, biome-tinted, no
+    FluidState) — upward faces of the stamped cone read as water sheeting down the trough."""
+    return {
         "render_type": "minecraft:translucent",
-        "textures": {"particle": f"{MOD}:block/funnel_wall",
-                     "all": f"{MOD}:block/funnel_wall", "water": "minecraft:block/water_still"},
+        "textures": {"particle": f"{MOD}:block/{texture_name}",
+                     "all": f"{MOD}:block/{texture_name}", "water": "minecraft:block/water_still"},
         "elements": [{
             "from": [0, 0, 0], "to": [16, 16, 16],
             "faces": {
@@ -101,27 +102,36 @@ def gen_data():
                 "east": face("#all", cull="east"), "west": face("#all", cull="west"),
             },
         }],
-    })
+    }
 
-    # The core: a low drain grate (no collision in Java — riders drop through the center), with a
-    # thin water film pooling over it so the drain reads as wet.
+
+def gen_data():
+    gen_textures()
+    models = RES / f"assets/{MOD}/models"
+
+    write_json(models / "block/funnel_wall.json", _shell_model("funnel_wall"))
+    write_json(models / "block/funnel_wall_accent.json", _shell_model("funnel_wall_accent"))
+
+    # The core: a solid exit collar — ceramic like the shell, copper port on the exit face,
+    # a thin water film on top (riders skid over it and out).
     write_json(models / "block/funnel_core.json", {
         "parent": "minecraft:block/block",
         "render_type": "minecraft:translucent",
-        "textures": {"particle": f"{MOD}:block/funnel_core",
-                     "grate": f"{MOD}:block/funnel_core", "side": f"{MOD}:block/funnel_wall",
+        "textures": {"particle": f"{MOD}:block/funnel_core_side",
+                     "front": f"{MOD}:block/funnel_core_front",
+                     "side": f"{MOD}:block/funnel_core_side",
                      "water": "minecraft:block/water_still"},
         "elements": [
             {
-                "from": [0, 0, 0], "to": [16, 3, 16],
+                "from": [0, 0, 0], "to": [16, 16, 16],
                 "faces": {
-                    "up": face("#grate"), "down": face("#side", cull="down"),
-                    "north": face("#side"), "south": face("#side"),
-                    "east": face("#side"), "west": face("#side"),
+                    "up": face("#side"), "down": face("#side", cull="down"),
+                    "north": face("#front", cull="north"), "south": face("#side", cull="south"),
+                    "east": face("#side", cull="east"), "west": face("#side", cull="west"),
                 },
             },
             {
-                "from": [1, 3, 1], "to": [15, 3.2, 15], "shade": False,
+                "from": [1, 16, 1], "to": [15, 16.2, 15], "shade": False,
                 "faces": {"up": {"texture": "#water", "tintindex": 0}},
             },
         ],
@@ -129,21 +139,22 @@ def gen_data():
 
     write_json(RES / f"assets/{MOD}/blockstates/funnel_wall.json",
                {"variants": {"": {"model": f"{MOD}:block/funnel_wall"}}})
-    write_json(RES / f"assets/{MOD}/blockstates/funnel_core.json",
-               {"variants": {f"size={s}": {"model": f"{MOD}:block/funnel_core"} for s in SIZES}})
+    write_json(RES / f"assets/{MOD}/blockstates/funnel_wall_accent.json",
+               {"variants": {"": {"model": f"{MOD}:block/funnel_wall_accent"}}})
+    # model front faces north; rotate per exit facing (size never changes the model)
+    write_json(RES / f"assets/{MOD}/blockstates/funnel_core.json", {
+        "variants": {
+            "facing=north": {"model": f"{MOD}:block/funnel_core"},
+            "facing=south": {"model": f"{MOD}:block/funnel_core", "y": 180},
+            "facing=east": {"model": f"{MOD}:block/funnel_core", "y": 90},
+            "facing=west": {"model": f"{MOD}:block/funnel_core", "y": 270},
+        },
+    })
 
-    write_json(models / "item/funnel_wall.json", {"parent": f"{MOD}:block/funnel_wall"})
     for s in SIZES:
         write_json(models / f"item/funnel_core_{s}.json", {"parent": f"{MOD}:block/funnel_core"})
 
-    # funnel_wall drops itself; the core drops the size-matching item.
-    write_json(RES / f"data/{MOD}/loot_table/blocks/funnel_wall.json", {
-        "type": "minecraft:block",
-        "random_sequence": f"{MOD}:blocks/funnel_wall",
-        "pools": [{"rolls": 1, "bonus_rolls": 0,
-                   "entries": [{"type": "minecraft:item", "name": f"{MOD}:funnel_wall"}],
-                   "conditions": [{"condition": "minecraft:survives_explosion"}]}],
-    })
+    # Only the core drops (the size-matching item); shell blocks are stamped, not owned.
     write_json(RES / f"data/{MOD}/loot_table/blocks/funnel_core.json", {
         "type": "minecraft:block",
         "random_sequence": f"{MOD}:blocks/funnel_core",
@@ -159,12 +170,6 @@ def gen_data():
     })
 
     # Copper + clay tier; cost escalates with size. Never rare.
-    write_json(RES / f"data/{MOD}/recipe/funnel_wall.json", {
-        "type": "minecraft:crafting_shaped", "category": "building",
-        "pattern": [" K ", "KCK", " K "],
-        "key": {"K": {"item": "minecraft:clay_ball"}, "C": {"item": "minecraft:copper_ingot"}},
-        "result": {"id": f"{MOD}:funnel_wall", "count": 4},
-    })
     write_json(RES / f"data/{MOD}/recipe/funnel_core_small.json", {
         "type": "minecraft:crafting_shaped", "category": "building",
         "pattern": [" C ", "CKC", " C "],
@@ -185,15 +190,16 @@ def gen_data():
     })
 
     merge_tag(RES / "data/minecraft/tags/block/mineable/pickaxe.json",
-              [f"{MOD}:funnel_core", f"{MOD}:funnel_wall"])
+              [f"{MOD}:funnel_core", f"{MOD}:funnel_wall", f"{MOD}:funnel_wall_accent"])
 
     lang_path = RES / f"assets/{MOD}/lang/en_us.json"
     lang = json.loads(lang_path.read_text()) if lang_path.exists() else {}
-    lang[f"block.{MOD}.funnel_core"] = "Funnel Core"
-    lang[f"block.{MOD}.funnel_wall"] = "Funnel Wall"
-    lang[f"item.{MOD}.funnel_core_small"] = "Small Funnel Core"
-    lang[f"item.{MOD}.funnel_core_medium"] = "Medium Funnel Core"
-    lang[f"item.{MOD}.funnel_core_large"] = "Large Funnel Core"
+    lang[f"block.{MOD}.funnel_core"] = "Tornado Funnel Core"
+    lang[f"block.{MOD}.funnel_wall"] = "Funnel Shell"
+    lang[f"block.{MOD}.funnel_wall_accent"] = "Funnel Shell (Accent)"
+    lang[f"item.{MOD}.funnel_core_small"] = "Small Tornado Funnel"
+    lang[f"item.{MOD}.funnel_core_medium"] = "Medium Tornado Funnel"
+    lang[f"item.{MOD}.funnel_core_large"] = "Large Tornado Funnel"
     write_json(lang_path, dict(sorted(lang.items())))
 
 

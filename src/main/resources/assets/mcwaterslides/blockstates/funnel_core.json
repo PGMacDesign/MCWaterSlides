@@ -1,13 +1,19 @@
 {
   "variants": {
-    "size=small": {
+    "facing=north": {
       "model": "mcwaterslides:block/funnel_core"
     },
-    "size=medium": {
-      "model": "mcwaterslides:block/funnel_core"
+    "facing=south": {
+      "model": "mcwaterslides:block/funnel_core",
+      "y": 180
     },
-    "size=large": {
-      "model": "mcwaterslides:block/funnel_core"
+    "facing=east": {
+      "model": "mcwaterslides:block/funnel_core",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "mcwaterslides:block/funnel_core",
+      "y": 270
     }
   }
 }

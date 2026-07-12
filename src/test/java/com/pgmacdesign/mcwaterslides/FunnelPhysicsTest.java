@@ -4,105 +4,109 @@ import com.pgmacdesign.mcwaterslides.funnel.FunnelPhysics;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** The funnel swirl laws: both behaviours must fall out of the one integrator. */
+/**
+ * The tornado laws. The two that matter most (the old bowl broke both):
+ * riders OSCILLATE — the swing decays but is never yanked to a point — and
+ * riders always LEAVE — the axial push admits no capture state anywhere.
+ */
 class FunnelPhysicsTest {
+    /** LARGE-ish cone: 5-block mouth radius, 2.5 exit, 13 long, 2 drop. */
     private static final FunnelPhysics.Params P =
-            new FunnelPhysics.Params(0.03, 0.008, 4.0, 4.0, 1.0, 1.2);
+            new FunnelPhysics.Params(5.0, 2.5, 13.0, 2.0, 0.06, 0.008, 0.005, 1.1);
 
-    /** A rider entering aimed across the middle swings wall-to-wall THROUGH center (oscillation). */
-    @Test
-    void radialEntryOscillatesThroughCenter() {
-        double dx = 3.5, dz = 0, vx = 0, vz = 0;
-        double minDx = dx;
-        for (int t = 0; t < 120; t++) {
-            double[] v = FunnelPhysics.stepHorizontal(dx, dz, vx, vz, P);
-            vx = v[0];
-            vz = v[1];
-            dx += vx;
-            dz += vz;
-            minDx = Math.min(minDx, dx);
+    /** Integrate one rider; returns {a, u, va, vu} after n steps or at exit. */
+    private static double[] run(double a, double u, double va, double vu, int n) {
+        for (int t = 0; t < n && !FunnelPhysics.exited(a); t++) {
+            double[] v = FunnelPhysics.step(a, u, va, vu, P);
+            va = v[0];
+            vu = v[1];
+            a += va;
+            u += vu;
         }
-        assertTrue(minDx < -1.0, "should swing past center to the far wall, min dx=" + minDx);
+        return new double[]{a, u, va, vu};
     }
 
-    /** A rider entering tangentially orbits and spirals inward (drag bleeds the radius down). */
+    /** A rider swung in across the trough crosses the centerline several times — the swish. */
     @Test
-    void tangentialEntrySpiralsInward() {
-        double r0 = 3.5;
-        double dx = r0, dz = 0, vx = 0;
-        double vz = Math.sqrt(P.pull()) * r0; // ~circular-orbit speed for the SHM bowl
-        double r = r0;
-        for (int t = 0; t < 400; t++) {
-            double[] v = FunnelPhysics.stepHorizontal(dx, dz, vx, vz, P);
-            vx = v[0];
-            vz = v[1];
-            dx += vx;
-            dz += vz;
-            r = Math.hypot(dx, dz);
-            assertTrue(r < P.rimRadius() * 1.3, "orbit must stay inside the bowl, r=" + r);
+    void transverseEntryOscillates() {
+        double a = 11, u = 0, va = 0, vu = 0.9;
+        int crossings = 0;
+        boolean positive = false;
+        double peak = 0;
+        for (int t = 0; t < 600 && !FunnelPhysics.exited(a); t++) {
+            double[] v = FunnelPhysics.step(a, u, va, vu, P);
+            va = v[0];
+            vu = v[1];
+            a += va;
+            u += vu;
+            peak = Math.max(peak, Math.abs(u));
+            if ((u > 0) != positive) {
+                crossings++;
+                positive = u > 0;
+            }
         }
-        assertTrue(r < r0 - 1.0, "orbit should spiral inward, r went " + r0 + " -> " + r);
+        assertTrue(crossings >= 3, "should swing across the centerline repeatedly, got " + crossings);
+        assertTrue(peak > 1.5, "the swing should climb the wall, peak=" + peak);
     }
 
-    /** The bowl profile: flat at the drain, full height at the rim, monotonic between. */
+    /** THE invariant: everyone exits. Even from a dead stop — the water always wins. */
     @Test
-    void surfaceProfileEndpoints() {
-        assertEquals(0.0, FunnelPhysics.surfaceHeight(0.0, P), 1e-9);
-        assertEquals(4.0, FunnelPhysics.surfaceHeight(4.0, P), 1e-9);
-        assertTrue(FunnelPhysics.surfaceHeight(2.0, P) < FunnelPhysics.surfaceHeight(3.0, P));
+    void everyRiderExits() {
+        for (double[] start : new double[][]{
+                {13.0, 0, 0, 0},       // dead stop at the mouth
+                {6.5, 3.0, 0, 0},      // parked high on a wall mid-cone
+                {12.0, 0, 0.9, 0.4},   // entering aimed BACKWARD (toward the mouth)
+                {11.0, -2.0, 0, -1.0}, // hot tangential entry
+        }) {
+            double[] end = run(start[0], start[1], start[2], start[3], 4000);
+            assertTrue(FunnelPhysics.exited(end[0]),
+                    "rider must wash out the exit from " + java.util.Arrays.toString(start)
+                            + " but sat at a=" + end[0]);
+        }
     }
 
-    /** The speed clamp is honored — the swirl never exceeds the ride's feel. */
+    /** The circle's restoring force diverges at the wall — no entry speed escapes the trough. */
+    @Test
+    void wallsContainTheSwing() {
+        double a = 12, u = 0, va = 0, vu = 1.1; // full-speed sideways
+        for (int t = 0; t < 600 && !FunnelPhysics.exited(a); t++) {
+            double[] v = FunnelPhysics.step(a, u, va, vu, P);
+            va = v[0];
+            vu = v[1];
+            a += va;
+            u += vu;
+            double r = FunnelPhysics.radiusAt(Math.max(a, 0), P);
+            assertTrue(Math.abs(u) < r * 1.05, "swing left the trough: u=" + u + " r=" + r);
+        }
+    }
+
+    /** The swish quickens as the cone narrows: stronger restoring pull at the same offset. */
+    @Test
+    void swishQuickensTowardExit() {
+        double[] atMouth = FunnelPhysics.step(13.0, 1.0, 0, 0, P);
+        double[] atThroat = FunnelPhysics.step(0.5, 1.0, 0, 0, P);
+        assertTrue(Math.abs(atThroat[1]) > Math.abs(atMouth[1]),
+                "restoring pull should be stronger at the narrow end");
+    }
+
+    /** Surface geometry: trough bottom on the centerline, walls rise, mouth sits `drop` higher. */
+    @Test
+    void surfaceProfile() {
+        assertEquals(P.drop(), FunnelPhysics.bottomAt(P.length(), P), 1e-9);
+        assertEquals(0.0, FunnelPhysics.bottomAt(0, P), 1e-9);
+        double center = FunnelPhysics.surfaceHeight(6.5, 0, P);
+        double wall = FunnelPhysics.surfaceHeight(6.5, 3.0, P);
+        assertTrue(wall > center + 1.0, "the wall should climb well above the trough bottom");
+        assertEquals(P.mouthRadius(), FunnelPhysics.radiusAt(P.length(), P), 1e-9);
+        assertEquals(P.exitRadius(), FunnelPhysics.radiusAt(0, P), 1e-9);
+    }
+
+    /** The speed clamp is honored — the tornado never exceeds the ride's feel. */
     @Test
     void speedIsClamped() {
-        double[] v = FunnelPhysics.stepHorizontal(4.0, 0, -5.0, 5.0, P);
+        double[] v = FunnelPhysics.step(6.0, 4.0, -3.0, 3.0, P);
         assertTrue(Math.hypot(v[0], v[1]) <= P.maxSpeed() + 1e-9);
-    }
-
-    @Test
-    void restsAtDeadCenter() {
-        double[] v = FunnelPhysics.stepHorizontal(0, 0, 0, 0, P);
-        assertEquals(0.0, v[0], 1e-9);
-        assertEquals(0.0, v[1], 1e-9);
-        assertTrue(FunnelPhysics.overDrain(0.0, P));
-    }
-
-    @Test
-    void fastCenterCrossingSkipsTheDrain() {
-        assertFalse(FunnelPhysics.shouldDrain(0.5, 1.0, P), "a fast pass over center must not drain");
-        assertTrue(FunnelPhysics.shouldDrain(0.5, 0.05, P), "slow over center drains");
-        assertFalse(FunnelPhysics.shouldDrain(3.0, 0.05, P), "far from center never drains");
-    }
-
-    /** The bug fix: a rider aimed across the middle swings past center several times before it
-     * finally slows enough to drop the drain — it does NOT vanish on the first crossing. */
-    @Test
-    void riderOscillatesSeveralTimesBeforeDraining() {
-        FunnelPhysics.Params p = new FunnelPhysics.Params(0.035, 0.01, 2.6, 4.0, 1.0, 0.34);
-        double dx = 2.6, dz = 0, vx = -0.25, vz = 0; // enter at the rim, aimed across
-        int crossings = 0;
-        boolean drained = false;
-        boolean prevPositive = dx > 0;
-        for (int t = 0; t < 800; t++) {
-            double r = Math.hypot(dx, dz);
-            if (FunnelPhysics.shouldDrain(r, Math.hypot(vx, vz), p)) {
-                drained = true;
-                break;
-            }
-            double[] v = FunnelPhysics.stepHorizontal(dx, dz, vx, vz, p);
-            vx = v[0];
-            vz = v[1];
-            dx += vx;
-            dz += vz;
-            if ((dx > 0) != prevPositive) {
-                crossings++;
-                prevPositive = dx > 0;
-            }
-        }
-        assertTrue(crossings >= 2, "should swing across center multiple times, got " + crossings);
-        assertTrue(drained, "should eventually drain once the swing decays");
     }
 }

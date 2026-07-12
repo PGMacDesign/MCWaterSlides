@@ -28,7 +28,6 @@ public final class ModItems {
     public static final DeferredItem<BlockItem> FLOOD_VALVE;
     public static final DeferredItem<BlockItem> SPLASH_POOL;
     public static final DeferredItem<com.pgmacdesign.mcwaterslides.entity.TubeRaftItem> INNER_TUBE;
-    public static final DeferredItem<BlockItem> FUNNEL_WALL;
     public static final DeferredItem<com.pgmacdesign.mcwaterslides.funnel.FunnelCoreItem> FUNNEL_CORE_SMALL;
     public static final DeferredItem<com.pgmacdesign.mcwaterslides.funnel.FunnelCoreItem> FUNNEL_CORE_MEDIUM;
     public static final DeferredItem<com.pgmacdesign.mcwaterslides.funnel.FunnelCoreItem> FUNNEL_CORE_LARGE;
@@ -52,7 +51,6 @@ public final class ModItems {
         SPLASH_POOL = ITEMS.registerSimpleBlockItem(ModBlocks.SPLASH_POOL);
         INNER_TUBE = ITEMS.register("inner_tube",
                 () -> new com.pgmacdesign.mcwaterslides.entity.TubeRaftItem(new Item.Properties().stacksTo(1)));
-        FUNNEL_WALL = ITEMS.registerSimpleBlockItem(ModBlocks.FUNNEL_WALL);
         FUNNEL_CORE_SMALL = ITEMS.register("funnel_core_small",
                 () -> new com.pgmacdesign.mcwaterslides.funnel.FunnelCoreItem(ModBlocks.FUNNEL_CORE.get(),
                         com.pgmacdesign.mcwaterslides.funnel.FunnelSize.SMALL, new Item.Properties()));

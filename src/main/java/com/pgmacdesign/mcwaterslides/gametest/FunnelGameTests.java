@@ -5,6 +5,7 @@ import com.pgmacdesign.mcwaterslides.funnel.FunnelCoreBlock;
 import com.pgmacdesign.mcwaterslides.funnel.FunnelSize;
 import com.pgmacdesign.mcwaterslides.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
@@ -19,30 +20,44 @@ import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
 public class FunnelGameTests {
 
     /**
-     * A funnel core registers, the ride ticker swirls a real in-world rider, and it gets gathered
-     * inward to the drain — the end-to-end proof that the branch fires (the exact swirl shape is
-     * pinned by FunnelPhysicsTest). SMALL fits the 5³ template.
+     * The tornado's bounded-dwell invariant, end to end: a rider dropped into the cone —
+     * with NO velocity at all — must get washed out past the exit plane by the axial
+     * current. This is the regression test for the old bowl's two killer bugs (trapped
+     * walkers, drain capture); the swish shape itself is pinned by FunnelPhysicsTest.
      */
-    @GameTest(template = "empty5", timeoutTicks = 200)
-    public static void funnelGathersRiderToDrain(GameTestHelper helper) {
-        for (int x = 0; x < 5; x++) {
-            for (int z = 0; z < 5; z++) {
+    @GameTest(template = "empty12", timeoutTicks = 400)
+    public static void funnelWashesRiderOutTheExit(GameTestHelper helper) {
+        for (int x = 0; x < 12; x++) {
+            for (int z = 0; z < 12; z++) {
                 helper.setBlock(new BlockPos(x, 0, z), Blocks.STONE);
             }
         }
-        helper.setBlock(new BlockPos(2, 1, 2),
-                ModBlocks.FUNNEL_CORE.get().defaultBlockState().setValue(FunnelCoreBlock.SIZE, FunnelSize.SMALL));
+        // core at the exit throat, cone extending south behind it (SMALL: length 7).
+        // setBlock skips the item-placement hook, so invoke the shell stamp explicitly.
+        BlockPos corePos = new BlockPos(5, 1, 2);
+        var coreState = ModBlocks.FUNNEL_CORE.get().defaultBlockState()
+                .setValue(FunnelCoreBlock.SIZE, FunnelSize.SMALL)
+                .setValue(FunnelCoreBlock.FACING, Direction.NORTH);
+        helper.setBlock(corePos, coreState);
+        ModBlocks.FUNNEL_CORE.get().setPlacedBy(helper.getLevel(), helper.absolutePos(corePos),
+                coreState, null, net.minecraft.world.item.ItemStack.EMPTY);
 
-        Villager villager = helper.spawnWithNoFreeWill(EntityType.VILLAGER, new BlockPos(3, 3, 2));
-        Vec3 center = helper.absoluteVec(new Vec3(2.5, 1.0, 2.5));
+        // the shell must have stamped both pinwheel colours
+        helper.assertBlockPresent(ModBlocks.FUNNEL_WALL.get(), new BlockPos(5, 2, 8));
+
+        // a rider parked mid-cone with zero momentum — the water alone must carry it out
+        Villager villager = helper.spawnWithNoFreeWill(EntityType.VILLAGER, new BlockPos(5, 4, 7));
+        Vec3 exitPlane = helper.absoluteVec(new Vec3(5.5, 2.0, 2.5));
+        Vec3 spawn = villager.position();
         helper.succeedWhen(() -> {
-            double dx = villager.position().x - center.x;
-            double dz = villager.position().z - center.z;
-            double r = Math.sqrt(dx * dx + dz * dz);
-            if (r < 0.7) {
+            // released at/past the exit plane (the funnel lets go at EXIT_MARGIN, then ground
+            // friction takes over — in a real build a catch slide is waiting there), having
+            // actually traveled the cone from the spawn point
+            boolean out = villager.position().z < exitPlane.z - 0.2;
+            if (out && villager.position().distanceTo(spawn) > 3.5) {
                 return;
             }
-            helper.fail("funnel has not gathered the rider to the drain yet, r=" + r);
+            helper.fail("rider not washed out yet, z=" + villager.position().z);
         });
     }
 }

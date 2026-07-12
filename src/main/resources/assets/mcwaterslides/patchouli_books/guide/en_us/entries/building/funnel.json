@@ -1,26 +1,26 @@
 {
-  "name": "The Funnel",
+  "name": "The Tornado Funnel",
   "icon": "mcwaterslides:funnel_core_medium",
   "category": "mcwaterslides:building",
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Drop into a $(item)Funnel$() and gravity takes over \u2014 you swirl the bowl, ride up the walls, and spiral down to the drain.$(br2)Place a $(item)Funnel Core$() where you want the center-bottom; it $(bold)builds its own bowl$(). Three sizes \u2014 $(thing)Small, Medium, Large$() \u2014 about 5, 7, and 9 blocks across.$(br2)$(thing)Crouch$() any time to climb back out."
+      "text": "A giant cone lying $(bold)on its side$() \u2014 fly in at the wide mouth, swish $(bold)wall to wall$() as the cone narrows, and shoot out the far throat with your momentum. You barely lose height; the water does the work.$(br2)Place a $(item)Tornado Funnel$() core where the $(bold)exit$() should be \u2014 it faces the way you're looking and $(bold)builds the whole cone behind it$(), pinwheel stripes and all."
     },
     {
       "type": "patchouli:crafting",
       "recipe": "mcwaterslides:funnel_core_medium",
-      "text": "No power, no RF \u2014 a funnel is pure gravity. Bigger cores build bigger bowls."
+      "text": "No power, no RF \u2014 pure water and momentum. Bigger cores build bigger cones."
     },
     {
       "type": "patchouli:text",
-      "text": "How you drop in decides the ride:$(br)$(li)Aim $(bold)across the middle$() and you swish wall-to-wall, each pass lower \u2014 the classic tornado.$(li)Enter $(bold)along the rim$() and you orbit, spiralling the drain \u2014 a whirlpool.$(br2)Both end at the center drain. Build a tube or shaft under the core and the ride flows straight on.",
-      "title": "Swirl or swish"
+      "text": "$(bold)Feed it$(): aim a slide into the wide mouth \u2014 enter off-center or at an angle and you'll swing high up the walls before the current walks you out.$(br2)$(bold)Catch it$(): run a channel from the exit collar; riders fire out level, carrying their speed.$(br2)Small / Medium / Large mouths stand about 6, 8, and 11 blocks tall. $(thing)Crouch$() any time to bail out.",
+      "title": "Feed & catch"
     },
     {
       "type": "patchouli:text",
-      "text": "The same trick works flat: any $(bold)U-shaped valley$() of sloped slides swings riders back and forth until they settle. A funnel just does it in the round.",
-      "title": "Swing valleys"
+      "text": "Nobody gets stuck, ever: the current always washes riders (and dropped items, and unlucky mobs) out the throat. Break the core to clear the whole shell.",
+      "title": "The current always wins"
     }
   ]
 }

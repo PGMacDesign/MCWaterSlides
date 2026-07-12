@@ -5,35 +5,36 @@ import javax.annotation.Nullable;
 import com.mojang.serialization.MapCodec;
 import com.pgmacdesign.mcwaterslides.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * The heart of a funnel: a passive drain grate placed at the bowl's center-bottom. On placement it
- * stamps a stepped bowl of {@link ModBlocks#FUNNEL_WALL} around itself (size S/M/L); on removal it
- * clears that bowl. Its own cell has NO collision — riders that spiral into the drain drop straight
- * through into whatever exit you build below (a vertical tube, an open shaft, or nothing → they
- * splash out). The swirl itself is driven per-rider by the ride ticker via {@link FunnelFields};
- * this block only marks the center and shapes the walls.
+ * The heart of a tornado funnel: a solid collar block sitting at the EXIT throat's
+ * bottom-center, FACING the direction riders fire out. On placement it stamps the
+ * side-lying half-cone shell behind itself ({@link FunnelShape}); on removal it clears it.
+ * Riders skid over this block on their way out — place it level with the slide you want
+ * to catch them. The ride itself is driven per-rider by the ride ticker via
+ * {@link FunnelFields}; this block only anchors the frame and shapes the walls.
  */
 public class FunnelCoreBlock extends Block implements EntityBlock {
     public static final EnumProperty<FunnelSize> SIZE = EnumProperty.create("size", FunnelSize.class);
-    private static final VoxelShape OUTLINE = Block.box(0, 0, 0, 16, 3, 16);
+    public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
 
     public FunnelCoreBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(SIZE, FunnelSize.MEDIUM));
+        registerDefaultState(stateDefinition.any()
+                .setValue(SIZE, FunnelSize.MEDIUM)
+                .setValue(FACING, Direction.NORTH));
     }
 
     @Override
@@ -43,17 +44,14 @@ public class FunnelCoreBlock extends Block implements EntityBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(SIZE);
+        builder.add(SIZE, FACING);
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return OUTLINE;
-    }
-
-    @Override
-    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return Shapes.empty(); // open drain — riders fall through the center
+    @Nullable
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        // exit fires the way the placer is looking — aim it at your catch slide
+        return defaultBlockState().setValue(FACING, context.getHorizontalDirection());
     }
 
     @Override
@@ -61,9 +59,10 @@ public class FunnelCoreBlock extends Block implements EntityBlock {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (!level.isClientSide) {
             BlockState wall = ModBlocks.FUNNEL_WALL.get().defaultBlockState();
-            for (BlockPos c : FunnelShape.bowlCells(pos, state.getValue(SIZE))) {
-                if (level.getBlockState(c).canBeReplaced()) {
-                    level.setBlock(c, wall, Block.UPDATE_ALL);
+            BlockState accent = ModBlocks.FUNNEL_WALL_ACCENT.get().defaultBlockState();
+            for (FunnelShape.ShellCell c : FunnelShape.shellCells(pos, state.getValue(FACING), state.getValue(SIZE))) {
+                if (level.getBlockState(c.pos()).canBeReplaced()) {
+                    level.setBlock(c.pos(), c.accent() ? accent : wall, Block.UPDATE_ALL);
                 }
             }
         }
@@ -72,9 +71,10 @@ public class FunnelCoreBlock extends Block implements EntityBlock {
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!level.isClientSide && !state.is(newState.getBlock())) {
-            for (BlockPos c : FunnelShape.bowlCells(pos, state.getValue(SIZE))) {
-                if (level.getBlockState(c).is(ModBlocks.FUNNEL_WALL.get())) {
-                    level.removeBlock(c, false);
+            for (FunnelShape.ShellCell c : FunnelShape.shellCells(pos, state.getValue(FACING), state.getValue(SIZE))) {
+                BlockState cur = level.getBlockState(c.pos());
+                if (cur.is(ModBlocks.FUNNEL_WALL.get()) || cur.is(ModBlocks.FUNNEL_WALL_ACCENT.get())) {
+                    level.removeBlock(c.pos(), false);
                 }
             }
         }

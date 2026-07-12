@@ -34,7 +34,6 @@ public final class ModCreativeTabs {
                         output.accept(ModItems.FUNNEL_CORE_SMALL.get());
                         output.accept(ModItems.FUNNEL_CORE_MEDIUM.get());
                         output.accept(ModItems.FUNNEL_CORE_LARGE.get());
-                        output.accept(ModItems.FUNNEL_WALL.get());
                         addGuideBook(output);
                     })
                     .build());

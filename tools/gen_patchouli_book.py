@@ -154,23 +154,25 @@ def gen():
              "damage$() — you just get a seat and a view.", title="Colors & feel"),
     ]))
 
-    write_json(entries / "building/funnel.json", entry("building", "The Funnel",
+    write_json(entries / "building/funnel.json", entry("building", "The Tornado Funnel",
             f"{MOD}:funnel_core_medium", [
-        text("Drop into a $(item)Funnel$() and gravity takes over — you swirl the bowl, ride up "
-             "the walls, and spiral down to the drain.$(br2)Place a $(item)Funnel Core$() where "
-             "you want the center-bottom; it $(bold)builds its own bowl$(). Three sizes — "
-             "$(thing)Small, Medium, Large$() — about 5, 7, and 9 blocks across.$(br2)$(thing)Crouch$() "
-             "any time to climb back out."),
+        text("A giant cone lying $(bold)on its side$() — fly in at the wide mouth, swish "
+             "$(bold)wall to wall$() as the cone narrows, and shoot out the far throat with your "
+             "momentum. You barely lose height; the water does the work.$(br2)Place a "
+             "$(item)Tornado Funnel$() core where the $(bold)exit$() should be — it faces the "
+             "way you're looking and $(bold)builds the whole cone behind it$(), pinwheel "
+             "stripes and all."),
         crafting(f"{MOD}:funnel_core_medium",
-                 "No power, no RF — a funnel is pure gravity. Bigger cores build bigger bowls."),
-        text("How you drop in decides the ride:$(br)$(li)Aim $(bold)across the middle$() and you "
-             "swish wall-to-wall, each pass lower — the classic tornado.$(li)Enter $(bold)along "
-             "the rim$() and you orbit, spiralling the drain — a whirlpool.$(br2)Both end at the "
-             "center drain. Build a tube or shaft under the core and the ride flows straight on.",
-             title="Swirl or swish"),
-        text("The same trick works flat: any $(bold)U-shaped valley$() of sloped slides swings "
-             "riders back and forth until they settle. A funnel just does it in the round.",
-             title="Swing valleys"),
+                 "No power, no RF — pure water and momentum. Bigger cores build bigger cones."),
+        text("$(bold)Feed it$(): aim a slide into the wide mouth — enter off-center or at an "
+             "angle and you'll swing high up the walls before the current walks you out."
+             "$(br2)$(bold)Catch it$(): run a channel from the exit collar; riders fire out "
+             "level, carrying their speed.$(br2)Small / Medium / Large mouths stand about "
+             "6, 8, and 11 blocks tall. $(thing)Crouch$() any time to bail out.",
+             title="Feed & catch"),
+        text("Nobody gets stuck, ever: the current always washes riders (and dropped items, "
+             "and unlucky mobs) out the throat. Break the core to clear the whole shell.",
+             title="The current always wins"),
     ]))
 
     write_json(entries / "building/mega_parks.json", entry("building", "Mega-Parks",

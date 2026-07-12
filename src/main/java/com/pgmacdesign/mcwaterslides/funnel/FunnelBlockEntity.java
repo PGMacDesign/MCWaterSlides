@@ -3,16 +3,17 @@ package com.pgmacdesign.mcwaterslides.funnel;
 import com.pgmacdesign.mcwaterslides.config.MCWaterslidesConfig;
 import com.pgmacdesign.mcwaterslides.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * A funnel core's presence marker. It stores no state (size lives in the blockstate, center is the
- * block pos), never ticks, and exists purely to register/unregister in {@link FunnelFields} on load
- * and removal — the swirl itself is driven per-rider by {@code RideTicker} (both sides), exactly
- * like the jet current. Passive: no RF, no energy.
+ * A tornado core's presence marker. It stores no state (size + facing live in the blockstate,
+ * the exit anchor is the block pos), never ticks, and exists purely to register/unregister in
+ * {@link FunnelFields} on load and removal — the ride itself is driven per-rider by
+ * {@code RideTicker} (both sides), exactly like the jet current. Passive: no RF, no energy.
  */
 public class FunnelBlockEntity extends BlockEntity {
     public FunnelBlockEntity(BlockPos pos, BlockState state) {
@@ -25,37 +26,62 @@ public class FunnelBlockEntity extends BlockEntity {
                 : FunnelSize.MEDIUM;
     }
 
-    /** The swirl axis: (centerX, drain-lip Y, centerZ). */
-    public Vec3 axis() {
-        return new Vec3(getBlockPos().getX() + 0.5, getBlockPos().getY(), getBlockPos().getZ() + 0.5);
+    private Direction facing() {
+        return getBlockState().getBlock() instanceof FunnelCoreBlock
+                ? getBlockState().getValue(FunnelCoreBlock.FACING)
+                : Direction.NORTH;
+    }
+
+    /** The exit anchor: the trough bottom at the exit plane (top-center of the core block). */
+    public Vec3 anchor() {
+        return new Vec3(getBlockPos().getX() + 0.5, getBlockPos().getY() + 1, getBlockPos().getZ() + 0.5);
+    }
+
+    /** Unit vector from the exit back toward the mouth (the funnel-frame +a axis). */
+    public Vec3 back() {
+        Direction d = facing().getOpposite();
+        return new Vec3(d.getStepX(), 0, d.getStepZ());
+    }
+
+    /** Unit vector across the trough (the funnel-frame +u axis). */
+    public Vec3 perp() {
+        Direction d = facing().getClockWise();
+        return new Vec3(d.getStepX(), 0, d.getStepZ());
     }
 
     public FunnelPhysics.Params params() {
         FunnelSize s = size();
-        double pull = MCWaterslidesConfig.FUNNEL_PULL.get();
-        // Cap the swirl so a rim-entry's oscillation amplitude stays inside the bowl (SHM
-        // amplitude ≈ speed/ω, ω=√pull): 0.7·√pull·rim keeps the far turning point under the
-        // wall even for a fast slide-in. Bigger bowls naturally swirl faster. Config is a ceiling.
-        double maxSpeed = Math.min(MCWaterslidesConfig.FUNNEL_MAX_SPEED.get(),
-                0.7 * Math.sqrt(pull) * s.rimRadius());
         return new FunnelPhysics.Params(
-                pull,
+                s.mouthRadius(),
+                s.exitRadius(),
+                s.length(),
+                s.drop(),
+                MCWaterslidesConfig.FUNNEL_SWING.get(),
                 MCWaterslidesConfig.FUNNEL_DRAG.get(),
-                s.rimRadius(),
-                s.bowlHeight(),
-                s.drainRadius(),
-                maxSpeed);
+                MCWaterslidesConfig.FUNNEL_AXIAL_PUSH.get(),
+                MCWaterslidesConfig.FUNNEL_MAX_SPEED.get());
     }
 
-    /** True when the entity is inside this funnel's bowl cylinder (rim radius × bowl height). */
+    /** True when the entity is inside the cone volume (funnel-frame test, all three axes). */
     public boolean contains(Entity entity) {
-        FunnelSize s = size();
-        double dx = entity.getX() - (getBlockPos().getX() + 0.5);
-        double dz = entity.getZ() - (getBlockPos().getZ() + 0.5);
-        double y = entity.getY();
-        double baseY = getBlockPos().getY();
-        return dx * dx + dz * dz <= (s.rimRadius() + 0.6) * (s.rimRadius() + 0.6)
-                && y >= baseY - 0.1 && y <= baseY + s.bowlHeight() + 1.5;
+        FunnelPhysics.Params p = params();
+        Vec3 anchor = anchor();
+        Vec3 back = back();
+        Vec3 perp = perp();
+        double relX = entity.getX() - anchor.x;
+        double relZ = entity.getZ() - anchor.z;
+        double a = relX * back.x + relZ * back.z;
+        if (a < FunnelPhysics.EXIT_MARGIN || a > p.length() + 0.75) {
+            return false;
+        }
+        double u = relX * perp.x + relZ * perp.z;
+        double r = FunnelPhysics.radiusAt(Math.max(a, 0), p);
+        if (Math.abs(u) > r + 0.75) {
+            return false;
+        }
+        double relY = entity.getY() - anchor.y;
+        double bottom = FunnelPhysics.bottomAt(a, p);
+        return relY >= bottom - 1.0 && relY <= bottom + r + 1.0;
     }
 
     @Override
